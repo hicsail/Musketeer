@@ -26,6 +26,7 @@ using namespace std;  // NOLINT
 
 typedef enum {
   AGG_OP,
+  AGG_OP_SEC,
   BLACK_BOX_OP,
   COUNT_OP,
   CROSS_JOIN_OP,

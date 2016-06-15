@@ -571,6 +571,8 @@ namespace scheduling {
       }
       output.push_front(make_pair(nodes,
                                   scheduled_fmw[cur_cost][cur_jobs_exec]));
+      // output.push_back(make_pair(nodes,
+      //                             scheduled_fmw[cur_cost][cur_jobs_exec]));
       uint32_t tmp_jobs_exec = cur_jobs_exec;
       cur_jobs_exec = parent[cur_cost][cur_jobs_exec];
       cur_cost = parent_cost[cur_cost][tmp_jobs_exec];
@@ -588,6 +590,11 @@ namespace scheduling {
     delete [] scheduled_fmw;
     delete [] min_cost;
     delete [] min_fmw;
+    cout << "OUTPUT OUTPUT" << endl;
+    for (std::list<pair<op_nodes, FmwType>>::iterator i = output.begin(); i != output.end(); ++i) {
+      cout << CheckForceFmwFlag(i->second) << endl;
+      PrintDag(i->first);
+    }
     return output;
   }
 

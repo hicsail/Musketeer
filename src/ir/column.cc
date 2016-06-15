@@ -59,6 +59,10 @@ namespace musketeer {
     if (!fmw.compare("wildcherry")) {
       return "COLI(" + boost::lexical_cast<string>(index) + ")";
     }
+    if (!fmw.compare("viff")) {
+      string idx_str = boost::lexical_cast<string>(index);
+      
+    }
     LOG(ERROR) << "Unexpected framework: " << fmw;
     return NULL;
   }
@@ -73,6 +77,10 @@ namespace musketeer {
     }
     return numbers[index];
   }
+
+  // string Column::translateTypePython() {
+  //   return stringTypePython(get_type());
+  // }
 
   string Column::translateTypeJava() {
     return stringTypeJava(get_type());
@@ -104,6 +112,9 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "Boolean";
     }
+    case INTEGER_TYPE_SEC: {
+      return "Integer";
+    }
     default: {
       LOG(ERROR) << "Column has unexpected type: " << type;
       return "";
@@ -121,6 +132,8 @@ namespace musketeer {
       return "Double";
     case BOOLEAN_TYPE:
       return "Boolean";
+    case INTEGER_TYPE_SEC:
+      return "Int";
     default: {
       LOG(ERROR) << "Column has unexpected type: " << type;
       return "";
@@ -141,6 +154,9 @@ namespace musketeer {
     }
     case BOOLEAN_TYPE: {
       return "bool";
+    }
+    case INTEGER_TYPE_SEC: {
+      return "int";
     }
     default: {
       LOG(ERROR) << "Column has unexpected type";
@@ -163,6 +179,9 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "Boolean";
     }
+    case INTEGER_TYPE_SEC: {
+      return "Int";
+    }
     default: {
       LOG(ERROR) << "Column has unexpected type";
       return NULL;
@@ -182,6 +201,9 @@ namespace musketeer {
       return ".GetHashCode()";
     }
     case BOOLEAN_TYPE: {
+      return "";
+    }
+    case INTEGER_TYPE_SEC: {
       return "";
     }
     default: {
@@ -211,6 +233,10 @@ namespace musketeer {
       return "if (this." + index_string + " != that." + index_string + ")\n        " +
         "return this." + index_string + " - that." + index_string + ";";
     }
+    case INTEGER_TYPE_SEC: {
+      return "if (this." + index_string + " != that." + index_string + ")\n        " +
+        "return this." + index_string + " - that." + index_string + ";";
+    }
     default: {
       LOG(ERROR) << "Column has unexpected type";
       return NULL;
@@ -233,6 +259,9 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "this." + index_string + " == that." + index_string;
     }
+    case INTEGER_TYPE_SEC: {
+      return "this." + index_string + " == that." + index_string;
+    }
     default: {
       LOG(ERROR) << "Column has unexpected type";
       return NULL;
@@ -253,6 +282,9 @@ namespace musketeer {
     }
     case BOOLEAN_TYPE: {
       return "boolean";
+    }
+    case INTEGER_TYPE_SEC: {
+      return "int";
     }
     default: {
       LOG(ERROR) << "Column has unexpected type";

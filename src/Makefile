@@ -72,6 +72,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/frameworks/powerlyra_framework.o \
 		$(BUILD_DIR)/frameworks/spark_dispatcher.o \
 		$(BUILD_DIR)/frameworks/spark_framework.o \
+		$(BUILD_DIR)/frameworks/viff_framework.o \
 		$(BUILD_DIR)/frameworks/wildcherry_dispatcher.o \
 		$(BUILD_DIR)/frameworks/wildcherry_framework.o \
 		$(BUILD_DIR)/frontends/beeraph.o \
@@ -79,6 +80,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/frontends/operator_node.o \
 		$(BUILD_DIR)/frontends/relations_type.o \
 		$(BUILD_DIR)/frontends/tree_traversal.o \
+		$(BUILD_DIR)/ir/agg_operator_sec.o \
 		$(BUILD_DIR)/ir/agg_operator.o \
 		$(BUILD_DIR)/ir/black_box_operator.o \
 		$(BUILD_DIR)/ir/column.o \
@@ -110,6 +112,8 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/translation/metis_job_code.o \
 		$(BUILD_DIR)/translation/naiad_job_code.o \
 		$(BUILD_DIR)/translation/spark_job_code.o \
+		$(BUILD_DIR)/translation/viff_job_code.o \
+		$(BUILD_DIR)/translation/translator_viff.o \
 		$(BUILD_DIR)/translation/translator_graphchi.o \
 		$(BUILD_DIR)/translation/translator_hadoop.o \
 		$(BUILD_DIR)/translation/translator_metis.o \

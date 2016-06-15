@@ -39,7 +39,8 @@ namespace musketeer {
   typedef set<shared_ptr<OperatorNode> > node_set;
 
   enum FmwType {FMW_SPARK, FMW_GRAPH_CHI, FMW_HADOOP, FMW_METIS,
-                FMW_NAIAD, FMW_POWER_GRAPH, FMW_POWER_LYRA, FMW_WILD_CHERRY};
+                FMW_NAIAD, FMW_POWER_GRAPH, FMW_POWER_LYRA, FMW_WILD_CHERRY,
+                FMW_VIFF};
 
   bool CheckChildrenInSet(const op_nodes& dag, const node_set& nodes);
   string ExecCmd(const string& cmd);

@@ -166,6 +166,7 @@ class OperatorInterface {
   const char* get_type_string() {
     static const char* type2str[] = {
       "AGG",
+      "AGG_SEC",
       "BLACK_BOX",
       "COUNT",
       "CROSS_JOIN",

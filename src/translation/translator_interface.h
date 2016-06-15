@@ -31,6 +31,7 @@
 #include "frontends/operator_node.h"
 #include "ir/operator_interface.h"
 #include "ir/agg_operator.h"
+#include "ir/agg_operator_sec.h"
 #include "ir/count_operator.h"
 #include "ir/cross_join_operator.h"
 #include "ir/difference_operator.h"
@@ -75,6 +76,8 @@ class TranslatorInterface {
  protected:
   JobCode* TranslateOperator(OperatorInterface *op) {
     switch (op->get_type()) {
+    case AGG_OP_SEC:
+      return Translate(dynamic_cast<AggOperatorSEC*>(op));
     case AGG_OP:
       return Translate(dynamic_cast<AggOperator*>(op));
     case COUNT_OP:
@@ -123,6 +126,12 @@ class TranslatorInterface {
   virtual JobCode* Translate(AggOperator* op) {
     // Only frameworks that support AGG must implement it.
     LOG(FATAL) << "AGG operator not supported by framework!";
+    return NULL;
+  }
+
+  virtual JobCode* Translate(AggOperatorSEC* op) {
+    // Only frameworks that support AGG must implement it.
+    LOG(FATAL) << "AGG_SEC operator not supported by framework!";
     return NULL;
   }
 

@@ -24,6 +24,7 @@
 #include <iostream>
 #include <vector>
 
+#include "tests/mindi/netflix.h"
 #include "base/common.h"
 #include "base/utils.h"
 #include "core/daemon.h"
@@ -35,6 +36,7 @@
 #include "RLPlusParser.h"
 #include "scheduling/operator_scheduler.h"
 #include "scheduling/scheduler_dynamic.h"
+#include "frameworks/viff_framework.h" // TODO: figure out why using the namespace doesn't work
 
 using namespace musketeer; // NOLINT
 using namespace musketeer::core; // NOLINT
@@ -197,9 +199,13 @@ map<string, FrameworkInterface*> AddFrameworks(string frams) {
       LOG(INFO) << "Adding PowerGraph Framework";
     } else if (!it->compare("powerlyra")) {
       frameworks["powerlyra"] = new PowerLyraFramework();
+      LOG(INFO) << "Adding PowerLyra Framework";
     } else if (!it->compare("wildcherry")) {
       frameworks["wildcherry"] = new WildCherryFramework();
       LOG(INFO) << "Adding WildCherry Framework";
+    } else if (!it->compare("viff")) {
+      frameworks["viff"] = new ViffFramework();
+      LOG(INFO) << "Adding Viff (MPC) Framework";
     }
   }
   return frameworks;
@@ -295,7 +301,11 @@ int main(int argc, char *argv[]) {
     parser = RLPlusParserNew(tokens);
     RLPlusParser_expr_return expr_ret = parser->expr(parser);
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
-    vector<shared_ptr<OperatorNode> > dag = tree_traversal.Traverse();
+    // vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
+    vector<shared_ptr<OperatorNode>> dag;
+    shared_ptr<OperatorNode> netflix = tests::mindi::Netflix().Run();
+    dag.push_back(netflix);
+
     if (FLAGS_output_ir_dag_gv) {
       PrintDagGV(dag);
     } else {

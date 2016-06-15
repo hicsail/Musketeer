@@ -205,6 +205,8 @@ namespace musketeer {
 
   string FmwToString(uint8_t fmw) {
     switch (fmw) {
+    case FMW_VIFF:
+      return "viff";
     case GRAPH_CHI:
       return "graphchi";
     case HADOOP:
@@ -228,6 +230,8 @@ namespace musketeer {
 
   string FrameworkToString(FmwType fmw) {
     switch (fmw) {
+    case FMW_VIFF:
+      return "viff";
     case FMW_GRAPH_CHI:
       return "graphchi";
     case FMW_HADOOP:
@@ -356,6 +360,8 @@ namespace musketeer {
            it != input_rels.end(); ++it) {
         // Rel is an input if rel not visited or doesn't have parents and
         // not already marked as an input.
+        cout << "IsGeneratedByOp " << IsGeneratedByOp((*it)->get_name(), node->get_parents()) << endl;
+
         if ((node->get_parents().size() == 0 ||
              !IsGeneratedByOp((*it)->get_name(), node->get_parents()) ||
              (node->get_children().size() == 0 && node->get_parents().size() == 1 &&
@@ -364,10 +370,12 @@ namespace musketeer {
               inputs->find((*it)->get_name()) == inputs->end()) ||
              !op->get_output_relation()->get_name().compare((*it)->get_name()))) {
           VLOG(2) << (*it)->get_name() << " is an input";
+          LOG(INFO) << (*it)->get_name() << " is an input";
           inputs->insert((*it)->get_name());
           input_rels_out->push_back(*it);
         } else {
           VLOG(2) << (*it)->get_name() << " is not an input";
+          LOG(INFO) << (*it)->get_name() << " is not an input";
         }
       }
       op_nodes non_loop_children = node->get_children();

@@ -69,6 +69,12 @@ class Mindi {
                                    Column* key_col,
                                    const string& rel_out_name) const;
 
+  shared_ptr<OperatorNode> GroupBySEC(shared_ptr<OperatorNode> op_node,
+                                   const vector<Column*>& group_bys, // key selector
+                                   const GroupByType group_reducer,
+                                   Column* key_col,
+                                   const string& rel_out_name) const;
+
   shared_ptr<OperatorNode> Join(shared_ptr<OperatorNode> op_node,
                                 const string& rel_out_name,
                                 shared_ptr<OperatorNode> other_op_node,

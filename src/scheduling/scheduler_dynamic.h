@@ -38,6 +38,7 @@
 #include "core/history_storage.h"
 #include "frameworks/framework_interface.h"
 #include "frameworks/graphchi_framework.h"
+#include "frameworks/viff_framework.h"
 #include "frameworks/hadoop_framework.h"
 #include "frameworks/metis_framework.h"
 #include "frameworks/naiad_framework.h"

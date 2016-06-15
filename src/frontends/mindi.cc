@@ -21,6 +21,7 @@
 #include "base/common.h"
 #include "base/flags.h"
 #include "ir/agg_operator.h"
+#include "ir/agg_operator_sec.h"
 #include "ir/count_operator.h"
 #include "ir/difference_operator.h"
 #include "ir/distinct_operator.h"
@@ -40,6 +41,7 @@
 namespace musketeer {
 
   using ir::AggOperator;
+  using ir::AggOperatorSEC;
   using ir::CountOperator;
   using ir::DifferenceOperator;
   using ir::DistinctOperator;
@@ -294,6 +296,47 @@ namespace musketeer {
       vector<Column*> val_cols;
       group_by_op = new MaxOperator(FLAGS_hdfs_input_dir, cond_tree, group_bys,
                                     relations, val_cols, key_col, output_rel);
+      break;
+    }
+    default: {
+      LOG(ERROR) << "Unexpected GroupBy operator type";
+      return op_node;
+    }
+    }
+    vector<shared_ptr<OperatorNode> > parents;
+    if (dynamic_cast<InputOperator*>(op_node->get_operator()) == NULL) {
+      parents.push_back(op_node);
+    }
+    shared_ptr<OperatorNode> group_by_node =
+      shared_ptr<OperatorNode>(new OperatorNode(group_by_op, parents));
+    op_node->AddChild(group_by_node);
+    return group_by_node;
+  }
+
+  shared_ptr<OperatorNode> Mindi::GroupBySEC(shared_ptr<OperatorNode> op_node,
+                                          const vector<Column*>& group_bys,
+                                          const GroupByType reducer,
+                                          Column* key_col,
+                                          const string& rel_out_name) const {
+    vector<Relation*> relations;
+    relations.push_back(op_node->get_operator()->get_output_relation());
+    vector<Column*> columns;
+    uint32_t index = 0;
+    for (vector<Column*>::const_iterator it = group_bys.begin();
+         it != group_bys.end(); it++, index++) {
+      columns.push_back(new Column(rel_out_name, index, (*it)->get_type()));
+    }
+    ConditionTree* cond_tree =
+      new ConditionTree(new Value("true", BOOLEAN_TYPE));
+    OperatorInterface* group_by_op;
+    vector<Column*> key_cols;
+    key_cols.push_back(key_col);
+    columns.push_back(new Column(rel_out_name, index, key_col->get_type()));
+    Relation* output_rel = new Relation(rel_out_name, columns);
+    switch (reducer) {
+    case PLUS_GROUP: {
+      group_by_op = new AggOperatorSEC(FLAGS_hdfs_input_dir, cond_tree, group_bys,
+                                    "+", relations, key_cols, output_rel);
       break;
     }
     default: {

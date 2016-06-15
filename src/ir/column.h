@@ -30,6 +30,7 @@
 #define DOUBLE_TYPE 1
 #define STRING_TYPE 2
 #define BOOLEAN_TYPE 3
+#define INTEGER_TYPE_SEC 5
 
 namespace musketeer {
 
@@ -44,6 +45,7 @@ class Column : public Value {
   string get_relation();
   int32_t get_index();
   string toString(const string& fmw);
+  // string translateTypePython();
   string translateTypeJava();
   string translateTypeC();
   string translateTypeCSharp();
@@ -52,6 +54,7 @@ class Column : public Value {
   static string stringEqualsCSharp(uint16_t type, int32_t index);
   static string stringHashCSharp(uint16_t type);
   static string stringPrimitiveTypeCSharp(uint16_t type);
+  // static string stringTypePython(uint16_t type)
   static string stringTypeJava(uint16_t type);
   static string stringTypeC(uint16_t type);
   static string stringTypeCSharp(uint16_t type);
