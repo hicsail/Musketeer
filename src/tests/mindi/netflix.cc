@@ -36,7 +36,7 @@ namespace mindi {
   shared_ptr<OperatorNode> Netflix::Run() {
     Mindi* mindi = new Mindi();
     vector<Column*> edges;
-    edges.push_back(new Column("edges", 0, INTEGER_TYPE)); // perfect place for privacy annotation
+    edges.push_back(new Column("edges", 0, INTEGER_TYPE));
     edges.push_back(new Column("edges", 1, INTEGER_TYPE_SEC));
     
     Relation* edges_rel = new Relation("edges", edges);
