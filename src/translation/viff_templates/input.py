@@ -10,17 +10,6 @@ from viff import shamir
 import time
 import subprocess
 
-class FakeShare:
-    def __init__(self, value):
-        self.value = value
-
-    def to_real_share(self, rt, Zp):
-        rt.increment_pc()
-        return Share(rt, Zp, Zp(self.value))
-
-    def __str__(self):
-        return str(self.value)
-
 def to_int(val, Zp, num_hosts=3):
     return [int(val)] * num_hosts
 
@@ -45,7 +34,7 @@ for idx, to_send in enumerate(to_send_all):
     to_send_all[idx][1]['edges'] = []
 edges_type_lookup = [to_int, to_share]
 
-input_path = '/home/nikolaj/Desktop/work/Musketeer/MUSKETEER_ROOT/edges/'
+input_path = '/home/nikolaj/Desktop/work/Musketeer/MUSKETEER_ROOT/' + 'edges/'
 edges = subprocess.Popen(["hadoop", "fs", "-cat", input_path + "*"], stdout=subprocess.PIPE)
 for ln_idx, line in enumerate(edges.stdout):
     tokens = line.split()
@@ -54,16 +43,26 @@ for ln_idx, line in enumerate(edges.stdout):
         for inner_idx, share in enumerate(shares):
             current = to_send_all[inner_idx][1]['edges']
             if ln_idx >= len(current):
-                current.append((ln_idx,))
-            current[-1] += (share,)
+                current.append([ln_idx])
+            current[-1].append(share)
 
 # GENERATE INPUT FOR edges end
 
 # DEFINE PROTOCOL
 
-def protocol(rt, repo, Zp):
-    print 'dummy protocol'
-    rt.shutdown()
+def protocol(rt, repo, Zp, output):
+    _edges = sorted(repo.get_data('edges'), key=lambda x: x[0] + x[1]) # temporary
+    edges = []
+    for row in _edges:
+        new_row = []
+        for val in row[2:]:
+            if isinstance(val, long):
+                new_row.append(to_share(rt, Zp, val))
+            else:
+                new_row.append(val)
+        edges.append(new_row)
+    edges_agg = relational.aggregate(edges, 0, 1, lambda x, y: x + y)
+    gather_rel(rt, repo, edges_agg, 'edges_agg', output)
 
 # DEFINE PROTOCOL end
 
@@ -75,7 +74,22 @@ for host in host_addresses:
 time.sleep(1)
 
 for host, to_send in zip(host_addresses, to_send_all):
-    print host
     r = requests.post(host + '/data_entry', data=marshal.dumps(to_send))
 
 # SEND PROTOCOL AND DATA end
+
+# GET RESULT AND WRITE TO HDFS
+
+edges_agg = None
+while not edges_agg:
+    r = requests.get(host_addresses[0] + '/output')
+    edges_agg = marshal.loads(r.text)
+    time.sleep(1)
+edges_agg = edges_agg[0] 
+
+output_path = '/home/nikolaj/Desktop/work/Musketeer/MUSKETEER_ROOT/' + 'edges_agg/'
+subprocess.call(["hadoop", "fs", "-mkdir", output_path])
+p = subprocess.Popen(["hadoop", "fs", "-put", "-", output_path + 'edges_agg'], stdin=subprocess.PIPE)
+p.communicate(input='\n'.join(edges_agg))
+
+# GET RESULT AND WRITE TO HDFS end
