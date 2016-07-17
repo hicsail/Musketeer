@@ -89,6 +89,9 @@ DECLARE_string(scala_major_version);
 DECLARE_string(spark_web_ui_host);
 DECLARE_int32(spark_web_ui_port);
 
+// Viff flags
+DECLARE_string(viff_templates_dir);
+
 // WildCherry flags.
 DECLARE_string(wildcherry_dir);
 DECLARE_string(wildcherry_loop_its);

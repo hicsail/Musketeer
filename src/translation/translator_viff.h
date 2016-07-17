@@ -45,11 +45,25 @@ class TranslatorViff : public TranslatorInterface {
   string GenerateCode();
 
  private:
-  pair<string, string> GetInputPathsAndRelationsCode(const op_nodes& dag);
-  ViffJobCode* Translate(AggOperatorSEC* op);
+  string TranslateHeader();
+  string TranslateGatherLeaves(set<shared_ptr<OperatorNode>> leaves);
+  string TranslateMakeShares(set<pair<Relation*, string>> input_rels_paths);
+  string TranslateProtocolInput(set<pair<Relation*, string>> input_rels_paths);
+  string TranslateDataTransfer();
+  string TranslateStoreLeaves(set<shared_ptr<OperatorNode>> leaves);
+  set<pair<Relation*, string>> GetInputRelsAndPaths(const op_nodes& dag);
+  bool CanSchedule(OperatorInterface* op, set<string>* processed);
+  void TranslateDAG(string* code, const op_nodes& next_set,
+                    set<shared_ptr<OperatorNode> >* leaves,
+                    set<string>* processed);
   string GetBinaryPath(OperatorInterface* op);
   string GetSourcePath(OperatorInterface* op);
   string WriteToFiles(OperatorInterface* op, const string& op_code);
+  
+  ViffJobCode* Translate(AggOperatorSEC* op);
+
+  string GenerateColumnTypes(Relation* rel);
+  string GenerateAggSECOp(const string& op);
 };
 
 } // namespace translator

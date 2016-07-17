@@ -45,20 +45,20 @@ class Column : public Value {
   string get_relation();
   int32_t get_index();
   string toString(const string& fmw);
-  // string translateTypePython();
   string translateTypeJava();
   string translateTypeC();
   string translateTypeCSharp();
   string translateTypeScala();
+  string translateTypeConversionViff();
   static string stringCompareToCSharp(uint16_t type, int32_t index);
   static string stringEqualsCSharp(uint16_t type, int32_t index);
   static string stringHashCSharp(uint16_t type);
   static string stringPrimitiveTypeCSharp(uint16_t type);
-  // static string stringTypePython(uint16_t type)
   static string stringTypeJava(uint16_t type);
   static string stringTypeC(uint16_t type);
   static string stringTypeCSharp(uint16_t type);
   static string stringTypeScala(uint16_t type);
+  static string stringViffTypeConversion(uint16_t type);
   static string indexString(int32_t index);
 
  private:

@@ -98,6 +98,10 @@ namespace musketeer {
     return stringTypeScala(get_type());
   }
 
+  string Column::translateTypeConversionViff() {
+    return stringViffTypeConversion(get_type());
+  }
+
   string Column::stringTypeJava(uint16_t type) {
     switch (type) {
     case INTEGER_TYPE: {
@@ -212,6 +216,22 @@ namespace musketeer {
     }
     }
   }
+
+  string Column::stringViffTypeConversion(uint16_t type) {
+    switch (type) {
+    case INTEGER_TYPE: {
+      return "_to_int";
+    }
+    case INTEGER_TYPE_SEC: {
+      return "_to_share";
+    }
+    default: {
+      LOG(ERROR) << "Column has unexpected type";
+      return NULL;
+    }
+    }  
+  }
+  
 
   string Column::stringCompareToCSharp(uint16_t type, int32_t index) {
     string index_string = indexString(index);

@@ -141,6 +141,9 @@ DEFINE_string(spark_templates_dir, "src/translation/spark_templates/",
 DEFINE_string(spark_web_ui_host, "localhost", "Spark Web UI Host");
 DEFINE_int32(spark_web_ui_port, 8080, "Spark Web UI Port");
 
+// Viff flags.
+DEFINE_string(viff_templates_dir, "src/translation/viff_templates/", "Viff templates directory");
+
 // Wildcherry flags.
 DEFINE_string(wildcherry_templates_dir, "src/translation/wildcherry_templates/",
               "WildCherry templates directory");
