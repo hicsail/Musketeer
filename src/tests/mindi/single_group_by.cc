@@ -16,7 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "tests/mindi/netflix.h"
+#include "tests/mindi/single_group_by.h"
 
 #include <vector>
 
@@ -33,7 +33,7 @@ namespace mindi {
   using ir::CondOperator;
   using ir::InputOperator;
 
-  shared_ptr<OperatorNode> Netflix::Run() {
+  shared_ptr<OperatorNode> SingleGroupby::Run() {
     Mindi* mindi = new Mindi();
     vector<Column*> edges;
     edges.push_back(new Column("edges", 0, INTEGER_TYPE));
@@ -44,34 +44,15 @@ namespace mindi {
     edges_rels.push_back(edges_rel);
 
     OperatorInterface* edge_op = new InputOperator(FLAGS_hdfs_input_dir, edges_rels, edges_rel);
-    
-    ConditionTree* edges_sel_cond_tree =
-      new ConditionTree(new CondOperator("<"),
-                        new ConditionTree(edges[1]->clone()),
-                        new ConditionTree(new Value("5", INTEGER_TYPE)));
-    shared_ptr<OperatorNode> edges_sel =
-      mindi->Where(shared_ptr<OperatorNode>(new OperatorNode(edge_op)),
-                   edges_sel_cond_tree,
-                   "edges_sel");
-    
-    vector<Column*> edges_sel_cols =
-      edges_sel->get_operator()->get_output_relation()->get_columns();
+    shared_ptr<OperatorNode> temp = shared_ptr<OperatorNode>(new OperatorNode(edge_op));
+
     vector<Column*> sum_group_by_cols;
-    sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
+    sum_group_by_cols.push_back(edges[0]->clone());
     shared_ptr<OperatorNode> sum_group_by =
-      mindi->GroupBySEC(edges_sel, sum_group_by_cols, PLUS_GROUP,
-                        edges_sel_cols[1], "sum_group_by");
+      mindi->GroupBy(temp, sum_group_by_cols, PLUS_GROUP,
+                     edges[1], "sum_group_by");
 
-    // vector<Column*> prev_output_cols =
-    //   sum_group_by->get_operator()->get_output_relation()->get_columns();
-    
-    // vector<Column*> sec_sum_group_by_cols;
-    // sec_sum_group_by_cols.push_back(prev_output_cols[0]->clone());
-    // shared_ptr<OperatorNode> sec_sum_group_by =
-    //   mindi->GroupBySEC(sum_group_by, sec_sum_group_by_cols, PLUS_GROUP,
-    //                  prev_output_cols[1], "sec_sum_group_by");
-
-    return edges_sel;
+    return sum_group_by;
   }
 
 } // namespace mindi
