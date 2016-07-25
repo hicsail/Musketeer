@@ -32,11 +32,11 @@
 namespace musketeer {
 namespace framework {
 
-  // using musketeer::translator::TranslatorViff;
+  using musketeer::translator::TranslatorViff;
   // using musketeer::monitor::ViffMonitor;
 
   ViffFramework::ViffFramework(): FrameworkInterface() {
-    dispatcher_ = NULL;
+    dispatcher_ = new ViffDispatcher();
     monitor_ = NULL;
   }
 
@@ -49,9 +49,9 @@ namespace framework {
 
   void ViffFramework::Dispatch(const string& binary_file,
                                const string& relation) {
-    // if (!FLAGS_dry_run) {
-    //   dispatcher_->Execute(binary_file, relation);
-    // }
+    if (!FLAGS_dry_run) {
+      dispatcher_->Execute(binary_file, relation);
+    }
   }
 
   FmwType ViffFramework::GetType() {
@@ -66,7 +66,7 @@ namespace framework {
     input_nodes.push_back(nodes.front());
     for (node_list::const_iterator it = nodes.begin(); it != nodes.end();
          ++it) {
-      cout << (*it)->get_operator()->get_type_string() << endl;
+      // cout << (*it)->get_operator()->get_type_string() << endl;
       to_schedule.insert(*it);
       num_ops_to_schedule++;
     }
@@ -108,7 +108,7 @@ namespace framework {
 
   double ViffFramework::ScoreOperator(shared_ptr<OperatorNode> op_node, const relation_size& rel_size) {
     OperatorInterface* op = op_node->get_operator();
-    if (op->get_type() == AGG_OP_SEC) {
+    if (op->get_type() == AGG_OP_SEC || op->get_type() == SELECT_OP_SEC || op->get_type() == MUL_OP_SEC) {
       cout << "Secure operator detected." << endl;
       return 1.0; 
     }
@@ -155,16 +155,28 @@ namespace framework {
   bool ViffFramework::CanMerge(const op_nodes& dag,
                                const node_set& to_schedule,
                                int32_t num_ops_to_schedule) {
-    cout << "size of node set to schedule: " << num_ops_to_schedule << endl;
-    cout << "###DAG###" << endl;
-    PrintDag(dag);
-    cout << "###DAG###" << endl;
-    if (dag.size() == 1 &&
-        to_schedule.size() == 1 &&
-        dag[0]->get_operator()->get_type() == AGG_OP_SEC) {
-      return true;
+    // cout << "size of node set to schedule: " << num_ops_to_schedule << endl;
+    // cout << "###DAG###" << endl;
+    // PrintDag(dag);
+    // cout << "###DAG###" << endl;
+    // if (dag.size() == 1 &&
+    //     // to_schedule.size() == 1 &&
+    //     (dag[0]->get_operator()->get_type() == AGG_OP_SEC ||
+    //      dag[0]->get_operator()->get_type() == SELECT_OP_SEC)) {
+    //   return true;
+    // }
+    // return false;
+    
+    // make sure all operators are secure operators (no mixing operators for now)
+    for (node_set::const_iterator it = to_schedule.begin();
+         it != to_schedule.end(); ++it) {
+      if ((*it)->get_operator()->get_type() != AGG_OP_SEC || 
+          (*it)->get_operator()->get_type() != SELECT_OP_SEC ||
+          (*it)->get_operator()->get_type() != MUL_OP_SEC) {
+        return false;
+      }
     }
-    return false;
+    return true;
   }
 
   bool ViffFramework::HasReduce(OperatorInterface* op) {

@@ -25,7 +25,7 @@
 
 #include "base/common.h"
 #include "base/utils.h"
-// #include "frameworks/viff_dispatcher.h"
+#include "frameworks/viff_dispatcher.h"
 #include "translation/translator_viff.h"
 
 namespace musketeer {

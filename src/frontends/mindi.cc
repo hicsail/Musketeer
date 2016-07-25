@@ -32,7 +32,9 @@
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
+#include "ir/mul_operator_sec.h"
 #include "ir/select_operator.h"
+#include "ir/select_operator_sec.h"
 #include "ir/sub_operator.h"
 #include "ir/sum_operator.h"
 #include "ir/union_operator.h"
@@ -52,7 +54,9 @@ namespace musketeer {
   using ir::MaxOperator;
   using ir::MinOperator;
   using ir::MulOperator;
+  using ir::MulOperatorSEC;
   using ir::SelectOperator;
+  using ir::SelectOperatorSEC;
   using ir::SubOperator;
   using ir::SumOperator;
   using ir::UnionOperator;
@@ -164,6 +168,84 @@ namespace musketeer {
       shared_ptr<OperatorNode>(new OperatorNode(select_op, parents_select));
     math_node->AddChild(select_node);
     return select_node;
+  }
+
+  shared_ptr<OperatorNode> Mindi::SelectSEC(shared_ptr<OperatorNode> op_node,
+                                         const vector<Column*>& sel_cols,
+                                         ConditionTree* cond_tree,
+                                         const string& rel_out_name) const {
+  
+    ConditionTree* empty_cond_tree =
+      new ConditionTree(new Value("true", BOOLEAN_TYPE));
+    // TODO(ionel): Assumes that the passed in condition tree only does one
+    // arithmetic operation. Extend it to handle the other cases as well.
+    vector<Value*> values;
+    values.push_back(cond_tree->get_left()->get_column());
+    values.push_back(cond_tree->get_right()->get_column());
+    // vector<Column*> in_cols =
+    //   op_node->get_operator()->get_output_relation()->get_columns();
+    vector<Column*> in_cols =
+      op_node->get_operator()->get_output_relation()->get_columns();
+    vector<Column*> out_cols;
+    uint32_t index = 0;
+    for (vector<Column*>::iterator it = in_cols.begin(); it != in_cols.end();
+         ++it) {
+      out_cols.push_back(new Column(rel_out_name + "_math", index,
+                                    (*it)->get_type()));
+      index++;
+    }
+    Relation* math_output_rel = new Relation(rel_out_name + "_math", out_cols);
+    OperatorInterface* math_op = NULL;
+    vector<Relation*> math_relations;
+    math_relations.push_back(op_node->get_operator()->get_output_relation());
+    string math_op_type = cond_tree->get_cond_operator()->toString();
+    if (!math_op_type.compare("*")) {
+      math_op = new MulOperatorSEC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
+                                   values, math_output_rel);
+    } else {
+      LOG(ERROR) << "Unexpected math op type: " << math_op_type;
+    }
+    vector<shared_ptr<OperatorNode> > parents;
+    if (dynamic_cast<InputOperator*>(op_node->get_operator()) == NULL) {
+      parents.push_back(op_node);
+    }
+    shared_ptr<OperatorNode> math_node =
+      shared_ptr<OperatorNode>(new OperatorNode(math_op, parents));
+    op_node->AddChild(math_node);
+
+
+    vector<Relation*> relations;
+    relations.push_back(math_output_rel);
+    vector<Column*> math_sel_cols;
+    vector<Column*> sel_out_cols;
+    index = 0;
+    for (vector<Column*>::const_iterator it = sel_cols.begin();
+         it != sel_cols.end(); ++it) {
+      math_sel_cols.push_back(new Column(rel_out_name + "_math",
+                                         (*it)->get_index(),
+                                         (*it)->get_type()));
+      sel_out_cols.push_back(new Column(rel_out_name, index,
+                                        (*it)->get_type()));
+      index++;
+    }
+    Relation* output_rel = new Relation(rel_out_name, sel_out_cols);
+    ConditionTree* cond_tree_sel =
+      new ConditionTree(new Value("true", BOOLEAN_TYPE));
+    SelectOperatorSEC* select_op =
+      new SelectOperatorSEC(FLAGS_hdfs_input_dir, cond_tree_sel, math_sel_cols,
+                         relations, output_rel);
+    vector<shared_ptr<OperatorNode> > parents_select;
+    parents_select.push_back(math_node);
+    shared_ptr<OperatorNode> select_node =
+      shared_ptr<OperatorNode>(new OperatorNode(select_op, parents_select));
+    math_node->AddChild(select_node);
+    return select_node;
+  }
+
+  shared_ptr<OperatorNode> Mindi::MathSEC(shared_ptr<OperatorNode> op_node,
+                                          vector<Value*> values,
+                                          const string& rel_out_name) const {
+    // TODO(nikolaj)
   }
 
   shared_ptr<OperatorNode> Mindi::Where(shared_ptr<OperatorNode> op_node,

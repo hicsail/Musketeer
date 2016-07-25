@@ -164,6 +164,7 @@ class OperatorInterface {
   virtual OperatorType get_type() = 0;
 
   const char* get_type_string() {
+    LOG(INFO) << "Don't use this method!";
     static const char* type2str[] = {
       "AGG",
       "AGG_SEC",
@@ -186,7 +187,8 @@ class OperatorInterface {
       "SUM",
       "UDF",
       "UNION",
-      "WHILE"
+      "WHILE",
+      "SELECT_SEC"
     };
 
     return type2str[get_type()];

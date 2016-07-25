@@ -16,39 +16,21 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_COMMON_H
-#define MUSKETEER_COMMON_H
+#ifndef MUSKETEER_TESTS_MINDI_NETFLIX_H
+#define MUSKETEER_TESTS_MINDI_NETFLIX_H
 
-using namespace std;  // NOLINT
+#include "frontends/mindi.h"
 
-#include <glog/logging.h>
-#include <gflags/gflags.h>
+namespace musketeer {
+namespace tests {
+namespace mindi {
 
-typedef enum {
-  AGG_OP,
-  AGG_OP_SEC,
-  BLACK_BOX_OP,
-  COUNT_OP,
-  CROSS_JOIN_OP,
-  DIFFERENCE_OP,
-  DISTINCT_OP,
-  DIV_OP,
-  INPUT_OP,
-  INTERSECTION_OP,
-  JOIN_OP,
-  MAX_OP,
-  MIN_OP,
-  MUL_OP,
-  PROJECT_OP,
-  SELECT_OP,
-  SORT_OP,
-  SUB_OP,
-  SUM_OP,
-  UDF_OP,
-  UNION_OP,
-  WHILE_OP,
-  SELECT_OP_SEC,
-  MUL_OP_SEC
-} OperatorType;
+class Netflix {
+ public:
+  shared_ptr<OperatorNode> Run();
+};
 
-#endif  // MUSKETEER_COMMON_H
+} // namespace mindi
+} // namespace tests
+} // namespace musketeer
+#endif

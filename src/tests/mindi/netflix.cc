@@ -46,21 +46,61 @@ namespace mindi {
     OperatorInterface* edge_op = new InputOperator(FLAGS_hdfs_input_dir, edges_rels, edges_rel);
     
     ConditionTree* edges_sel_cond_tree =
-      new ConditionTree(new CondOperator("<"),
+      new ConditionTree(new CondOperator("*"),
                         new ConditionTree(edges[1]->clone()),
-                        new ConditionTree(new Value("5", INTEGER_TYPE)));
+                        new ConditionTree(edges[1]->clone()));
+    vector<Column*> temp_sel_cols;
+    temp_sel_cols.push_back(edges[0]->clone());
+    temp_sel_cols.push_back(edges[1]->clone());
+
     shared_ptr<OperatorNode> edges_sel =
-      mindi->Where(shared_ptr<OperatorNode>(new OperatorNode(edge_op)),
-                   edges_sel_cond_tree,
-                   "edges_sel");
+      mindi->SelectSEC(shared_ptr<OperatorNode>(new OperatorNode(edge_op)),
+                       temp_sel_cols,
+                       edges_sel_cond_tree,
+                       "edges_sel");
+
+    // vector<Column*> edges_sel_cols =
+    //   edges_sel->get_operator()->get_output_relation()->get_columns();
+    // vector<Column*> sum_group_by_cols;
+    // sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
+    // shared_ptr<OperatorNode> sum_group_by =
+    //   mindi->GroupBySEC(edges_sel, sum_group_by_cols, PLUS_GROUP,
+    //                     edges_sel_cols[1], "sum_group_by");
+
+    return edges_sel->get_parents()[0];
+
+    // Mindi* mindi = new Mindi();
+    // vector<Column*> edges;
+    // edges.push_back(new Column("edges", 0, INTEGER_TYPE));
+    // edges.push_back(new Column("edges", 1, INTEGER_TYPE_SEC));
     
-    vector<Column*> edges_sel_cols =
-      edges_sel->get_operator()->get_output_relation()->get_columns();
-    vector<Column*> sum_group_by_cols;
-    sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
-    shared_ptr<OperatorNode> sum_group_by =
-      mindi->GroupBySEC(edges_sel, sum_group_by_cols, PLUS_GROUP,
-                        edges_sel_cols[1], "sum_group_by");
+    // Relation* edges_rel = new Relation("edges", edges);
+    // vector<Relation*> edges_rels;
+    // edges_rels.push_back(edges_rel);
+
+    // OperatorInterface* edge_op = new InputOperator(FLAGS_hdfs_input_dir, edges_rels, edges_rel);
+    
+    // ConditionTree* edges_sel_cond_tree =
+    //   new ConditionTree(new CondOperator("*"),
+    //                     new ConditionTree(edges[0]->clone()),
+    //                     new ConditionTree(edges[0]->clone()));
+    // vector<Column*> temp_sel_cols;
+    // temp_sel_cols.push_back(edges[0]->clone());
+    // temp_sel_cols.push_back(edges[1]->clone());
+
+    // shared_ptr<OperatorNode> edges_sel =
+    //   mindi->Select(shared_ptr<OperatorNode>(new OperatorNode(edge_op)),
+    //                 temp_sel_cols,
+    //                 edges_sel_cond_tree,
+    //                 "edges_sel");
+    
+    // vector<Column*> edges_sel_cols =
+    //   edges_sel->get_operator()->get_output_relation()->get_columns();
+    // vector<Column*> sum_group_by_cols;
+    // sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
+    // shared_ptr<OperatorNode> sum_group_by =
+    //   mindi->GroupBy(edges_sel, sum_group_by_cols, PLUS_GROUP,
+    //                  edges_sel_cols[1], "sum_group_by");
 
     // vector<Column*> prev_output_cols =
     //   sum_group_by->get_operator()->get_output_relation()->get_columns();
@@ -71,7 +111,7 @@ namespace mindi {
     //   mindi->GroupBySEC(sum_group_by, sec_sum_group_by_cols, PLUS_GROUP,
     //                  prev_output_cols[1], "sec_sum_group_by");
 
-    return edges_sel;
+    // return edges_sel;
   }
 
 } // namespace mindi

@@ -40,6 +40,8 @@ namespace translator {
 
   using ctemplate::mutable_default_template_cache;
 
+  map<string, Relation*> TranslatorViff::relations;
+
   TranslatorViff::TranslatorViff(const op_nodes& dag,
                                  const string& class_name):
     TranslatorInterface(dag, class_name) {
@@ -92,6 +94,71 @@ namespace translator {
     }
     return input_rels_paths;
   }
+
+  vector<Relation*>* TranslatorViff::DetermineInputsSpark(const op_nodes& dag,
+                                                           set<string>* inputs,
+                                                           set<string>* visited) {
+    vector<Relation*> *input_rels_out = new vector<Relation*>;
+    queue<shared_ptr<OperatorNode> > to_visit;
+    for (op_nodes::const_iterator it = dag.begin(); it != dag.end(); ++it) {
+      to_visit.push(*it);
+      Relation* rel = (*it)->get_operator()->get_output_relation();
+      visited->insert(rel->get_name());
+      relations[rel->get_name()] = rel;
+    }
+    while (!to_visit.empty()) {
+      shared_ptr<OperatorNode> node = to_visit.front();
+      to_visit.pop();
+      OperatorInterface* op = node->get_operator();
+      LOG(INFO) << "VISITED: " << op->get_output_relation()->get_name();
+      vector<Relation*> input_rels = op->get_relations();
+      for (vector<Relation*>::iterator it = input_rels.begin();
+           it != input_rels.end(); ++it) {
+        // Rel is an input if rel not visited or doesn't have parents and
+        // not already marked as an input.
+        if ((node->get_parents().size() == 0 ||
+             !IsGeneratedByOp((*it)->get_name(), node->get_parents())) &&
+            visited->find((*it)->get_name()) == visited->end() &&
+            inputs->find((*it)->get_name()) == inputs->end()) {
+          LOG(INFO) << (*it)->get_name() << " is an input";
+          inputs->insert((*it)->get_name());
+          input_rels_out->push_back(*it);
+          relations[(*it)->get_name()]= *it;
+        } else {
+          relations[(*it)->get_name()] = *it;
+          LOG(INFO) << (*it)->get_name() << " is not an input";
+        }
+      }
+      op_nodes non_loop_children = node->get_children();
+      op_nodes children = node->get_loop_children();
+      children.insert(children.end(), non_loop_children.begin(),
+                      non_loop_children.end());
+      for (op_nodes::iterator it = children.begin(); it != children.end();
+           ++it) {
+        bool can_add = true;
+        vector<Relation*> input_rels = (*it)->get_operator()->get_relations();
+        for (vector<Relation*>::iterator input_it = input_rels.begin();
+             input_it != input_rels.end(); ++input_it) {
+          if (visited->find((*input_it)->get_name()) == visited->end() &&
+              inputs->find((*input_it)->get_name()) == inputs->end() &&
+              IsGeneratedByOp((*input_it)->get_name(), node->get_parents())) {
+            can_add = false;
+            break;
+          }
+        }
+        if (can_add || op->get_type() == WHILE_OP ||
+            (*it)->get_operator()->get_type() == WHILE_OP) {
+          Relation* rel = (*it)->get_operator()->get_output_relation();
+          relations[rel->get_name()] = rel;
+          if (visited->insert(rel->get_name()).second) {
+            to_visit.push(*it);
+          }
+        }
+      }
+    }
+    return input_rels_out;
+  }
+
 
   string TranslatorViff::TranslateHeader() {
     string header;
@@ -211,13 +278,24 @@ namespace translator {
 
   string TranslatorViff::GenerateCode() {
     LOG(INFO) << "Viff generate code";
+    LOG(INFO) << dag.size();
     shared_ptr<OperatorNode> op_node = dag[0];
     OperatorInterface* op = op_node->get_operator();
     std::vector<Relation*> v = op->get_relations();
     
     string header = TranslateHeader();
     set<pair<Relation*, string>> input_rels_paths = GetInputRelsAndPaths(dag);
+
+    set<string> nodelist = set<string>();
+    set<string> inputs = set<string>();
+    DetermineInputsSpark(dag, &inputs, &nodelist);
+    for (std::set<string>::iterator i = inputs.begin(); i != inputs.end(); ++i)
+    {
+      LOG(INFO) << *i;
+    }
+
     string protocol_inputs = TranslateProtocolInput(input_rels_paths);
+    LOG(INFO) << protocol_inputs;
 
     string protocol_ops;
     set<shared_ptr<OperatorNode>> leaves = set<shared_ptr<OperatorNode>>();
@@ -237,6 +315,16 @@ namespace translator {
     string code = header + protocol_inputs + protocol_ops + gather_ops
                   + make_shares + data_transfer + store_leaves;
     return WriteToFiles(op, code);
+  }
+
+  ViffJobCode* TranslatorViff::Translate(SelectOperatorSEC* op) {
+    TemplateDictionary dict("selectsec");
+    Relation* input_rel = op->get_relations()[0];
+    string input_name = input_rel->get_name();
+    string code = "SKIP\n";
+    ViffJobCode* job_code = new ViffJobCode(op, code);
+    return job_code;
+
   }
 
   ViffJobCode* TranslatorViff::Translate(AggOperatorSEC* op) {
@@ -259,6 +347,10 @@ namespace translator {
     return job_code;
   }
 
+  ViffJobCode* TranslatorViff::Translate(MulOperatorSEC* op) {
+    return TranslateMathOp(op, op->get_values(), op->get_condition_tree(), "*");
+  }
+
   string TranslatorViff::GenerateColumnTypes(Relation* rel) {
     vector<Column*> cols = rel->get_columns();
     string types = "(";
@@ -270,6 +362,89 @@ namespace translator {
 
   string TranslatorViff::GenerateAggSECOp(const string& op) {
     return "x " + op + " y";
+  }
+
+
+  ViffJobCode* TranslatorViff::TranslateMathOp(OperatorInterface* op, vector<Value*> values,
+                                               ConditionTree* condition_tree, string math_op) {
+    Relation* input_rel = op->get_relations()[0];
+    string input_name = input_rel->get_name();
+    Relation* output_rel = op->get_output_relation();
+    string maths = GenerateMaths(math_op, input_rel,
+                                 values[0], values[1], output_rel);
+    LOG(INFO) << maths;
+    TemplateDictionary dict("math");
+    // PopulateCommonValues(op, &dict);
+    string code = "";
+    ExpandTemplate(FLAGS_viff_templates_dir + "MathTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &code);
+    ViffJobCode* job_code = new ViffJobCode(op, code);
+    return job_code;
+  }
+
+  string TranslatorViff::GenerateMaths(const string& op,
+                                       Relation* rel, Value* left_val,
+                                       Value* right_val, Relation* output_rel) {
+    vector<Column*> columns = rel->get_columns();
+    Column* left_column = dynamic_cast<Column*>(left_val);
+    Column* right_column = dynamic_cast<Column*>(right_val);
+    string left_value = "";
+    string right_value = "";
+    int32_t col_index_left = -1;
+    int32_t col_index_right = -1;
+    string maths = "(";
+    string input_name = "rel";
+
+    // Assumption: no two constants
+    if (left_column != NULL) {
+      col_index_left = left_column->get_index();
+    } else {
+      left_value = left_val->get_value();
+    }
+    if (right_column != NULL) {
+      col_index_right = right_column->get_index();
+    } else {
+      right_value = right_val->get_value();
+    }
+    uint32_t i = 0;
+    for (vector<Column*>::const_iterator it = columns.begin(); it != columns.end(); ++it) {
+      int32_t col_index = (*it)->get_index();
+      if (col_index == col_index_left) {
+        if (columns.size() > 1) {
+          maths += "(" + input_name + "[" + boost::lexical_cast<string>(col_index + 1) +
+            "] " + op + " ";
+        } else {
+          maths += "(" + input_name + " " + op + " ";
+        }
+        if (col_index_right != -1) {
+          if (columns.size() > 1) {
+            maths += input_name + "[" + boost::lexical_cast<string>(col_index_right + 1) + "])";
+          } else {
+            maths += input_name + ")";
+          }
+        } else {
+          maths += right_value + ")";
+        }
+      } else if (col_index == col_index_right && (col_index_left == -1)) {
+        if (columns.size() > 1) {
+          maths += "(" + input_name + "[" + boost::lexical_cast<string>(col_index + 1) + "] " + op +
+            " " + left_value + ")";
+        } else {
+          maths += "(" + input_name + " " + op + " " + left_value + ")";
+        }
+      } else {
+        if (columns.size() > 1) {
+          maths += input_name + "[" + boost::lexical_cast<string>(col_index + 1) + "]";
+        } else {
+          maths += input_name;
+        }
+      }
+      if (++i < columns.size()) {
+        maths += ", ";
+      }
+    }
+    maths += ")";
+    return maths;
   }
 
   string TranslatorViff::WriteToFiles(OperatorInterface* op, 

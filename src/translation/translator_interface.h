@@ -42,8 +42,10 @@
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
+#include "ir/mul_operator_sec.h"
 #include "ir/project_operator.h"
 #include "ir/select_operator.h"
+#include "ir/select_operator_sec.h"
 #include "ir/sort_operator.h"
 #include "ir/sub_operator.h"
 #include "ir/sum_operator.h"
@@ -104,6 +106,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<ProjectOperator*>(op));
     case SELECT_OP:
       return Translate(dynamic_cast<SelectOperator*>(op));
+    case SELECT_OP_SEC:
+      return Translate(dynamic_cast<SelectOperatorSEC*>(op));
     case SORT_OP:
       return Translate(dynamic_cast<SortOperator*>(op));
     case SUB_OP:
@@ -116,6 +120,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<UnionOperator*>(op));
     case WHILE_OP:
       return Translate(dynamic_cast<WhileOperator*>(op));
+    case MUL_OP_SEC:
+      return Translate(dynamic_cast<MulOperatorSEC*>(op));
     default:
       LOG(ERROR) << "Unexpected operator type: " << op->get_type();
     }
@@ -195,6 +201,12 @@ class TranslatorInterface {
     return NULL;
   }
 
+  virtual JobCode* Translate(MulOperatorSEC* op) {
+    // Only frameworks that support MUL must implement it.
+    LOG(FATAL) << "MUL_SEC operator not supported by framework!";
+    return NULL;
+  }
+
   virtual JobCode* Translate(ProjectOperator* op) {
     // Only frameworks that support PROJECT must implement it.
     LOG(FATAL) << "PROJECT operator not supported by framework!";
@@ -204,6 +216,12 @@ class TranslatorInterface {
   virtual JobCode* Translate(SelectOperator* op) {
     // Only frameworks that support SELECT must implement it.
     LOG(FATAL) << "SELECT operator not supported by framework!";
+    return NULL;
+  }
+
+  virtual JobCode* Translate(SelectOperatorSEC* op) {
+    // Only frameworks that support SELECT must implement it.
+    LOG(FATAL) << "SELECT_SEC operator not supported by framework!";
     return NULL;
   }
 

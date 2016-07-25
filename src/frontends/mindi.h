@@ -51,6 +51,11 @@ class Mindi {
                                   ConditionTree* cond_tree,
                                   const string& rel_out_name) const;
 
+  shared_ptr<OperatorNode> SelectSEC(shared_ptr<OperatorNode> op_node,
+                                     const vector<Column*>& sel_cols,
+                                     ConditionTree* cond_tree,
+                                     const string& rel_out_name) const;
+
   shared_ptr<OperatorNode> Where(shared_ptr<OperatorNode> op_node,
                                  ConditionTree* cond_tree,
                                  const string& rel_out_name) const;
@@ -109,6 +114,10 @@ class Mindi {
                                Column* key_col,
                                const vector<Column*>& val_cols,
                                const string& rel_out_name) const;
+
+  shared_ptr<OperatorNode> MathSEC(shared_ptr<OperatorNode> op_node,
+                                   vector<Value*> values,
+                                   const string& rel_out_name) const;
 
   // Non-standard LINQ methods
   shared_ptr<OperatorNode> Iterate(shared_ptr<OperatorNode> op_node,

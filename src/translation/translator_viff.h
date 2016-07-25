@@ -43,7 +43,9 @@ class TranslatorViff : public TranslatorInterface {
  public:
   TranslatorViff(const op_nodes& dag, const string& class_name);
   string GenerateCode();
+  static map<string, Relation*> relations;
 
+  
  private:
   string TranslateHeader();
   string TranslateGatherLeaves(set<shared_ptr<OperatorNode>> leaves);
@@ -52,6 +54,9 @@ class TranslatorViff : public TranslatorInterface {
   string TranslateDataTransfer();
   string TranslateStoreLeaves(set<shared_ptr<OperatorNode>> leaves);
   set<pair<Relation*, string>> GetInputRelsAndPaths(const op_nodes& dag);
+  vector<Relation*>* DetermineInputsSpark(const op_nodes& dag,
+                                                           set<string>* inputs,
+                                                           set<string>* visited);
   bool CanSchedule(OperatorInterface* op, set<string>* processed);
   void TranslateDAG(string* code, const op_nodes& next_set,
                     set<shared_ptr<OperatorNode> >* leaves,
@@ -61,7 +66,15 @@ class TranslatorViff : public TranslatorInterface {
   string WriteToFiles(OperatorInterface* op, const string& op_code);
   
   ViffJobCode* Translate(AggOperatorSEC* op);
+  ViffJobCode* Translate(SelectOperatorSEC* op);
+  ViffJobCode* Translate(MulOperatorSEC* op);
 
+  ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,
+                               ConditionTree* condition_tree, string math_op);
+  
+  string GenerateMaths(const string& op,
+                       Relation* rel, Value* left_val,
+                       Value* right_val, Relation* output_rel);
   string GenerateColumnTypes(Relation* rel);
   string GenerateAggSECOp(const string& op);
 };
