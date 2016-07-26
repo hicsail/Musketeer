@@ -59,13 +59,13 @@ namespace mindi {
                        edges_sel_cond_tree,
                        "edges_sel");
 
-    // vector<Column*> edges_sel_cols =
-    //   edges_sel->get_operator()->get_output_relation()->get_columns();
-    // vector<Column*> sum_group_by_cols;
-    // sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
-    // shared_ptr<OperatorNode> sum_group_by =
-    //   mindi->GroupBySEC(edges_sel, sum_group_by_cols, PLUS_GROUP,
-    //                     edges_sel_cols[1], "sum_group_by");
+    vector<Column*> edges_sel_cols =
+      edges_sel->get_operator()->get_output_relation()->get_columns();
+    vector<Column*> sum_group_by_cols;
+    sum_group_by_cols.push_back(edges_sel_cols[0]->clone());
+    shared_ptr<OperatorNode> sum_group_by =
+      mindi->GroupBySEC(edges_sel, sum_group_by_cols, PLUS_GROUP,
+                        edges_sel_cols[1], "sum_group_by");
 
     return edges_sel->get_parents()[0];
 

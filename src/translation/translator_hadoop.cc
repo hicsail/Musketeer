@@ -203,6 +203,7 @@ namespace translator {
     LOG(INFO) << "Hadoop generate code";
     // If false the code should be added to the map function, otherwise to the
     // reduce.
+    LOG(INFO) << dag.size();
     bool add_to_reduce = false;
     shared_ptr<OperatorNode> op_node = dag[0];
     OperatorInterface* op = op_node->get_operator();

@@ -170,8 +170,8 @@ namespace framework {
     // make sure all operators are secure operators (no mixing operators for now)
     for (node_set::const_iterator it = to_schedule.begin();
          it != to_schedule.end(); ++it) {
-      if ((*it)->get_operator()->get_type() != AGG_OP_SEC || 
-          (*it)->get_operator()->get_type() != SELECT_OP_SEC ||
+      if ((*it)->get_operator()->get_type() != AGG_OP_SEC && 
+          (*it)->get_operator()->get_type() != SELECT_OP_SEC &&
           (*it)->get_operator()->get_type() != MUL_OP_SEC) {
         return false;
       }

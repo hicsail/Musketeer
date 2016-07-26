@@ -72,7 +72,7 @@ class TranslatorViff : public TranslatorInterface {
   ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,
                                ConditionTree* condition_tree, string math_op);
   
-  string GenerateMaths(const string& op,
+  string GenerateLambda(const string& op,
                        Relation* rel, Value* left_val,
                        Value* right_val, Relation* output_rel);
   string GenerateColumnTypes(Relation* rel);

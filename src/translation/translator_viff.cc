@@ -200,8 +200,12 @@ namespace translator {
       if (CanSchedule(op, processed)) {
         ViffJobCode* job_code = dynamic_cast<ViffJobCode*>(TranslateOperator(op));
         *code += job_code->get_code();
+        processed->insert(output_rel);
         if (node->IsLeaf()) {
           leaves->insert(node);
+        }
+        else {
+          TranslateDAG(code, node->get_children(), leaves, processed);
         }
       }
       else {
@@ -209,6 +213,8 @@ namespace translator {
                   << op->get_output_relation()->get_name();
       }
     }
+    // cout << *code;
+    // cout << "#########" << endl;
   }
 
   string TranslatorViff::TranslateMakeShares(set<pair<Relation*, string>> input_rels_paths) {
@@ -278,7 +284,6 @@ namespace translator {
 
   string TranslatorViff::GenerateCode() {
     LOG(INFO) << "Viff generate code";
-    LOG(INFO) << dag.size();
     shared_ptr<OperatorNode> op_node = dag[0];
     OperatorInterface* op = op_node->get_operator();
     std::vector<Relation*> v = op->get_relations();
@@ -288,15 +293,8 @@ namespace translator {
 
     set<string> nodelist = set<string>();
     set<string> inputs = set<string>();
-    DetermineInputsSpark(dag, &inputs, &nodelist);
-    for (std::set<string>::iterator i = inputs.begin(); i != inputs.end(); ++i)
-    {
-      LOG(INFO) << *i;
-    }
-
     string protocol_inputs = TranslateProtocolInput(input_rels_paths);
-    LOG(INFO) << protocol_inputs;
-
+    
     string protocol_ops;
     set<shared_ptr<OperatorNode>> leaves = set<shared_ptr<OperatorNode>>();
     set<string> proc;
@@ -307,8 +305,8 @@ namespace translator {
     }
 
     TranslateDAG(&protocol_ops, dag, &leaves, &proc);
+    cout << protocol_ops << endl;
     string gather_ops = TranslateGatherLeaves(leaves);
-    
     string make_shares = TranslateMakeShares(input_rels_paths);
     string data_transfer = TranslateDataTransfer();
     string store_leaves = TranslateStoreLeaves(leaves);
@@ -318,13 +316,17 @@ namespace translator {
   }
 
   ViffJobCode* TranslatorViff::Translate(SelectOperatorSEC* op) {
-    TemplateDictionary dict("selectsec");
+    // TODO(nikolaj): Implement non-dummy version
+    TemplateDictionary dict("dummy");
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
-    string code = "SKIP\n";
+    dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
+    dict.SetValue("IN_REL", input_name);
+    string code;
+    ExpandTemplate(FLAGS_viff_templates_dir + "TempDummyTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;
-
   }
 
   ViffJobCode* TranslatorViff::Translate(AggOperatorSEC* op) {
@@ -370,19 +372,21 @@ namespace translator {
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
     Relation* output_rel = op->get_output_relation();
-    string maths = GenerateMaths(math_op, input_rel,
-                                 values[0], values[1], output_rel);
-    LOG(INFO) << maths;
+    string lambda = GenerateLambda(math_op, input_rel,
+                                   values[0], values[1], output_rel);
+    LOG(INFO) << lambda;
     TemplateDictionary dict("math");
-    // PopulateCommonValues(op, &dict);
+    dict.SetValue("OUT_REL",output_rel->get_name());
+    dict.SetValue("IN_REL", input_name);
+    dict.SetValue("LAMBDA", lambda);
     string code = "";
-    ExpandTemplate(FLAGS_viff_templates_dir + "MathTemplate.py",
+    ExpandTemplate(FLAGS_viff_templates_dir + "MathSECTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;
   }
 
-  string TranslatorViff::GenerateMaths(const string& op,
+  string TranslatorViff::GenerateLambda(const string& op,
                                        Relation* rel, Value* left_val,
                                        Value* right_val, Relation* output_rel) {
     vector<Column*> columns = rel->get_columns();
@@ -392,8 +396,17 @@ namespace translator {
     string right_value = "";
     int32_t col_index_left = -1;
     int32_t col_index_right = -1;
-    string maths = "(";
-    string input_name = "rel";
+    string maths = "lambda ";
+    for (vector<Column*>::const_iterator it = columns.begin(); it != columns.end(); ++it) {
+      int32_t col_index = (*it)->get_index();
+      maths += "e" + boost::lexical_cast<string>(col_index + 1);
+      if (it != columns.end() - 1) {
+        maths += ", ";
+      }
+    }
+    maths += ": [";
+
+    string input_name = "e";
 
     // Assumption: no two constants
     if (left_column != NULL) {
@@ -411,30 +424,30 @@ namespace translator {
       int32_t col_index = (*it)->get_index();
       if (col_index == col_index_left) {
         if (columns.size() > 1) {
-          maths += "(" + input_name + "[" + boost::lexical_cast<string>(col_index + 1) +
-            "] " + op + " ";
+          maths += input_name + boost::lexical_cast<string>(col_index + 1) +
+            " " + op + " ";
         } else {
-          maths += "(" + input_name + " " + op + " ";
+          maths += input_name + " " + op + " ";
         }
         if (col_index_right != -1) {
           if (columns.size() > 1) {
-            maths += input_name + "[" + boost::lexical_cast<string>(col_index_right + 1) + "])";
+            maths += input_name + boost::lexical_cast<string>(col_index_right + 1);
           } else {
-            maths += input_name + ")";
+            maths += input_name;
           }
         } else {
-          maths += right_value + ")";
+          maths += right_value;
         }
       } else if (col_index == col_index_right && (col_index_left == -1)) {
         if (columns.size() > 1) {
-          maths += "(" + input_name + "[" + boost::lexical_cast<string>(col_index + 1) + "] " + op +
-            " " + left_value + ")";
+          maths += input_name + boost::lexical_cast<string>(col_index + 1) + " " + op +
+            " " + left_value;
         } else {
-          maths += "(" + input_name + " " + op + " " + left_value + ")";
+          maths += input_name + " " + op + " " + left_value;
         }
       } else {
         if (columns.size() > 1) {
-          maths += input_name + "[" + boost::lexical_cast<string>(col_index + 1) + "]";
+          maths += input_name + boost::lexical_cast<string>(col_index + 1);
         } else {
           maths += input_name;
         }
@@ -443,16 +456,19 @@ namespace translator {
         maths += ", ";
       }
     }
-    maths += ")";
+    maths += "]";
     return maths;
   }
 
   string TranslatorViff::WriteToFiles(OperatorInterface* op, 
                                       const string& op_code) {
+    LOG(INFO) << op_code;
     ofstream job_file;
     string source_file = GetSourcePath(op);
-    string path = op->get_code_dir() + op->get_output_relation()->get_name() +
-      "_code/";
+    LOG(INFO) << source_file;
+    string path = op->get_code_dir() + class_name + "_code/";
+    LOG(INFO) << path;
+    
     string create_dir = "mkdir -p " + path;
     std::system(create_dir.c_str());
     job_file.open(source_file.c_str());
