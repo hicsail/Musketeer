@@ -310,8 +310,8 @@ namespace translator {
     string make_shares = TranslateMakeShares(input_rels_paths);
     string data_transfer = TranslateDataTransfer();
     string store_leaves = TranslateStoreLeaves(leaves);
-    string code = header + protocol_inputs + protocol_ops + gather_ops
-                  + make_shares + data_transfer + store_leaves;
+    string code = header + protocol_inputs + protocol_ops + gather_ops + 
+                  make_shares + data_transfer + store_leaves;
     return WriteToFiles(op, code);
   }
 
@@ -462,13 +462,9 @@ namespace translator {
 
   string TranslatorViff::WriteToFiles(OperatorInterface* op, 
                                       const string& op_code) {
-    LOG(INFO) << op_code;
     ofstream job_file;
     string source_file = GetSourcePath(op);
-    LOG(INFO) << source_file;
     string path = op->get_code_dir() + class_name + "_code/";
-    LOG(INFO) << path;
-    
     string create_dir = "mkdir -p " + path;
     std::system(create_dir.c_str());
     job_file.open(source_file.c_str());

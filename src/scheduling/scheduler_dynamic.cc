@@ -560,6 +560,11 @@ namespace scheduling {
     for (uint32_t cur_jobs_exec = all_ops_ran; cur_jobs_exec > 0; ) {
       op_nodes nodes;
       LOG(INFO) << "Cur cost: " << cur_cost;
+      if (cur_cost >= FLAGS_max_scheduler_cost) {
+        LOG(FATAL) << "At least one operator could not be scheduled on any of"
+                   << "the available execution engines!";
+      }
+      CHECK(parent[cur_cost] != NULL);
       uint32_t prev_jobs_exec = parent[cur_cost][cur_jobs_exec];
       uint32_t jobs_merged = prev_jobs_exec ^ cur_jobs_exec;
       LOG(INFO) << "---------- Job boundary ----------";
@@ -664,9 +669,12 @@ namespace scheduling {
         }
       }
     }
-    if (schedulable_ops == 0) {
+    if (min_cost == FLAGS_max_scheduler_cost) {
       // All the costs are maximum.
       optimal_num_jobs = 1;
+      LOG(ERROR) << "The cost of running the operators is maximum! This can "
+                 << "happen when the operators' input bounds are too big. "
+                 << "Defaulting to running in Spark.";
       scheduled_fmw[1][1] = FMW_SPARK;
     }
     schedulable_ops++;
