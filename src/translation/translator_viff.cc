@@ -213,8 +213,6 @@ namespace translator {
                   << op->get_output_relation()->get_name();
       }
     }
-    // cout << *code;
-    // cout << "#########" << endl;
   }
 
   string TranslatorViff::TranslateMakeShares(set<pair<Relation*, string>> input_rels_paths) {
@@ -305,7 +303,6 @@ namespace translator {
     }
 
     TranslateDAG(&protocol_ops, dag, &leaves, &proc);
-    cout << protocol_ops << endl;
     string gather_ops = TranslateGatherLeaves(leaves);
     string make_shares = TranslateMakeShares(input_rels_paths);
     string data_transfer = TranslateDataTransfer();

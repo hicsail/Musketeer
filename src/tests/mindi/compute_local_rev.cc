@@ -16,7 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "tests/mindi/netflix.h"
+#include "tests/mindi/compute_local_rev.h"
 
 #include <vector>
 

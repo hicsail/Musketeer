@@ -103,6 +103,7 @@ namespace musketeer {
     vector<Value*> values;
     values.push_back(cond_tree->get_left()->get_column());
     values.push_back(cond_tree->get_right()->get_column());
+    
     vector<Column*> in_cols =
       op_node->get_operator()->get_output_relation()->get_columns();
     vector<Column*> out_cols;
