@@ -12,3 +12,6 @@ while not received_output:
     r = requests.get(host_addresses[0] + '/output')
     received_output = marshal.loads(r.text)
     time.sleep(1)
+
+for host in host_addresses:
+    r = requests.post(host + '/received', data=marshal.dumps(1))

@@ -331,8 +331,16 @@ namespace translator {
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
     // only aggregate single columns on single columns for now
-    Column* agg_col = op->get_columns()[0];
     Column* group_by_col = op->get_group_bys()[0];
+    Column* agg_col = NULL;
+    vector<Column*> all_cols = op->get_output_relation()->get_columns();
+    for (vector<Column*>::iterator i = all_cols.begin(); i != all_cols.end(); ++i) {
+      if (group_by_col->get_index() != (*i)->get_index()) {
+        agg_col = *i;
+        break;
+      }
+    }
+    assert(agg_col);
     string agg_op = GenerateAggSECOp(op->get_operator());
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
     dict.SetValue("IN_REL", input_name);

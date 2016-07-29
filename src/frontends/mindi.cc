@@ -100,10 +100,11 @@ namespace musketeer {
       new ConditionTree(new Value("true", BOOLEAN_TYPE));
     // TODO(ionel): Assumes that the passed in condition tree only does one
     // arithmetic operation. Extend it to handle the other cases as well.
+    LOG(INFO) << "don't forget to fix bug";
     vector<Value*> values;
     values.push_back(cond_tree->get_left()->get_column());
     values.push_back(cond_tree->get_right()->get_column());
-    
+
     vector<Column*> in_cols =
       op_node->get_operator()->get_output_relation()->get_columns();
     vector<Column*> out_cols;
@@ -396,11 +397,14 @@ namespace musketeer {
     return group_by_node;
   }
 
+  // TODO(nikolaj): there is a bug here inhereted from GroupBy. Columns are not
+  // created correctly (unless I'm misunderstanding the semantics of columns
+  // attached to an operator)
   shared_ptr<OperatorNode> Mindi::GroupBySEC(shared_ptr<OperatorNode> op_node,
-                                          const vector<Column*>& group_bys,
-                                          const GroupByType reducer,
-                                          Column* key_col,
-                                          const string& rel_out_name) const {
+                                             const vector<Column*>& group_bys,
+                                             const GroupByType reducer,
+                                             Column* key_col,
+                                             const string& rel_out_name) const {
     vector<Relation*> relations;
     relations.push_back(op_node->get_operator()->get_output_relation());
     vector<Column*> columns;
@@ -413,13 +417,15 @@ namespace musketeer {
       new ConditionTree(new Value("true", BOOLEAN_TYPE));
     OperatorInterface* group_by_op;
     vector<Column*> key_cols;
+
+    // I don't think this is correct
     key_cols.push_back(key_col);
     columns.push_back(new Column(rel_out_name, index, key_col->get_type()));
     Relation* output_rel = new Relation(rel_out_name, columns);
     switch (reducer) {
     case PLUS_GROUP: {
       group_by_op = new AggOperatorSEC(FLAGS_hdfs_input_dir, cond_tree, group_bys,
-                                    "+", relations, key_cols, output_rel);
+                                       "+", relations, key_cols, output_rel); 
       break;
     }
     default: {
