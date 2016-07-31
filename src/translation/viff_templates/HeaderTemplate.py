@@ -16,8 +16,9 @@ def _to_share(val, Zp, num_hosts=3):
     return shares
 
 Zp = GF(256203221)
-host_addresses = ['http://localhost:9001', 'http://localhost:9002', 'http://localhost:9003']
-owner_id = 1
+# TODO(nikolaj): add flag instead of hardcoding
+host_addresses = ['http://52.207.242.150:8001','http://52.207.229.228:8001','http://54.86.19.194:8001']
+owner_id = {{INPUT_PARTY_ID}}
 to_send_all = [(owner_id, dict()) for _ in host_addresses]
 
 def protocol(rt, repo, Zp, output):

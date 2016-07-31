@@ -36,7 +36,6 @@
 #include "RLPlusParser.h"
 #include "scheduling/operator_scheduler.h"
 #include "scheduling/scheduler_dynamic.h"
-#include "frameworks/viff_framework.h" // TODO: figure out why using the namespace doesn't work
 
 using namespace musketeer; // NOLINT
 using namespace musketeer::core; // NOLINT
@@ -143,6 +142,7 @@ DEFINE_int32(spark_web_ui_port, 8080, "Spark Web UI Port");
 
 // Viff flags.
 DEFINE_string(viff_templates_dir, "src/translation/viff_templates/", "Viff templates directory");
+DEFINE_string(viff_input_party_id, "1", "Id used by Viff to indentify input party");
 
 // Wildcherry flags.
 DEFINE_string(wildcherry_templates_dir, "src/translation/wildcherry_templates/",
