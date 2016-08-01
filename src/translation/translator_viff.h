@@ -68,6 +68,7 @@ class TranslatorViff : public TranslatorInterface {
   ViffJobCode* Translate(AggOperatorSEC* op);
   ViffJobCode* Translate(SelectOperatorSEC* op);
   ViffJobCode* Translate(MulOperatorSEC* op);
+  ViffJobCode* Translate(DivOperatorSEC* op);
   ViffJobCode* Translate(JoinOperatorSEC* op);
 
   ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,

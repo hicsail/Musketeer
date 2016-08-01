@@ -373,6 +373,10 @@ namespace translator {
     return TranslateMathOp(op, op->get_values(), op->get_condition_tree(), "*");
   }
 
+  ViffJobCode* TranslatorViff::Translate(DivOperatorSEC* op) {
+    return TranslateMathOp(op, op->get_values(), op->get_condition_tree(), "/");
+  }
+
   string TranslatorViff::GenerateColumnTypes(Relation* rel) {
     vector<Column*> cols = rel->get_columns();
     string types = "(";
@@ -385,7 +389,6 @@ namespace translator {
   string TranslatorViff::GenerateAggSECOp(const string& op) {
     return "x " + op + " y";
   }
-
 
   ViffJobCode* TranslatorViff::TranslateMathOp(OperatorInterface* op, vector<Value*> values,
                                                ConditionTree* condition_tree, string math_op) {
@@ -407,8 +410,8 @@ namespace translator {
   }
 
   string TranslatorViff::GenerateLambda(const string& op,
-                                       Relation* rel, Value* left_val,
-                                       Value* right_val, Relation* output_rel) {
+                                        Relation* rel, Value* left_val,
+                                        Value* right_val, Relation* output_rel) {
     vector<Column*> columns = rel->get_columns();
     Column* left_column = dynamic_cast<Column*>(left_val);
     Column* right_column = dynamic_cast<Column*>(right_val);
@@ -444,14 +447,24 @@ namespace translator {
       int32_t col_index = (*it)->get_index();
       if (col_index == col_index_left) {
         if (columns.size() > 1) {
-          maths += input_name + boost::lexical_cast<string>(col_index + 1) +
-            " " + op + " ";
+          if (!op.compare("/")) {
+            maths += "relational.divide(" + input_name + boost::lexical_cast<string>(col_index + 1) + ", ";
+          }
+          else {
+            maths += input_name + boost::lexical_cast<string>(col_index + 1) +
+              " " + op + " ";
+          }
         } else {
           maths += input_name + " " + op + " ";
         }
         if (col_index_right != -1) {
           if (columns.size() > 1) {
-            maths += input_name + boost::lexical_cast<string>(col_index_right + 1);
+            if (!op.compare("/")) {
+              maths += input_name + boost::lexical_cast<string>(col_index_right + 1) + ")";
+            }
+            else {
+              maths += input_name + boost::lexical_cast<string>(col_index_right + 1);
+            }
           } else {
             maths += input_name;
           }
@@ -461,7 +474,7 @@ namespace translator {
       } else if (col_index == col_index_right && (col_index_left == -1)) {
         if (columns.size() > 1) {
           maths += input_name + boost::lexical_cast<string>(col_index + 1) + " " + op +
-            " " + left_value;
+              " " + left_value;
         } else {
           maths += input_name + " " + op + " " + left_value;
         }

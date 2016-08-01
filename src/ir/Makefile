@@ -12,6 +12,6 @@ OBJS = agg_operator.o agg_operator_sec.o black_box_operator.o count_operator.o \
 	sort_operator.o sub_operator.o sum_operator.o udf_operator.o \
 	union_operator.o while_operator.o condition_tree.o input_operator.o \
 	distinct_operator.o column.o relation.o select_operator_sec.o mul_operator_sec.o \
-	join_operator_sec.o
+	join_operator_sec.o div_operator_sec.o
 
 all: $(addprefix $(OBJ_DIR)/, $(OBJS)) .setup

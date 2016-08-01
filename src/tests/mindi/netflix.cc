@@ -34,6 +34,7 @@ namespace mindi {
   using ir::CondOperator;
   using ir::InputOperator;
   using ir::ConditionTree;
+  using musketeer::Value;
 
   shared_ptr<OperatorNode> Netflix::Run() {
     Mindi* mindi = new Mindi();
@@ -62,10 +63,15 @@ namespace mindi {
     vector<Column*> selected_input_cols = 
       selected_input->get_operator()->get_output_relation()->get_columns();
     
+    // ConditionTree* first_val_blank_cond_tree =
+    //   new ConditionTree(new CondOperator("-"),
+    //                     new ConditionTree(selected_input_cols[0]->clone()),
+    //                     new ConditionTree(selected_input_cols[0]->clone()));
+    
     ConditionTree* first_val_blank_cond_tree =
-      new ConditionTree(new CondOperator("-"),
+      new ConditionTree(new CondOperator("*"),
                         new ConditionTree(selected_input_cols[0]->clone()),
-                        new ConditionTree(selected_input_cols[0]->clone()));
+                        new ConditionTree(new Value("100", INTEGER_TYPE)));
     
     vector<Column*> first_val_blank_cols;
     first_val_blank_cols.push_back(selected_input_cols[0]->clone());
@@ -87,7 +93,7 @@ namespace mindi {
     total_rev_group_by_cols.push_back(local_rev_group_by_cols[0]->clone());
     shared_ptr<OperatorNode> total_rev =
       mindi->GroupBySEC(local_rev, total_rev_group_by_cols, PLUS_GROUP,
-                        local_rev_group_by_cols[1]->clone(), "total_rev");
+                        first_val_blank_cols[1]->clone(), "total_rev"); // double check on the column
 
     vector<Column*> left_cols;
     left_cols.push_back(total_rev->get_operator()->get_output_relation()->get_columns()[0]->clone());
@@ -108,25 +114,29 @@ namespace mindi {
     // vector<Column*> market_share_cols;
     // market_share_cols.push_back(total_local_rev_cols[0]->clone());
     // market_share_cols.push_back(total_local_rev_cols[1]->clone());
+    // market_share_cols.push_back(total_local_rev_cols[2]->clone());
 
     // shared_ptr<OperatorNode> market_share =
-    //   mindi->Select(total_local_rev, market_share_cols, market_share_cond_tree,
-    //                 "market_share");
+    //   mindi->SelectSEC(total_local_rev, market_share_cols, market_share_cond_tree,
+    //                    "market_share");
+    
+    // vector<Column*> proc_market_share_cols = market_share->get_operator()->get_output_relation()->get_columns();
     
     // ConditionTree* market_share_squared_tree =
     //   new ConditionTree(new CondOperator("*"),
-    //                     new ConditionTree(market_share_cols[1]->clone()),
-    //                     new ConditionTree(market_share_cols[1]->clone()));
+    //                     new ConditionTree(proc_market_share_cols[1]->clone()),
+    //                     new ConditionTree(proc_market_share_cols[1]->clone()));
     
     // vector<Column*> market_share_squared_cols;
-    // market_share_squared_cols.push_back(market_share_cols[0]->clone());
-    // market_share_squared_cols.push_back(market_share_cols[1]->clone());
+    // market_share_squared_cols.push_back(proc_market_share_cols[0]->clone());
+    // market_share_squared_cols.push_back(proc_market_share_cols[1]->clone());
+    // market_share_squared_cols.push_back(proc_market_share_cols[2]->clone());
 
     // shared_ptr<OperatorNode> market_share_squared =
-    //   mindi->Select(market_share,
-    //                 market_share_squared_cols,
-    //                 market_share_squared_tree,
-    //                 "market_share_squared");
+    //   mindi->SelectSEC(market_share,
+    //                    market_share_squared_cols,
+    //                    market_share_squared_tree,
+    //                    "market_share_squared");
 
     // vector<Column*> hhi_group_by_cols;
     // hhi_group_by_cols.push_back(market_share_squared_cols[0]->clone());

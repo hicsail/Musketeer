@@ -49,7 +49,8 @@ typedef enum {
   WHILE_OP,
   SELECT_OP_SEC,
   MUL_OP_SEC,
-  JOIN_OP_SEC
+  JOIN_OP_SEC,
+  DIV_OP_SEC
 } OperatorType;
 
 #endif  // MUSKETEER_COMMON_H

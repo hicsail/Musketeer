@@ -37,6 +37,7 @@
 #include "ir/difference_operator.h"
 #include "ir/distinct_operator.h"
 #include "ir/div_operator.h"
+#include "ir/div_operator_sec.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
 #include "ir/join_operator_sec.h"
@@ -125,6 +126,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<MulOperatorSEC*>(op));
     case JOIN_OP_SEC:
       return Translate(dynamic_cast<JoinOperatorSEC*>(op));
+    case DIV_OP_SEC:
+      return Translate(dynamic_cast<DivOperatorSEC*>(op));
     default:
       LOG(ERROR) << "Unexpected operator type: " << op->get_type();
     }
@@ -174,6 +177,12 @@ class TranslatorInterface {
     return NULL;
   }
 
+  virtual JobCode* Translate(DivOperatorSEC* op) {
+    // Only frameworks that support DIV must implement it.
+    LOG(FATAL) << "DIV_SEC operator not supported by framework!";
+    return NULL;
+  }
+
   virtual JobCode* Translate(IntersectionOperator* op) {
     // Only frameworks that support INTERSECTION must implement it.
     LOG(FATAL) << "INTERSECTION operator not supported by framework!";
@@ -188,7 +197,7 @@ class TranslatorInterface {
 
   virtual JobCode* Translate(JoinOperatorSEC* op) {
     // Only frameworks that support JOIN must implement it.
-    LOG(FATAL) << "JOIN operator not supported by framework!";
+    LOG(FATAL) << "JOIN_SEC operator not supported by framework!";
     return NULL;
   }
 

@@ -26,6 +26,7 @@
 #include "ir/difference_operator.h"
 #include "ir/distinct_operator.h"
 #include "ir/div_operator.h"
+#include "ir/div_operator_sec.h"
 #include "ir/input_operator.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
@@ -49,6 +50,7 @@ namespace musketeer {
   using ir::DifferenceOperator;
   using ir::DistinctOperator;
   using ir::DivOperator;
+  using ir::DivOperatorSEC;
   using ir::InputOperator;
   using ir::IntersectionOperator;
   using ir::JoinOperator;
@@ -102,10 +104,22 @@ namespace musketeer {
       new ConditionTree(new Value("true", BOOLEAN_TYPE));
     // TODO(ionel): Assumes that the passed in condition tree only does one
     // arithmetic operation. Extend it to handle the other cases as well.
-    LOG(INFO) << "don't forget to fix bug";
     vector<Value*> values;
-    values.push_back(cond_tree->get_left()->get_column());
-    values.push_back(cond_tree->get_right()->get_column());
+    if (cond_tree->get_left()->isColumn()) {
+      values.push_back(cond_tree->get_left()->get_column());
+    }
+    else {
+      // no other option
+      values.push_back(cond_tree->get_left()->get_value());
+    }
+
+    if (cond_tree->get_right()->isColumn()) {
+      values.push_back(cond_tree->get_right()->get_column());
+    }
+    else {
+      // no other option
+      values.push_back(cond_tree->get_right()->get_value());
+    }
 
     vector<Column*> in_cols =
       op_node->get_operator()->get_output_relation()->get_columns();
@@ -184,10 +198,22 @@ namespace musketeer {
     // TODO(ionel): Assumes that the passed in condition tree only does one
     // arithmetic operation. Extend it to handle the other cases as well.
     vector<Value*> values;
-    values.push_back(cond_tree->get_left()->get_column());
-    values.push_back(cond_tree->get_right()->get_column());
-    // vector<Column*> in_cols =
-    //   op_node->get_operator()->get_output_relation()->get_columns();
+    if (cond_tree->get_left()->isColumn()) {
+      values.push_back(cond_tree->get_left()->get_column());
+    }
+    else {
+      // no other option
+      values.push_back(cond_tree->get_left()->get_value());
+    }
+
+    if (cond_tree->get_right()->isColumn()) {
+      values.push_back(cond_tree->get_right()->get_column());
+    }
+    else {
+      // no other option
+      values.push_back(cond_tree->get_right()->get_value());
+    }
+    
     vector<Column*> in_cols =
       op_node->get_operator()->get_output_relation()->get_columns();
     vector<Column*> out_cols;
@@ -205,6 +231,10 @@ namespace musketeer {
     string math_op_type = cond_tree->get_cond_operator()->toString();
     if (!math_op_type.compare("*")) {
       math_op = new MulOperatorSEC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
+                                   values, math_output_rel);
+    }
+    else if (!math_op_type.compare("/")) {
+      math_op = new DivOperatorSEC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
                                    values, math_output_rel);
     } else {
       LOG(ERROR) << "Unexpected math op type: " << math_op_type;
