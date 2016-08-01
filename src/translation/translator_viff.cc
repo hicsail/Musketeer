@@ -159,7 +159,6 @@ namespace translator {
     return input_rels_out;
   }
 
-
   string TranslatorViff::TranslateHeader() {
     string header;
     TemplateDictionary dict("header");
@@ -350,6 +349,21 @@ namespace translator {
     dict.SetValue("AGG_OP", agg_op);
     string code;
     ExpandTemplate(FLAGS_viff_templates_dir + "AggSECTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &code);
+    ViffJobCode* job_code = new ViffJobCode(op, code);
+    return job_code;
+  }
+
+  ViffJobCode* TranslatorViff::Translate(JoinOperatorSEC* op) {
+    TemplateDictionary dict("joinsec");
+    vector<Relation*> relations = op->get_relations();
+    dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
+    dict.SetValue("LEFT_REL", relations[0]->get_name());
+    dict.SetValue("RIGHT_REL", relations[1]->get_name());
+    dict.SetValue("LEFT_COL", boost::lexical_cast<string>(op->get_col_left()->get_index()));
+    dict.SetValue("RIGHT_COL", boost::lexical_cast<string>(op->get_col_right()->get_index()));
+    string code;
+    ExpandTemplate(FLAGS_viff_templates_dir + "JoinSECTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;

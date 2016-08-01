@@ -14,4 +14,4 @@ while not received_output:
     time.sleep(1)
 
 for host in host_addresses:
-    r = requests.post(host + '/received', data=marshal.dumps(1))
+    r = requests.post(host + '/received', data=marshal.dumps(owner_id))

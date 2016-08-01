@@ -83,6 +83,8 @@ namespace mindi {
       mindi->GroupBy(first_val_blank, local_rev_group_by_cols, PLUS_GROUP,
                      first_val_blank_cols[1]->clone(), "local_rev");
 
+    
+
     vector<Column*> total_rev_group_by_cols;
     total_rev_group_by_cols.push_back(local_rev_group_by_cols[0]->clone());
     shared_ptr<OperatorNode> total_rev =
@@ -95,44 +97,44 @@ namespace mindi {
     right_cols.push_back(local_rev->get_operator()->get_output_relation()->get_columns()[0]->clone());
 
     shared_ptr<OperatorNode> total_local_rev = 
-      mindi->JoinSEC(total_rev, "total_local_rev", local_rev, left_cols, right_cols);
+      mindi->Join(total_rev, "total_local_rev", local_rev, left_cols, right_cols);
 
-    // vector<Column*> total_local_rev_cols = 
-    //   total_local_rev->get_operator()->get_output_relation()->get_columns();
+    vector<Column*> total_local_rev_cols = 
+      total_local_rev->get_operator()->get_output_relation()->get_columns();
     
-    // ConditionTree* market_share_cond_tree =
-    //   new ConditionTree(new CondOperator("/"),
-    //                     new ConditionTree(total_local_rev_cols[1]->clone()),
-    //                     new ConditionTree(total_local_rev_cols[2]->clone()));
+    ConditionTree* market_share_cond_tree =
+      new ConditionTree(new CondOperator("/"),
+                        new ConditionTree(total_local_rev_cols[1]->clone()),
+                        new ConditionTree(total_local_rev_cols[2]->clone()));
     
-    // vector<Column*> market_share_cols;
-    // market_share_cols.push_back(total_local_rev_cols[0]->clone());
-    // market_share_cols.push_back(total_local_rev_cols[1]->clone());
+    vector<Column*> market_share_cols;
+    market_share_cols.push_back(total_local_rev_cols[0]->clone());
+    market_share_cols.push_back(total_local_rev_cols[1]->clone());
 
-    // shared_ptr<OperatorNode> market_share =
-    //   mindi->Select(total_local_rev, market_share_cols, market_share_cond_tree,
-    //                 "market_share");
+    shared_ptr<OperatorNode> market_share =
+      mindi->Select(total_local_rev, market_share_cols, market_share_cond_tree,
+                    "market_share");
     
-    // ConditionTree* market_share_squared_tree =
-    //   new ConditionTree(new CondOperator("*"),
-    //                     new ConditionTree(market_share_cols[1]->clone()),
-    //                     new ConditionTree(market_share_cols[1]->clone()));
+    ConditionTree* market_share_squared_tree =
+      new ConditionTree(new CondOperator("*"),
+                        new ConditionTree(market_share_cols[1]->clone()),
+                        new ConditionTree(market_share_cols[1]->clone()));
     
-    // vector<Column*> market_share_squared_cols;
-    // market_share_squared_cols.push_back(market_share_cols[0]->clone());
-    // market_share_squared_cols.push_back(market_share_cols[1]->clone());
+    vector<Column*> market_share_squared_cols;
+    market_share_squared_cols.push_back(market_share_cols[0]->clone());
+    market_share_squared_cols.push_back(market_share_cols[1]->clone());
 
-    // shared_ptr<OperatorNode> market_share_squared =
-    //   mindi->Select(market_share,
-    //                 market_share_squared_cols,
-    //                 market_share_squared_tree,
-    //                 "market_share_squared");
+    shared_ptr<OperatorNode> market_share_squared =
+      mindi->Select(market_share,
+                    market_share_squared_cols,
+                    market_share_squared_tree,
+                    "market_share_squared");
 
-    // vector<Column*> hhi_group_by_cols;
-    // hhi_group_by_cols.push_back(market_share_squared_cols[0]->clone());
-    // shared_ptr<OperatorNode> hhi =
-    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-    //                     market_share_squared_cols[1]->clone(), "hhi");
+    vector<Column*> hhi_group_by_cols;
+    hhi_group_by_cols.push_back(market_share_squared_cols[0]->clone());
+    shared_ptr<OperatorNode> hhi =
+      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+                        market_share_squared_cols[1]->clone(), "hhi");
 
     return selected_input;
   }

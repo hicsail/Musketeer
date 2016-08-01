@@ -29,6 +29,7 @@
 #include "ir/input_operator.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
+#include "ir/join_operator_sec.h"
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
@@ -51,6 +52,7 @@ namespace musketeer {
   using ir::InputOperator;
   using ir::IntersectionOperator;
   using ir::JoinOperator;
+  using ir::JoinOperatorSEC;
   using ir::MaxOperator;
   using ir::MinOperator;
   using ir::MulOperator;
@@ -443,11 +445,59 @@ namespace musketeer {
     return group_by_node;
   }
 
-  shared_ptr<OperatorNode> Mindi::Join(shared_ptr<OperatorNode> op_node,
-                                       const string& rel_out_name,
-                                       shared_ptr<OperatorNode> other_op_node,
-                                       vector<Column*> left_cols,
-                                       vector<Column*> right_cols) const {
+  // shared_ptr<OperatorNode> Mindi::Join(shared_ptr<OperatorNode> op_node,
+  //                                      const string& rel_out_name,
+  //                                      shared_ptr<OperatorNode> other_op_node,
+  //                                      vector<Column*> left_cols,
+  //                                      vector<Column*> right_cols) const {
+  //   vector<Relation*> relations;
+  //   vector<Column*> columns;
+  //   vector<Column*> out_left_cols =
+  //     op_node->get_operator()->get_output_relation()->get_columns();
+  //   uint32_t index = 0;
+  //   for (vector<Column*>::iterator it = out_left_cols.begin();
+  //        it != out_left_cols.end(); ++it, ++index) {
+  //     columns.push_back(new Column(rel_out_name, index, (*it)->get_type()));
+  //   }
+
+  //   set<int32_t> join_right_cols_indices;
+  //   for (vector<Column*>::iterator it = right_cols.begin(); it != right_cols.end(); ++it) {
+  //     join_right_cols_indices.insert((*it)->get_index());
+  //   }
+
+  //   vector<Column*> out_right_cols =
+  //     other_op_node->get_operator()->get_output_relation()->get_columns();
+  //   for (vector<Column*>::iterator it = out_right_cols.begin();
+  //        it != out_right_cols.end(); ++it) {
+  //     if (join_right_cols_indices.find((*it)->get_index()) == join_right_cols_indices.end()) {
+  //       columns.push_back(new Column(rel_out_name, index, (*it)->get_type()));
+  //       ++index;
+  //     }
+  //   }
+  //   relations.push_back(op_node->get_operator()->get_output_relation());
+  //   relations.push_back(other_op_node->get_operator()->get_output_relation());
+  //   Relation* output_rel = new Relation(rel_out_name, columns);
+  //   JoinOperator* join_op =
+  //     new JoinOperator(FLAGS_hdfs_input_dir, relations, left_cols, right_cols, output_rel);
+  //   vector<shared_ptr<OperatorNode> > parents;
+  //   if (dynamic_cast<InputOperator*>(op_node->get_operator()) == NULL) {
+  //     parents.push_back(shared_ptr<OperatorNode>(op_node));
+  //   }
+  //   if (dynamic_cast<InputOperator*>(other_op_node->get_operator()) == NULL) {
+  //     parents.push_back(shared_ptr<OperatorNode>(other_op_node));
+  //   }
+  //   shared_ptr<OperatorNode> join_node =
+  //     shared_ptr<OperatorNode>(new OperatorNode(join_op, parents));
+  //   op_node->AddChild(join_node);
+  //   other_op_node->AddChild(join_node);
+  //   return join_node;
+  // }
+
+  shared_ptr<OperatorNode> Mindi::JoinSEC(shared_ptr<OperatorNode> op_node,
+                                          const string& rel_out_name,
+                                          shared_ptr<OperatorNode> other_op_node,
+                                          vector<Column*> left_cols,
+                                          vector<Column*> right_cols) const {
     vector<Relation*> relations;
     vector<Column*> columns;
     vector<Column*> out_left_cols =
@@ -475,8 +525,8 @@ namespace musketeer {
     relations.push_back(op_node->get_operator()->get_output_relation());
     relations.push_back(other_op_node->get_operator()->get_output_relation());
     Relation* output_rel = new Relation(rel_out_name, columns);
-    JoinOperator* join_op =
-      new JoinOperator(FLAGS_hdfs_input_dir, relations, left_cols, right_cols, output_rel);
+    JoinOperatorSEC* join_op =
+      new JoinOperatorSEC(FLAGS_hdfs_input_dir, relations, left_cols, right_cols, output_rel);
     vector<shared_ptr<OperatorNode> > parents;
     if (dynamic_cast<InputOperator*>(op_node->get_operator()) == NULL) {
       parents.push_back(shared_ptr<OperatorNode>(op_node));

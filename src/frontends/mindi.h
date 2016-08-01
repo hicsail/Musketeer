@@ -86,6 +86,12 @@ class Mindi {
                                 vector<Column*> left_cols,
                                 vector<Column*> right_cols) const;
 
+  shared_ptr<OperatorNode> JoinSEC(shared_ptr<OperatorNode> op_node,
+                                   const string& rel_out_name,
+                                   shared_ptr<OperatorNode> other_op_node,
+                                   vector<Column*> left_cols,
+                                   vector<Column*> right_cols) const;
+
   shared_ptr<OperatorNode> Distinct(shared_ptr<OperatorNode> op_node,
                                     const string& rel_out_name) const;
 

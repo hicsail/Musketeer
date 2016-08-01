@@ -94,6 +94,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/ir/input_operator.o \
 		$(BUILD_DIR)/ir/intersection_operator.o \
 		$(BUILD_DIR)/ir/join_operator.o \
+		$(BUILD_DIR)/ir/join_operator_sec.o \
 		$(BUILD_DIR)/ir/max_operator.o \
 		$(BUILD_DIR)/ir/min_operator.o \
 		$(BUILD_DIR)/ir/mul_operator.o \

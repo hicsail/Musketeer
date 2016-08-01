@@ -39,6 +39,7 @@
 #include "ir/div_operator.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
+#include "ir/join_operator_sec.h"
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
@@ -122,6 +123,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<WhileOperator*>(op));
     case MUL_OP_SEC:
       return Translate(dynamic_cast<MulOperatorSEC*>(op));
+    case JOIN_OP_SEC:
+      return Translate(dynamic_cast<JoinOperatorSEC*>(op));
     default:
       LOG(ERROR) << "Unexpected operator type: " << op->get_type();
     }
@@ -178,6 +181,12 @@ class TranslatorInterface {
   }
 
   virtual JobCode* Translate(JoinOperator* op) {
+    // Only frameworks that support JOIN must implement it.
+    LOG(FATAL) << "JOIN operator not supported by framework!";
+    return NULL;
+  }
+
+  virtual JobCode* Translate(JoinOperatorSEC* op) {
     // Only frameworks that support JOIN must implement it.
     LOG(FATAL) << "JOIN operator not supported by framework!";
     return NULL;

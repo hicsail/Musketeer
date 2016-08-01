@@ -68,13 +68,14 @@ class TranslatorViff : public TranslatorInterface {
   ViffJobCode* Translate(AggOperatorSEC* op);
   ViffJobCode* Translate(SelectOperatorSEC* op);
   ViffJobCode* Translate(MulOperatorSEC* op);
+  ViffJobCode* Translate(JoinOperatorSEC* op);
 
   ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,
                                ConditionTree* condition_tree, string math_op);
   
   string GenerateLambda(const string& op,
-                       Relation* rel, Value* left_val,
-                       Value* right_val, Relation* output_rel);
+                        Relation* rel, Value* left_val,
+                        Value* right_val, Relation* output_rel);
   string GenerateColumnTypes(Relation* rel);
   string GenerateAggSECOp(const string& op);
 };
