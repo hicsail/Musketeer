@@ -303,12 +303,13 @@ namespace translator {
     }
 
     TranslateDAG(&protocol_ops, dag, &leaves, &proc);
+    string return_rt = "    return rt\n\n"; // just a hack for now
     string gather_ops = TranslateGatherLeaves(leaves);
     string make_shares = TranslateMakeShares(input_rels_paths);
     string data_transfer = TranslateDataTransfer();
     string store_leaves = TranslateStoreLeaves(leaves);
     string code = header + protocol_inputs + protocol_ops + gather_ops + 
-                  make_shares + data_transfer + store_leaves;
+                  return_rt + make_shares + data_transfer + store_leaves;
     return WriteToFiles(op, code);
   }
 

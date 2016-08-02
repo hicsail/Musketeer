@@ -14,7 +14,7 @@ def _to_share(val, Zp, num_hosts=3):
     shares = [long(share[1]) for share in shamir.share(Zp(int(val)), 1, num_hosts)]
     return shares
 
-Zp = GF(256203221)
+Zp = GF(36893488147419103363)
 # TODO(nikolaj): add flag instead of hardcoding
 host_addresses = ['http://52.207.242.150:8001','http://52.207.229.228:8001','http://54.86.19.194:8001']
 owner_id = {{INPUT_PARTY_ID}}

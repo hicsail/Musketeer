@@ -36,6 +36,10 @@ namespace mindi {
   using ir::ConditionTree;
   using musketeer::Value;
 
+  vector<Column*> Netflix::col(shared_ptr<OperatorNode> op_node) {
+    return op_node->get_operator()->get_output_relation()->get_columns();
+  }
+
   shared_ptr<OperatorNode> Netflix::Run() {
     Mindi* mindi = new Mindi();
     
@@ -60,22 +64,14 @@ namespace mindi {
                    selected_input_cond_tree,
                    "selected_input");
 
-    vector<Column*> selected_input_cols = 
-      selected_input->get_operator()->get_output_relation()->get_columns();
-    
-    // ConditionTree* first_val_blank_cond_tree =
-    //   new ConditionTree(new CondOperator("-"),
-    //                     new ConditionTree(selected_input_cols[0]->clone()),
-    //                     new ConditionTree(selected_input_cols[0]->clone()));
-    
     ConditionTree* first_val_blank_cond_tree =
       new ConditionTree(new CondOperator("*"),
-                        new ConditionTree(selected_input_cols[0]->clone()),
-                        new ConditionTree(new Value("100", INTEGER_TYPE)));
+                        new ConditionTree(col(selected_input)[0]->clone()),
+                        new ConditionTree(new Value("0", INTEGER_TYPE)));
     
     vector<Column*> first_val_blank_cols;
-    first_val_blank_cols.push_back(selected_input_cols[0]->clone());
-    first_val_blank_cols.push_back(selected_input_cols[1]->clone());
+    first_val_blank_cols.push_back(col(selected_input)[0]->clone());
+    first_val_blank_cols.push_back(col(selected_input)[1]->clone());
 
     shared_ptr<OperatorNode> first_val_blank =
       mindi->Select(selected_input,
@@ -84,65 +80,75 @@ namespace mindi {
                     "first_val_blank");
 
     vector<Column*> local_rev_group_by_cols;
-    local_rev_group_by_cols.push_back(first_val_blank_cols[0]->clone());
+    local_rev_group_by_cols.push_back(col(first_val_blank)[0]->clone());
     shared_ptr<OperatorNode> local_rev =
       mindi->GroupBy(first_val_blank, local_rev_group_by_cols, PLUS_GROUP,
-                     first_val_blank_cols[1]->clone(), "local_rev");
+                     col(first_val_blank)[1]->clone(), "local_rev");
+
+    ConditionTree* local_rev_per_cond_tree =
+      new ConditionTree(new CondOperator("*"),
+                        new ConditionTree(col(local_rev)[1]->clone()),
+                        new ConditionTree(new Value("100", INTEGER_TYPE)));
+    
+    vector<Column*> local_rev_per_cols;
+    local_rev_per_cols.push_back(col(local_rev)[0]->clone());
+    local_rev_per_cols.push_back(col(local_rev)[1]->clone());
+
+    shared_ptr<OperatorNode> local_rev_per =
+      mindi->Select(local_rev,
+                    local_rev_per_cols,
+                    local_rev_per_cond_tree,
+                    "local_rev_per");
 
     vector<Column*> total_rev_group_by_cols;
-    total_rev_group_by_cols.push_back(local_rev_group_by_cols[0]->clone());
+    total_rev_group_by_cols.push_back(col(local_rev)[0]->clone());
     shared_ptr<OperatorNode> total_rev =
       mindi->GroupBySEC(local_rev, total_rev_group_by_cols, PLUS_GROUP,
-                        first_val_blank_cols[1]->clone(), "total_rev"); // double check on the column
+                        col(local_rev)[1]->clone(), "total_rev"); // double check on the column
 
-    vector<Column*> left_cols;
-    left_cols.push_back(total_rev->get_operator()->get_output_relation()->get_columns()[0]->clone());
-    vector<Column*> right_cols;
-    right_cols.push_back(local_rev->get_operator()->get_output_relation()->get_columns()[0]->clone());
+    vector<Column*> left;
+    left.push_back(col(local_rev_per)[0]);
+    vector<Column*> right;
+    right.push_back(col(total_rev)[0]);
 
-    shared_ptr<OperatorNode> total_local_rev = 
-      mindi->JoinSEC(total_rev, "total_local_rev", local_rev, left_cols, right_cols);
+    shared_ptr<OperatorNode> local_total_rev = 
+      mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
 
-    // vector<Column*> total_local_rev_cols = 
-    //   total_local_rev->get_operator()->get_output_relation()->get_columns();
+    ConditionTree* market_share_cond_tree =
+      new ConditionTree(new CondOperator("/"),
+                        new ConditionTree(col(local_total_rev)[1]->clone()),
+                        new ConditionTree(col(local_total_rev)[2]->clone()));
     
-    // ConditionTree* market_share_cond_tree =
-    //   new ConditionTree(new CondOperator("/"),
-    //                     new ConditionTree(total_local_rev_cols[1]->clone()),
-    //                     new ConditionTree(total_local_rev_cols[2]->clone()));
-    
-    // vector<Column*> market_share_cols;
-    // market_share_cols.push_back(total_local_rev_cols[0]->clone());
-    // market_share_cols.push_back(total_local_rev_cols[1]->clone());
-    // market_share_cols.push_back(total_local_rev_cols[2]->clone());
+    vector<Column*> market_share_cols;
+    market_share_cols.push_back(col(local_total_rev)[0]->clone());
+    market_share_cols.push_back(col(local_total_rev)[1]->clone());
+    market_share_cols.push_back(col(local_total_rev)[2]->clone());
 
-    // shared_ptr<OperatorNode> market_share =
-    //   mindi->SelectSEC(total_local_rev, market_share_cols, market_share_cond_tree,
-    //                    "market_share");
+    shared_ptr<OperatorNode> market_share =
+      mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
+                       "market_share");
     
-    // vector<Column*> proc_market_share_cols = market_share->get_operator()->get_output_relation()->get_columns();
+    ConditionTree* market_share_squared_tree =
+      new ConditionTree(new CondOperator("*"),
+                        new ConditionTree(col(market_share)[1]->clone()),
+                        new ConditionTree(col(market_share)[1]->clone()));
     
-    // ConditionTree* market_share_squared_tree =
-    //   new ConditionTree(new CondOperator("*"),
-    //                     new ConditionTree(proc_market_share_cols[1]->clone()),
-    //                     new ConditionTree(proc_market_share_cols[1]->clone()));
-    
-    // vector<Column*> market_share_squared_cols;
-    // market_share_squared_cols.push_back(proc_market_share_cols[0]->clone());
-    // market_share_squared_cols.push_back(proc_market_share_cols[1]->clone());
-    // market_share_squared_cols.push_back(proc_market_share_cols[2]->clone());
+    vector<Column*> market_share_squared_cols;
+    market_share_squared_cols.push_back(col(market_share)[0]->clone());
+    market_share_squared_cols.push_back(col(market_share)[1]->clone());
+    market_share_squared_cols.push_back(col(market_share)[2]->clone());
 
-    // shared_ptr<OperatorNode> market_share_squared =
-    //   mindi->SelectSEC(market_share,
-    //                    market_share_squared_cols,
-    //                    market_share_squared_tree,
-    //                    "market_share_squared");
+    shared_ptr<OperatorNode> market_share_squared =
+      mindi->SelectSEC(market_share,
+                       market_share_squared_cols,
+                       market_share_squared_tree,
+                       "market_share_squared");
 
-    // vector<Column*> hhi_group_by_cols;
-    // hhi_group_by_cols.push_back(market_share_squared_cols[0]->clone());
-    // shared_ptr<OperatorNode> hhi =
-    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-    //                     market_share_squared_cols[1]->clone(), "hhi");
+    vector<Column*> hhi_group_by_cols;
+    hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
+    shared_ptr<OperatorNode> hhi =
+      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+                        col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;
   }

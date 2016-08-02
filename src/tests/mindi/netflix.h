@@ -28,6 +28,7 @@ namespace mindi {
 class Netflix {
  public:
   shared_ptr<OperatorNode> Run();
+  vector<Column*> col(shared_ptr<OperatorNode> op_node);
 };
 
 } // namespace mindi

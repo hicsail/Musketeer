@@ -1,5 +1,3 @@
-    return rt # closing the protocol definition probably doesn't belong here
-
 for idx, to_send in enumerate(to_send_all):
     to_send_all[idx][1]['{{REL}}'] = []
 {{REL}}_type_lookup = {{COL_TYPES}}
