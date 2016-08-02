@@ -144,11 +144,11 @@ namespace mindi {
                        market_share_squared_tree,
                        "market_share_squared");
 
-    vector<Column*> hhi_group_by_cols;
-    hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
-    shared_ptr<OperatorNode> hhi =
-      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-                        col(market_share_squared)[1]->clone(), "hhi");
+    // vector<Column*> hhi_group_by_cols;
+    // hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
+    // shared_ptr<OperatorNode> hhi =
+    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+    //                     col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;
   }
