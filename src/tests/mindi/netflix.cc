@@ -42,27 +42,44 @@ namespace mindi {
 
   shared_ptr<OperatorNode> Netflix::Run() {
     Mindi* mindi = new Mindi();
-    
-    vector<Column*> input_cols;
-    input_cols.push_back(new Column("input", 0, INTEGER_TYPE));
-    input_cols.push_back(new Column("input", 1, INTEGER_TYPE_SEC));
 
-    Relation* input_rel = new Relation("input", input_cols);
+    vector<Column*> input_cols;
+
+    input_cols.push_back(new Column("VendorID", 0, INTEGER_TYPE));
+    input_cols.push_back(new Column("lpep_pickup_datetime", 1, STRING_TYPE));
+    input_cols.push_back(new Column("Lpep_dropoff_datetime", 2, STRING_TYPE));
+    input_cols.push_back(new Column("Store_and_fwd_flag", 3, STRING_TYPE));
+    input_cols.push_back(new Column("RateCodeID", 4, STRING_TYPE));
+    input_cols.push_back(new Column("Pickup_longitude", 5, STRING_TYPE));
+    input_cols.push_back(new Column("Pickup_latitude", 6, STRING_TYPE));
+    input_cols.push_back(new Column("Dropoff_longitude", 7, STRING_TYPE));
+    input_cols.push_back(new Column("Dropoff_latitude", 8, STRING_TYPE));
+    input_cols.push_back(new Column("Passenger_count", 9, STRING_TYPE));
+    input_cols.push_back(new Column("Trip_distance", 10, STRING_TYPE));
+    input_cols.push_back(new Column("Fare_amount", 11, INTEGER_TYPE_SEC));
+    input_cols.push_back(new Column("Extra", 12, STRING_TYPE));
+    input_cols.push_back(new Column("MTA_tax", 13, STRING_TYPE));
+    input_cols.push_back(new Column("Tip_amount", 14, INTEGER_TYPE_SEC));
+    input_cols.push_back(new Column("Tolls_amount", 15, STRING_TYPE));
+    input_cols.push_back(new Column("Ehail_fee", 16, STRING_TYPE));
+    input_cols.push_back(new Column("Total_amount", 17, INTEGER_TYPE_SEC));
+    input_cols.push_back(new Column("Payment_type", 18, STRING_TYPE));
+    input_cols.push_back(new Column("Trip_type", 19, STRING_TYPE));
+
+    Relation* input_rel = new Relation("smalltrip", input_cols);
     vector<Relation*> input_rels;
     input_rels.push_back(input_rel);
 
     OperatorInterface* input_op = new InputOperator(FLAGS_hdfs_input_dir, input_rels, input_rel);
     
-    // For now a dummy selection but the specific use case might require an actual selection here
-    ConditionTree* selected_input_cond_tree =
-      new ConditionTree(new CondOperator("=="),
-                        new ConditionTree(input_cols[0]->clone()),
-                        new ConditionTree(input_cols[0]->clone()));
+    vector<Column*> selected_cols;
+    selected_cols.push_back(input_cols[0]->clone());
+    selected_cols.push_back(input_cols[17]->clone());
     
     shared_ptr<OperatorNode> selected_input =
-      mindi->Where(shared_ptr<OperatorNode>(new OperatorNode(input_op)),
-                   selected_input_cond_tree,
-                   "selected_input");
+      mindi->Select(shared_ptr<OperatorNode>(new OperatorNode(input_op)),
+                    selected_cols,
+                    "selected_input");
 
     ConditionTree* first_val_blank_cond_tree =
       new ConditionTree(new CondOperator("*"),
@@ -86,9 +103,9 @@ namespace mindi {
                      col(first_val_blank)[1]->clone(), "local_rev");
 
     ConditionTree* local_rev_per_cond_tree =
-      new ConditionTree(new CondOperator("*"),
+      new ConditionTree(new CondOperator("/"),
                         new ConditionTree(col(local_rev)[1]->clone()),
-                        new ConditionTree(new Value("100", INTEGER_TYPE)));
+                        new ConditionTree(new Value("10", INTEGER_TYPE)));
     
     vector<Column*> local_rev_per_cols;
     local_rev_per_cols.push_back(col(local_rev)[0]->clone());
@@ -100,11 +117,27 @@ namespace mindi {
                     local_rev_per_cond_tree,
                     "local_rev_per");
 
+    ConditionTree* local_rev_scaled_cond_tree =
+      new ConditionTree(new CondOperator("/"),
+                        new ConditionTree(col(local_rev)[1]->clone()),
+                        new ConditionTree(new Value("1000", INTEGER_TYPE)));
+    
+    vector<Column*> local_rev_scaled_cols;
+    local_rev_scaled_cols.push_back(col(local_rev)[0]->clone());
+    local_rev_scaled_cols.push_back(col(local_rev)[1]->clone());
+
+    shared_ptr<OperatorNode> local_rev_scaled =
+      mindi->Select(local_rev,
+                    local_rev_scaled_cols,
+                    local_rev_scaled_cond_tree,
+                    "local_rev_scaled");
+
+
     vector<Column*> total_rev_group_by_cols;
-    total_rev_group_by_cols.push_back(col(local_rev)[0]->clone());
+    total_rev_group_by_cols.push_back(col(local_rev_scaled)[0]->clone());
     shared_ptr<OperatorNode> total_rev =
-      mindi->GroupBySEC(local_rev, total_rev_group_by_cols, PLUS_GROUP,
-                        col(local_rev)[1]->clone(), "total_rev"); // double check on the column
+      mindi->GroupBySEC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
+                        col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
 
     vector<Column*> left;
     left.push_back(col(local_rev_per)[0]);
@@ -144,11 +177,11 @@ namespace mindi {
                        market_share_squared_tree,
                        "market_share_squared");
 
-    // vector<Column*> hhi_group_by_cols;
-    // hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
-    // shared_ptr<OperatorNode> hhi =
-    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-    //                     col(market_share_squared)[1]->clone(), "hhi");
+    vector<Column*> hhi_group_by_cols;
+    hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
+    shared_ptr<OperatorNode> hhi =
+      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+                        col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;
   }
