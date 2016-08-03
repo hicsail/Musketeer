@@ -34,6 +34,7 @@ namespace framework {
     // XXX(malte): hack hack hack
     string cmd = "hadoop jar " + job_path + " " + job_options;
     LOG(INFO) << "hadoop run started for: " << job_path;
+    LOG(INFO) << "hadoop run started for: " << cmd;
     system(cmd.c_str());
     LOG(INFO) << "hadoop run ended for: " << job_path;
   }

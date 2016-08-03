@@ -45,28 +45,47 @@ namespace mindi {
 
     vector<Column*> input_cols;
 
-    input_cols.push_back(new Column("VendorID", 0, INTEGER_TYPE));
-    input_cols.push_back(new Column("lpep_pickup_datetime", 1, STRING_TYPE));
-    input_cols.push_back(new Column("Lpep_dropoff_datetime", 2, STRING_TYPE));
-    input_cols.push_back(new Column("Store_and_fwd_flag", 3, STRING_TYPE));
-    input_cols.push_back(new Column("RateCodeID", 4, STRING_TYPE));
-    input_cols.push_back(new Column("Pickup_longitude", 5, STRING_TYPE));
-    input_cols.push_back(new Column("Pickup_latitude", 6, STRING_TYPE));
-    input_cols.push_back(new Column("Dropoff_longitude", 7, STRING_TYPE));
-    input_cols.push_back(new Column("Dropoff_latitude", 8, STRING_TYPE));
-    input_cols.push_back(new Column("Passenger_count", 9, STRING_TYPE));
-    input_cols.push_back(new Column("Trip_distance", 10, STRING_TYPE));
-    input_cols.push_back(new Column("Fare_amount", 11, INTEGER_TYPE_SEC));
-    input_cols.push_back(new Column("Extra", 12, STRING_TYPE));
-    input_cols.push_back(new Column("MTA_tax", 13, STRING_TYPE));
-    input_cols.push_back(new Column("Tip_amount", 14, INTEGER_TYPE_SEC));
-    input_cols.push_back(new Column("Tolls_amount", 15, STRING_TYPE));
-    input_cols.push_back(new Column("Ehail_fee", 16, STRING_TYPE));
-    input_cols.push_back(new Column("Total_amount", 17, INTEGER_TYPE_SEC));
-    input_cols.push_back(new Column("Payment_type", 18, STRING_TYPE));
-    input_cols.push_back(new Column("Trip_type", 19, STRING_TYPE));
+    input_cols.push_back(new Column("vendor_id", 0, INTEGER_TYPE));
+    input_cols.push_back(new Column("pickup_datetime", 1, STRING_TYPE));
+    input_cols.push_back(new Column("dropoff_datetime", 2, STRING_TYPE));
+    input_cols.push_back(new Column("passenger_count", 3, STRING_TYPE));
+    input_cols.push_back(new Column("trip_distance", 4, STRING_TYPE));
+    input_cols.push_back(new Column("pickup_longitude", 5, STRING_TYPE));
+    input_cols.push_back(new Column("pickup_latitude", 6, STRING_TYPE));
+    input_cols.push_back(new Column("rate_code", 7, STRING_TYPE));
+    input_cols.push_back(new Column("store_and_fwd_flag", 8, STRING_TYPE));
+    input_cols.push_back(new Column("dropoff_longitude", 9, STRING_TYPE));
+    input_cols.push_back(new Column("dropoff_latitude", 10, STRING_TYPE));
+    input_cols.push_back(new Column("payment_type", 11, STRING_TYPE));
+    input_cols.push_back(new Column("fare_amount", 12, STRING_TYPE));
+    input_cols.push_back(new Column("surcharge", 13, STRING_TYPE));
+    input_cols.push_back(new Column("mta_tax", 14, STRING_TYPE));
+    input_cols.push_back(new Column("tip_amount", 15, STRING_TYPE));
+    input_cols.push_back(new Column("tolls_amount", 16, STRING_TYPE));
+    input_cols.push_back(new Column("total_amount", 17, INTEGER_TYPE_SEC));
 
-    Relation* input_rel = new Relation("smalltrip", input_cols);
+    // input_cols.push_back(new Column("VendorID", 0, INTEGER_TYPE));
+    // input_cols.push_back(new Column("lpep_pickup_datetime", 1, STRING_TYPE));
+    // input_cols.push_back(new Column("Lpep_dropoff_datetime", 2, STRING_TYPE));
+    // input_cols.push_back(new Column("Store_and_fwd_flag", 3, STRING_TYPE));
+    // input_cols.push_back(new Column("RateCodeID", 4, STRING_TYPE));
+    // input_cols.push_back(new Column("Pickup_longitude", 5, STRING_TYPE));
+    // input_cols.push_back(new Column("Pickup_latitude", 6, STRING_TYPE));
+    // input_cols.push_back(new Column("Dropoff_longitude", 7, STRING_TYPE));
+    // input_cols.push_back(new Column("Dropoff_latitude", 8, STRING_TYPE));
+    // input_cols.push_back(new Column("Passenger_count", 9, STRING_TYPE));
+    // input_cols.push_back(new Column("Trip_distance", 10, STRING_TYPE));
+    // input_cols.push_back(new Column("Fare_amount", 11, INTEGER_TYPE_SEC));
+    // input_cols.push_back(new Column("Extra", 12, STRING_TYPE));
+    // input_cols.push_back(new Column("MTA_tax", 13, STRING_TYPE));
+    // input_cols.push_back(new Column("Tip_amount", 14, INTEGER_TYPE_SEC));
+    // input_cols.push_back(new Column("Tolls_amount", 15, STRING_TYPE));
+    // input_cols.push_back(new Column("Ehail_fee", 16, STRING_TYPE));
+    // input_cols.push_back(new Column("Total_amount", 17, INTEGER_TYPE_SEC));
+    // input_cols.push_back(new Column("Payment_type", 18, STRING_TYPE));
+    // input_cols.push_back(new Column("Trip_type", 19, STRING_TYPE));
+
+    Relation* input_rel = new Relation("cab_data", input_cols);
     vector<Relation*> input_rels;
     input_rels.push_back(input_rel);
 
@@ -133,55 +152,55 @@ namespace mindi {
                     "local_rev_scaled");
 
 
-    vector<Column*> total_rev_group_by_cols;
-    total_rev_group_by_cols.push_back(col(local_rev_scaled)[0]->clone());
-    shared_ptr<OperatorNode> total_rev =
-      mindi->GroupBySEC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
-                        col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
+    // vector<Column*> total_rev_group_by_cols;
+    // total_rev_group_by_cols.push_back(col(local_rev_scaled)[0]->clone());
+    // shared_ptr<OperatorNode> total_rev =
+    //   mindi->GroupBySEC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
+    //                     col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
 
-    vector<Column*> left;
-    left.push_back(col(local_rev_per)[0]);
-    vector<Column*> right;
-    right.push_back(col(total_rev)[0]);
+    // vector<Column*> left;
+    // left.push_back(col(local_rev_per)[0]);
+    // vector<Column*> right;
+    // right.push_back(col(total_rev)[0]);
 
-    shared_ptr<OperatorNode> local_total_rev = 
-      mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
+    // shared_ptr<OperatorNode> local_total_rev = 
+    //   mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
 
-    ConditionTree* market_share_cond_tree =
-      new ConditionTree(new CondOperator("/"),
-                        new ConditionTree(col(local_total_rev)[1]->clone()),
-                        new ConditionTree(col(local_total_rev)[2]->clone()));
+    // ConditionTree* market_share_cond_tree =
+    //   new ConditionTree(new CondOperator("/"),
+    //                     new ConditionTree(col(local_total_rev)[1]->clone()),
+    //                     new ConditionTree(col(local_total_rev)[2]->clone()));
     
-    vector<Column*> market_share_cols;
-    market_share_cols.push_back(col(local_total_rev)[0]->clone());
-    market_share_cols.push_back(col(local_total_rev)[1]->clone());
-    market_share_cols.push_back(col(local_total_rev)[2]->clone());
+    // vector<Column*> market_share_cols;
+    // market_share_cols.push_back(col(local_total_rev)[0]->clone());
+    // market_share_cols.push_back(col(local_total_rev)[1]->clone());
+    // market_share_cols.push_back(col(local_total_rev)[2]->clone());
 
-    shared_ptr<OperatorNode> market_share =
-      mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
-                       "market_share");
+    // shared_ptr<OperatorNode> market_share =
+    //   mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
+    //                    "market_share");
     
-    ConditionTree* market_share_squared_tree =
-      new ConditionTree(new CondOperator("*"),
-                        new ConditionTree(col(market_share)[1]->clone()),
-                        new ConditionTree(col(market_share)[1]->clone()));
+    // ConditionTree* market_share_squared_tree =
+    //   new ConditionTree(new CondOperator("*"),
+    //                     new ConditionTree(col(market_share)[1]->clone()),
+    //                     new ConditionTree(col(market_share)[1]->clone()));
     
-    vector<Column*> market_share_squared_cols;
-    market_share_squared_cols.push_back(col(market_share)[0]->clone());
-    market_share_squared_cols.push_back(col(market_share)[1]->clone());
-    market_share_squared_cols.push_back(col(market_share)[2]->clone());
+    // vector<Column*> market_share_squared_cols;
+    // market_share_squared_cols.push_back(col(market_share)[0]->clone());
+    // market_share_squared_cols.push_back(col(market_share)[1]->clone());
+    // market_share_squared_cols.push_back(col(market_share)[2]->clone());
 
-    shared_ptr<OperatorNode> market_share_squared =
-      mindi->SelectSEC(market_share,
-                       market_share_squared_cols,
-                       market_share_squared_tree,
-                       "market_share_squared");
+    // shared_ptr<OperatorNode> market_share_squared =
+    //   mindi->SelectSEC(market_share,
+    //                    market_share_squared_cols,
+    //                    market_share_squared_tree,
+    //                    "market_share_squared");
 
-    vector<Column*> hhi_group_by_cols;
-    hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
-    shared_ptr<OperatorNode> hhi =
-      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-                        col(market_share_squared)[1]->clone(), "hhi");
+    // vector<Column*> hhi_group_by_cols;
+    // hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
+    // shared_ptr<OperatorNode> hhi =
+    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+    //                     col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;
   }
