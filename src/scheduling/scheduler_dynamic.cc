@@ -675,7 +675,7 @@ namespace scheduling {
       LOG(ERROR) << "The cost of running the operators is maximum! This can "
                  << "happen when the operators' input bounds are too big. "
                  << "Defaulting to running in Spark.";
-      scheduled_fmw[1][1] = FMW_SPARK;
+      scheduled_fmw[1][1] = FMW_HADOOP;
     }
     schedulable_ops++;
     LOG(INFO) << "Schedulable operators: [1, " << schedulable_ops << "]";

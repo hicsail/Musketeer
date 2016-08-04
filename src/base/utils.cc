@@ -133,7 +133,7 @@ namespace musketeer {
       to_visit.push(*it);
       visited.insert(*it);
       cout << (*it)->get_operator()->get_output_relation()->get_name()
-           << " [label=\"" << (*it)->get_operator()->get_type() << "\"]"
+           << " [label=\"" << (*it)->get_operator()->get_type_string() << "\"]"
            << "; ";
     }
     cout << endl;
@@ -151,7 +151,7 @@ namespace musketeer {
                << "->"
                << (*it)->get_operator()->get_output_relation()->get_name()
                << " [label=\"" <<
-            cur_node->get_operator()->get_output_relation()->get_name()
+            cur_node->get_operator()->get_type_string()
                << "\"];" << endl;
           if (visited.insert(*it).second) {
             to_visit.push(*it);

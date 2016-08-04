@@ -37,6 +37,7 @@ namespace musketeer {
 
   string Column::toString(const string& fmw) {
     if (!fmw.compare("hadoop")) {
+      cout << "relation: " << relation << endl;
       return translateTypeJava() + ".valueOf(" + relation + "[" +
         boost::lexical_cast<string>(index) + "])";
     }
