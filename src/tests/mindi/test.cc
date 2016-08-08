@@ -16,7 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "tests/mindi/netflix.h"
+#include "tests/mindi/test.h"
 
 #include <vector>
 
@@ -36,11 +36,11 @@ namespace mindi {
   using ir::ConditionTree;
   using musketeer::Value;
 
-  vector<Column*> Netflix::col(shared_ptr<OperatorNode> op_node) {
+  vector<Column*> Test::col(shared_ptr<OperatorNode> op_node) {
     return op_node->get_operator()->get_output_relation()->get_columns();
   }
 
-  shared_ptr<OperatorNode> Netflix::Run() {
+  shared_ptr<OperatorNode> Test::Run() {
     Mindi* mindi = new Mindi();
 
     vector<Column*> input_cols;
@@ -159,27 +159,27 @@ namespace mindi {
       mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
                        "market_share");
     
-    ConditionTree* market_share_squared_tree =
-      new ConditionTree(new CondOperator("*"),
-                        new ConditionTree(col(market_share)[1]->clone()),
-                        new ConditionTree(col(market_share)[1]->clone()));
+    // ConditionTree* market_share_squared_tree =
+    //   new ConditionTree(new CondOperator("*"),
+    //                     new ConditionTree(col(market_share)[1]->clone()),
+    //                     new ConditionTree(col(market_share)[1]->clone()));
     
-    vector<Column*> market_share_squared_cols;
-    market_share_squared_cols.push_back(col(market_share)[0]->clone());
-    market_share_squared_cols.push_back(col(market_share)[1]->clone());
-    market_share_squared_cols.push_back(col(market_share)[2]->clone());
+    // vector<Column*> market_share_squared_cols;
+    // market_share_squared_cols.push_back(col(market_share)[0]->clone());
+    // market_share_squared_cols.push_back(col(market_share)[1]->clone());
+    // market_share_squared_cols.push_back(col(market_share)[2]->clone());
 
-    shared_ptr<OperatorNode> market_share_squared =
-      mindi->SelectSEC(market_share,
-                       market_share_squared_cols,
-                       market_share_squared_tree,
-                       "market_share_squared");
+    // shared_ptr<OperatorNode> market_share_squared =
+    //   mindi->SelectSEC(market_share,
+    //                    market_share_squared_cols,
+    //                    market_share_squared_tree,
+    //                    "market_share_squared");
 
-    vector<Column*> hhi_group_by_cols;
-    hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
-    shared_ptr<OperatorNode> hhi =
-      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
-                        col(market_share_squared)[1]->clone(), "hhi");
+    // vector<Column*> hhi_group_by_cols;
+    // hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
+    // shared_ptr<OperatorNode> hhi =
+    //   mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+    //                     col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;
   }

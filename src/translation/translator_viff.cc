@@ -163,6 +163,7 @@ namespace translator {
     string header;
     TemplateDictionary dict("header");
     dict.SetValue("INPUT_PARTY_ID", FLAGS_viff_input_party_id);
+    dict.SetValue("VIFF_NODE_ADDRESSES", FLAGS_viff_node_addresses);
     ExpandTemplate(FLAGS_viff_templates_dir + "HeaderTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &header);
     return header;

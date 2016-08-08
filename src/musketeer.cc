@@ -24,7 +24,7 @@
 #include <iostream>
 #include <vector>
 
-#include "tests/mindi/netflix.h"
+#include "tests/mindi/test.h"
 #include "base/common.h"
 #include "base/utils.h"
 #include "core/daemon.h"
@@ -143,7 +143,8 @@ DEFINE_int32(spark_web_ui_port, 8080, "Spark Web UI Port");
 // Viff flags.
 DEFINE_string(viff_templates_dir, "src/translation/viff_templates/", "Viff templates directory");
 DEFINE_string(viff_input_party_id, "1", "Id used by Viff to indentify input party");
-
+DEFINE_string(viff_node_addresses, "'http://localhost:9001','http://localhost:9002','http://localhost:9003'",
+              "Addresses to send secret shares.");
 // Wildcherry flags.
 DEFINE_string(wildcherry_templates_dir, "src/translation/wildcherry_templates/",
               "WildCherry templates directory");
@@ -306,8 +307,8 @@ int main(int argc, char *argv[]) {
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
     // vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
     vector<shared_ptr<OperatorNode>> dag;
-    shared_ptr<OperatorNode> netflix = tests::mindi::Netflix().Run();
-    dag.push_back(netflix);
+    shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
+    dag.push_back(test);
 
     if (FLAGS_output_ir_dag_gv) {
       PrintDagGV(dag);

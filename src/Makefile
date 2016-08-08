@@ -130,7 +130,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/scheduling/operator_scheduler.o \
 		$(BUILD_DIR)/scheduling/scheduler_dynamic.o \
 		$(BUILD_DIR)/scheduling/scheduler_simulator.o \
-		$(BUILD_DIR)/tests/mindi/netflix.o \
+		$(BUILD_DIR)/tests/mindi/test.o \
 		$(LIBS) \
 		-o $(BUILD_DIR)/musketeer, \
 		" DYNLNK $(BUILD_DIR)/musketeer")

@@ -16,8 +16,8 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_TESTS_MINDI_NETFLIX_H
-#define MUSKETEER_TESTS_MINDI_NETFLIX_H
+#ifndef MUSKETEER_TESTS_MINDI_TEST_H
+#define MUSKETEER_TESTS_MINDI_TEST_H
 
 #include "frontends/mindi.h"
 
@@ -25,9 +25,10 @@ namespace musketeer {
 namespace tests {
 namespace mindi {
 
-class Netflix {
+class Test {
  public:
   shared_ptr<OperatorNode> Run();
+  vector<Column*> col(shared_ptr<OperatorNode> op_node);
 };
 
 } // namespace mindi
