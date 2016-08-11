@@ -16,29 +16,42 @@
  * permissions and limitations under the License.
  */
 
-#include "ir/agg_operator_sec.h"
+#ifndef MUSKETEER_JOIN_OPERATOR_MPC_H
+#define MUSKETEER_JOIN_OPERATOR_MPC_H
 
-#include <limits>
+#include "ir/join_operator.h"
+
+#include <stdint.h>
+
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
+
+#include "base/common.h"
+#include "ir/column.h"
+#include "ir/relation.h"
 
 namespace musketeer {
 namespace ir {
 
-  OperatorType AggOperatorSEC::get_type() {
-    return AGG_OP_SEC;
+class JoinOperatorMPC: public JoinOperator {
+ public:
+  JoinOperatorMPC(const string& input_dir, const vector<Relation*>& relations,
+               vector<Column*> left_cols, vector<Column*> right_cols,
+               Relation* output_relation):
+    JoinOperator(input_dir, relations, left_cols, right_cols, output_relation) {
   }
 
-  bool AggOperatorSEC::isMPC() {
-    return true;
+  ~JoinOperatorMPC() {
+    // TODO(ionel): Implement.
   }
 
-  OperatorInterface* AggOperatorSEC::clone() {
-    return new AggOperatorSEC(get_input_dir(), get_condition_tree(), group_bys,
-                              math_operator, get_relations(), columns,
-                              get_output_relation());
-  }
+  OperatorType get_type();
+  bool isMPC();
+  OperatorInterface* clone();
+};
 
 } // namespace ir
 } // namespace musketeer
+#endif

@@ -51,7 +51,7 @@ class Mindi {
                                   ConditionTree* cond_tree,
                                   const string& rel_out_name) const;
 
-  shared_ptr<OperatorNode> SelectSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> SelectMPC(shared_ptr<OperatorNode> op_node,
                                      const vector<Column*>& sel_cols,
                                      ConditionTree* cond_tree,
                                      const string& rel_out_name) const;
@@ -74,7 +74,7 @@ class Mindi {
                                    Column* key_col,
                                    const string& rel_out_name) const;
 
-  shared_ptr<OperatorNode> GroupBySEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> GroupByMPC(shared_ptr<OperatorNode> op_node,
                                    const vector<Column*>& group_bys, // key selector
                                    const GroupByType group_reducer,
                                    Column* key_col,
@@ -86,7 +86,7 @@ class Mindi {
                                 vector<Column*> left_cols,
                                 vector<Column*> right_cols) const;
 
-  shared_ptr<OperatorNode> JoinSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> JoinMPC(shared_ptr<OperatorNode> op_node,
                                    const string& rel_out_name,
                                    shared_ptr<OperatorNode> other_op_node,
                                    vector<Column*> left_cols,
@@ -121,7 +121,7 @@ class Mindi {
                                const vector<Column*>& val_cols,
                                const string& rel_out_name) const;
 
-  shared_ptr<OperatorNode> MathSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> MathMPC(shared_ptr<OperatorNode> op_node,
                                    vector<Value*> values,
                                    const string& rel_out_name) const;
 

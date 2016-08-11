@@ -81,7 +81,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/frontends/operator_node.o \
 		$(BUILD_DIR)/frontends/relations_type.o \
 		$(BUILD_DIR)/frontends/tree_traversal.o \
-		$(BUILD_DIR)/ir/agg_operator_sec.o \
+		$(BUILD_DIR)/ir/agg_operator_mpc.o \
 		$(BUILD_DIR)/ir/agg_operator.o \
 		$(BUILD_DIR)/ir/black_box_operator.o \
 		$(BUILD_DIR)/ir/column.o \
@@ -91,19 +91,19 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/ir/difference_operator.o \
 		$(BUILD_DIR)/ir/distinct_operator.o \
 		$(BUILD_DIR)/ir/div_operator.o \
-		$(BUILD_DIR)/ir/div_operator_sec.o \
+		$(BUILD_DIR)/ir/div_operator_mpc.o \
 		$(BUILD_DIR)/ir/input_operator.o \
 		$(BUILD_DIR)/ir/intersection_operator.o \
 		$(BUILD_DIR)/ir/join_operator.o \
-		$(BUILD_DIR)/ir/join_operator_sec.o \
+		$(BUILD_DIR)/ir/join_operator_mpc.o \
 		$(BUILD_DIR)/ir/max_operator.o \
 		$(BUILD_DIR)/ir/min_operator.o \
 		$(BUILD_DIR)/ir/mul_operator.o \
-		$(BUILD_DIR)/ir/mul_operator_sec.o \
+		$(BUILD_DIR)/ir/mul_operator_mpc.o \
 		$(BUILD_DIR)/ir/project_operator.o \
 		$(BUILD_DIR)/ir/relation.o \
 		$(BUILD_DIR)/ir/select_operator.o \
-		$(BUILD_DIR)/ir/select_operator_sec.o \
+		$(BUILD_DIR)/ir/select_operator_mpc.o \
 		$(BUILD_DIR)/ir/sub_operator.o \
 		$(BUILD_DIR)/ir/sum_operator.o \
 		$(BUILD_DIR)/ir/sort_operator.o \

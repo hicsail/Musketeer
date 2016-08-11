@@ -16,28 +16,42 @@
  * permissions and limitations under the License.
  */
 
-#include "ir/div_operator_sec.h"
+#ifndef MUSKETEER_DIV_OPERATOR_MPC_H
+#define MUSKETEER_DIV_OPERATOR_MPC_H
 
-#include <limits>
+#include "ir/div_operator.h"
+
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
+
+#include "base/common.h"
+#include "ir/column.h"
+#include "ir/condition_tree.h"
+#include "ir/relation.h"
+#include "ir/value.h"
+#include "RLPlusLexer.h"
+#include "RLPlusParser.h"
 
 namespace musketeer {
 namespace ir {
 
-  bool DivOperatorSEC::isMPC() {
-    return true;
+class DivOperatorMPC : public DivOperator {
+ public:
+  
+  DivOperatorMPC(const string& input_dir, ConditionTree* condition_tree,
+                 const vector<Relation*>& relations, const vector<Value*>& values_,
+                 Relation* output_rel):
+    DivOperator(input_dir, condition_tree, relations, values_, output_rel) {
   }
 
-  OperatorType DivOperatorSEC::get_type() {
-    return DIV_OP_SEC;
-  }
+  OperatorType get_type();
+  bool isMPC();
+  OperatorInterface* clone();
 
-  OperatorInterface* DivOperatorSEC::clone() {
-    return new DivOperatorSEC(get_input_dir(), get_condition_tree(),
-                              get_relations(), values, get_output_relation());
-  }
+};
 
 } // namespace ir
 } // namespace musketeer
+#endif

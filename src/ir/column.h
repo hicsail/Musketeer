@@ -30,7 +30,7 @@
 #define DOUBLE_TYPE 1
 #define STRING_TYPE 2
 #define BOOLEAN_TYPE 3
-#define INTEGER_TYPE_SEC 5
+#define INTEGER_TYPE_PRIV 5
 
 namespace musketeer {
 

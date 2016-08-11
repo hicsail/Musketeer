@@ -16,44 +16,28 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_SELECT_OPERATOR_SEC_H
-#define MUSKETEER_SELECT_OPERATOR_SEC_H
+#include "ir/join_operator_mpc.h"
 
-#include "ir/select_operator.h"
-
-#include <stdint.h>
-
+#include <limits>
 #include <map>
-#include <string>
 #include <utility>
 #include <vector>
-
-#include "base/common.h"
-#include "ir/column.h"
-#include "ir/condition_tree.h"
-#include "ir/relation.h"
-#include "RLPlusLexer.h"
-#include "RLPlusParser.h"
 
 namespace musketeer {
 namespace ir {
 
-class SelectOperatorSEC : public SelectOperator {
- public:
-  
-  SelectOperatorSEC(const string& input_dir, ConditionTree* condition_tree,
-                 const vector<Column*>& columns_,
-                 const vector<Relation*>& relations,
-                 Relation* output_relation):
-    SelectOperator(input_dir, condition_tree, columns_, relations, output_relation) {
+  bool JoinOperatorMPC::isMPC() {
+    return true;
   }
 
-  OperatorType get_type();
-  bool isMPC();
-  OperatorInterface* clone();
+  OperatorType JoinOperatorMPC::get_type() {
+    return JOIN_OP_MPC;
+  }
 
-};
+  OperatorInterface* JoinOperatorMPC::clone() {
+    return new JoinOperatorMPC(get_input_dir(), get_relations(), left_cols_,
+                               right_cols_, get_output_relation());
+  }
 
 } // namespace ir
 } // namespace musketeer
-#endif

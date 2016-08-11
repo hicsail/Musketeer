@@ -26,7 +26,7 @@ using namespace std;  // NOLINT
 
 typedef enum {
   AGG_OP,
-  AGG_OP_SEC,
+  AGG_OP_MPC,
   BLACK_BOX_OP,
   COUNT_OP,
   CROSS_JOIN_OP,
@@ -47,10 +47,10 @@ typedef enum {
   UDF_OP,
   UNION_OP,
   WHILE_OP,
-  SELECT_OP_SEC,
-  MUL_OP_SEC,
-  JOIN_OP_SEC,
-  DIV_OP_SEC
+  SELECT_OP_MPC,
+  MUL_OP_MPC,
+  JOIN_OP_MPC,
+  DIV_OP_MPC
 } OperatorType;
 
 #endif  // MUSKETEER_COMMON_H

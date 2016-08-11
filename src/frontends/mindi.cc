@@ -21,22 +21,22 @@
 #include "base/common.h"
 #include "base/flags.h"
 #include "ir/agg_operator.h"
-#include "ir/agg_operator_sec.h"
+#include "ir/agg_operator_mpc.h"
 #include "ir/count_operator.h"
 #include "ir/difference_operator.h"
 #include "ir/distinct_operator.h"
 #include "ir/div_operator.h"
-#include "ir/div_operator_sec.h"
+#include "ir/div_operator_mpc.h"
 #include "ir/input_operator.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
-#include "ir/join_operator_sec.h"
+#include "ir/join_operator_mpc.h"
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
-#include "ir/mul_operator_sec.h"
+#include "ir/mul_operator_mpc.h"
 #include "ir/select_operator.h"
-#include "ir/select_operator_sec.h"
+#include "ir/select_operator_mpc.h"
 #include "ir/sub_operator.h"
 #include "ir/sum_operator.h"
 #include "ir/union_operator.h"
@@ -45,22 +45,22 @@
 namespace musketeer {
 
   using ir::AggOperator;
-  using ir::AggOperatorSEC;
+  using ir::AggOperatorMPC;
   using ir::CountOperator;
   using ir::DifferenceOperator;
   using ir::DistinctOperator;
   using ir::DivOperator;
-  using ir::DivOperatorSEC;
+  using ir::DivOperatorMPC;
   using ir::InputOperator;
   using ir::IntersectionOperator;
   using ir::JoinOperator;
-  using ir::JoinOperatorSEC;
+  using ir::JoinOperatorMPC;
   using ir::MaxOperator;
   using ir::MinOperator;
   using ir::MulOperator;
-  using ir::MulOperatorSEC;
+  using ir::MulOperatorMPC;
   using ir::SelectOperator;
-  using ir::SelectOperatorSEC;
+  using ir::SelectOperatorMPC;
   using ir::SubOperator;
   using ir::SumOperator;
   using ir::UnionOperator;
@@ -188,7 +188,7 @@ namespace musketeer {
     return select_node;
   }
 
-  shared_ptr<OperatorNode> Mindi::SelectSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> Mindi::SelectMPC(shared_ptr<OperatorNode> op_node,
                                          const vector<Column*>& sel_cols,
                                          ConditionTree* cond_tree,
                                          const string& rel_out_name) const {
@@ -230,11 +230,11 @@ namespace musketeer {
     math_relations.push_back(op_node->get_operator()->get_output_relation());
     string math_op_type = cond_tree->get_cond_operator()->toString();
     if (!math_op_type.compare("*")) {
-      math_op = new MulOperatorSEC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
+      math_op = new MulOperatorMPC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
                                    values, math_output_rel);
     }
     else if (!math_op_type.compare("/")) {
-      math_op = new DivOperatorSEC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
+      math_op = new DivOperatorMPC(FLAGS_hdfs_input_dir, empty_cond_tree, math_relations,
                                    values, math_output_rel);
     } else {
       LOG(ERROR) << "Unexpected math op type: " << math_op_type;
@@ -265,8 +265,8 @@ namespace musketeer {
     Relation* output_rel = new Relation(rel_out_name, sel_out_cols);
     ConditionTree* cond_tree_sel =
       new ConditionTree(new Value("true", BOOLEAN_TYPE));
-    SelectOperatorSEC* select_op =
-      new SelectOperatorSEC(FLAGS_hdfs_input_dir, cond_tree_sel, math_sel_cols,
+    SelectOperatorMPC* select_op =
+      new SelectOperatorMPC(FLAGS_hdfs_input_dir, cond_tree_sel, math_sel_cols,
                          relations, output_rel);
     vector<shared_ptr<OperatorNode> > parents_select;
     parents_select.push_back(math_node);
@@ -276,7 +276,7 @@ namespace musketeer {
     return select_node;
   }
 
-  shared_ptr<OperatorNode> Mindi::MathSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> Mindi::MathMPC(shared_ptr<OperatorNode> op_node,
                                           vector<Value*> values,
                                           const string& rel_out_name) const {
     // TODO(nikolaj)
@@ -432,7 +432,7 @@ namespace musketeer {
   // TODO(nikolaj): there is a bug here inhereted from GroupBy. Columns are not
   // created correctly (unless I'm misunderstanding the semantics of columns
   // attached to an operator)
-  shared_ptr<OperatorNode> Mindi::GroupBySEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> Mindi::GroupByMPC(shared_ptr<OperatorNode> op_node,
                                              const vector<Column*>& group_bys,
                                              const GroupByType reducer,
                                              Column* key_col,
@@ -455,7 +455,7 @@ namespace musketeer {
     Relation* output_rel = new Relation(rel_out_name, columns);
     switch (reducer) {
     case PLUS_GROUP: {
-      group_by_op = new AggOperatorSEC(FLAGS_hdfs_input_dir, cond_tree, group_bys,
+      group_by_op = new AggOperatorMPC(FLAGS_hdfs_input_dir, cond_tree, group_bys,
                                        "+", relations, key_cols, output_rel); 
       break;
     }
@@ -522,7 +522,7 @@ namespace musketeer {
     return join_node;
   }
 
-  shared_ptr<OperatorNode> Mindi::JoinSEC(shared_ptr<OperatorNode> op_node,
+  shared_ptr<OperatorNode> Mindi::JoinMPC(shared_ptr<OperatorNode> op_node,
                                           const string& rel_out_name,
                                           shared_ptr<OperatorNode> other_op_node,
                                           vector<Column*> left_cols,
@@ -554,8 +554,8 @@ namespace musketeer {
     relations.push_back(op_node->get_operator()->get_output_relation());
     relations.push_back(other_op_node->get_operator()->get_output_relation());
     Relation* output_rel = new Relation(rel_out_name, columns);
-    JoinOperatorSEC* join_op =
-      new JoinOperatorSEC(FLAGS_hdfs_input_dir, relations, left_cols, right_cols, output_rel);
+    JoinOperatorMPC* join_op =
+      new JoinOperatorMPC(FLAGS_hdfs_input_dir, relations, left_cols, right_cols, output_rel);
     vector<shared_ptr<OperatorNode> > parents;
     if (dynamic_cast<InputOperator*>(op_node->get_operator()) == NULL) {
       parents.push_back(shared_ptr<OperatorNode>(op_node));

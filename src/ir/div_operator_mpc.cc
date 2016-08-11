@@ -16,26 +16,27 @@
  * permissions and limitations under the License.
  */
 
-#include "ir/select_operator_sec.h"
+#include "ir/div_operator_mpc.h"
 
 #include <limits>
 #include <map>
 #include <utility>
+#include <vector>
 
 namespace musketeer {
 namespace ir {
 
-  OperatorType SelectOperatorSEC::get_type() {
-    return SELECT_OP_SEC;
-  }
-
-  bool SelectOperatorSEC::isMPC() {
+  bool DivOperatorMPC::isMPC() {
     return true;
   }
 
-  OperatorInterface* SelectOperatorSEC::clone() {
-    return new SelectOperatorSEC(get_input_dir(), get_condition_tree(), columns,
-                                 get_relations(), get_output_relation());
+  OperatorType DivOperatorMPC::get_type() {
+    return DIV_OP_MPC;
+  }
+
+  OperatorInterface* DivOperatorMPC::clone() {
+    return new DivOperatorMPC(get_input_dir(), get_condition_tree(),
+                              get_relations(), values, get_output_relation());
   }
 
 } // namespace ir

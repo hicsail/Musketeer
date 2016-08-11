@@ -16,13 +16,13 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_AGG_OPERATOR_SEC_H
-#define MUSKETEER_AGG_OPERATOR_SEC_H
+#ifndef MUSKETEER_SELECT_OPERATOR_MPC_H
+#define MUSKETEER_SELECT_OPERATOR_MPC_H
 
-// #include "ir/operator_interface.h"
-#include "ir/agg_operator.h"
+#include "ir/select_operator.h"
 
-#include <limits>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
@@ -38,20 +38,20 @@
 namespace musketeer {
 namespace ir {
 
-class AggOperatorSEC : public AggOperator {
+class SelectOperatorMPC : public SelectOperator {
  public:
-
-  AggOperatorSEC(const string& input_dir, ConditionTree* condition_tree,
-                 const vector<Column*>& group_bys_, string operator_,
+  
+  SelectOperatorMPC(const string& input_dir, ConditionTree* condition_tree,
+                 const vector<Column*>& columns_,
                  const vector<Relation*>& relations,
-                 const vector<Column*> columns_, Relation* output_rel):
-    AggOperator(input_dir, condition_tree, group_bys_, operator_, relations,
-                columns_, output_rel) {
+                 Relation* output_relation):
+    SelectOperator(input_dir, condition_tree, columns_, relations, output_relation) {
   }
 
   OperatorType get_type();
   bool isMPC();
   OperatorInterface* clone();
+
 };
 
 } // namespace ir

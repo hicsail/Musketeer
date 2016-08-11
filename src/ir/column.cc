@@ -115,7 +115,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "Boolean";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "Integer";
     }
     default: {
@@ -135,7 +135,7 @@ namespace musketeer {
       return "Double";
     case BOOLEAN_TYPE:
       return "Boolean";
-    case INTEGER_TYPE_SEC:
+    case INTEGER_TYPE_PRIV:
       return "Int";
     default: {
       LOG(ERROR) << "Column has unexpected type: " << type;
@@ -158,7 +158,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "bool";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "int";
     }
     default: {
@@ -182,7 +182,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "Boolean";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "Int";
     }
     default: {
@@ -206,7 +206,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "";
     }
     default: {
@@ -221,7 +221,7 @@ namespace musketeer {
     case INTEGER_TYPE: {
       return "_to_int";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "_to_share";
     }
     default: {
@@ -252,7 +252,7 @@ namespace musketeer {
       return "if (this." + index_string + " != that." + index_string + ")\n        " +
         "return this." + index_string + " - that." + index_string + ";";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "if (this." + index_string + " != that." + index_string + ")\n        " +
         "return this." + index_string + " - that." + index_string + ";";
     }
@@ -278,7 +278,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "this." + index_string + " == that." + index_string;
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "this." + index_string + " == that." + index_string;
     }
     default: {
@@ -302,7 +302,7 @@ namespace musketeer {
     case BOOLEAN_TYPE: {
       return "boolean";
     }
-    case INTEGER_TYPE_SEC: {
+    case INTEGER_TYPE_PRIV: {
       return "int";
     }
     default: {

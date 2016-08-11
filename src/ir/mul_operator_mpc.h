@@ -16,12 +16,10 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_JOIN_OPERATOR_SEC_H
-#define MUSKETEER_JOIN_OPERATOR_SEC_H
+#ifndef MUL_OPERATOR_MPC_H
+#define MUL_OPERATOR_MPC_H
 
-#include "ir/join_operator.h"
-
-#include <stdint.h>
+#include "ir/mul_operator.h"
 
 #include <map>
 #include <string>
@@ -30,26 +28,28 @@
 
 #include "base/common.h"
 #include "ir/column.h"
+#include "ir/condition_tree.h"
 #include "ir/relation.h"
+#include "ir/value.h"
+#include "RLPlusLexer.h"
+#include "RLPlusParser.h"
 
 namespace musketeer {
 namespace ir {
 
-class JoinOperatorSEC: public JoinOperator {
+class MulOperatorMPC : public MulOperator {
  public:
-  JoinOperatorSEC(const string& input_dir, const vector<Relation*>& relations,
-               vector<Column*> left_cols, vector<Column*> right_cols,
-               Relation* output_relation):
-    JoinOperator(input_dir, relations, left_cols, right_cols, output_relation) {
+  
+  MulOperatorMPC(const string& input_dir, ConditionTree* condition_tree,
+                 const vector<Relation*>& relations, const vector<Value*>& values_,
+                 Relation* output_rel):
+    MulOperator(input_dir, condition_tree, relations, values_, output_rel) {
   }
 
-  ~JoinOperatorSEC() {
-    // TODO(ionel): Implement.
-  }
-
-  OperatorType get_type();
   bool isMPC();
+  OperatorType get_type();
   OperatorInterface* clone();
+  
 };
 
 } // namespace ir

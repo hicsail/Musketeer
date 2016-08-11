@@ -62,7 +62,7 @@ namespace mindi {
     input_cols.push_back(new Column("cab_data", 14, STRING_TYPE));
     input_cols.push_back(new Column("cab_data", 15, STRING_TYPE));
     input_cols.push_back(new Column("cab_data", 16, STRING_TYPE));
-    input_cols.push_back(new Column("cab_data", 17, INTEGER_TYPE_SEC));
+    input_cols.push_back(new Column("cab_data", 17, INTEGER_TYPE_PRIV));
 
     Relation* input_rel = new Relation("cab_data", input_cols);
     vector<Relation*> input_rels;
@@ -134,7 +134,7 @@ namespace mindi {
     vector<Column*> total_rev_group_by_cols;
     total_rev_group_by_cols.push_back(col(local_rev_scaled)[0]->clone());
     shared_ptr<OperatorNode> total_rev =
-      mindi->GroupBySEC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
+      mindi->GroupByMPC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
                         col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
 
     vector<Column*> left;
@@ -143,7 +143,7 @@ namespace mindi {
     right.push_back(col(total_rev)[0]);
 
     shared_ptr<OperatorNode> local_total_rev = 
-      mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
+      mindi->JoinMPC(local_rev_per, "local_total_rev", total_rev, left, right);
 
     ConditionTree* market_share_cond_tree =
       new ConditionTree(new CondOperator("/"),
@@ -156,7 +156,7 @@ namespace mindi {
     market_share_cols.push_back(col(local_total_rev)[2]->clone());
 
     shared_ptr<OperatorNode> market_share =
-      mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
+      mindi->SelectMPC(local_total_rev, market_share_cols, market_share_cond_tree,
                        "market_share");
     
     ConditionTree* market_share_squared_tree =
@@ -170,7 +170,7 @@ namespace mindi {
     market_share_squared_cols.push_back(col(market_share)[2]->clone());
 
     shared_ptr<OperatorNode> market_share_squared =
-      mindi->SelectSEC(market_share,
+      mindi->SelectMPC(market_share,
                        market_share_squared_cols,
                        market_share_squared_tree,
                        "market_share_squared");
@@ -178,7 +178,7 @@ namespace mindi {
     vector<Column*> hhi_group_by_cols;
     hhi_group_by_cols.push_back(col(market_share_squared)[0]->clone());
     shared_ptr<OperatorNode> hhi =
-      mindi->GroupBySEC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
+      mindi->GroupByMPC(market_share_squared, hhi_group_by_cols, PLUS_GROUP,
                         col(market_share_squared)[1]->clone(), "hhi");
 
     return selected_input;

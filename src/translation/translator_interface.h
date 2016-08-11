@@ -31,23 +31,23 @@
 #include "frontends/operator_node.h"
 #include "ir/operator_interface.h"
 #include "ir/agg_operator.h"
-#include "ir/agg_operator_sec.h"
+#include "ir/agg_operator_mpc.h"
 #include "ir/count_operator.h"
 #include "ir/cross_join_operator.h"
 #include "ir/difference_operator.h"
 #include "ir/distinct_operator.h"
 #include "ir/div_operator.h"
-#include "ir/div_operator_sec.h"
+#include "ir/div_operator_mpc.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
-#include "ir/join_operator_sec.h"
+#include "ir/join_operator_mpc.h"
 #include "ir/max_operator.h"
 #include "ir/min_operator.h"
 #include "ir/mul_operator.h"
-#include "ir/mul_operator_sec.h"
+#include "ir/mul_operator_mpc.h"
 #include "ir/project_operator.h"
 #include "ir/select_operator.h"
-#include "ir/select_operator_sec.h"
+#include "ir/select_operator_mpc.h"
 #include "ir/sort_operator.h"
 #include "ir/sub_operator.h"
 #include "ir/sum_operator.h"
@@ -80,8 +80,8 @@ class TranslatorInterface {
  protected:
   JobCode* TranslateOperator(OperatorInterface *op) {
     switch (op->get_type()) {
-    case AGG_OP_SEC:
-      return Translate(dynamic_cast<AggOperatorSEC*>(op));
+    case AGG_OP_MPC:
+      return Translate(dynamic_cast<AggOperatorMPC*>(op));
     case AGG_OP:
       return Translate(dynamic_cast<AggOperator*>(op));
     case COUNT_OP:
@@ -108,8 +108,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<ProjectOperator*>(op));
     case SELECT_OP:
       return Translate(dynamic_cast<SelectOperator*>(op));
-    case SELECT_OP_SEC:
-      return Translate(dynamic_cast<SelectOperatorSEC*>(op));
+    case SELECT_OP_MPC:
+      return Translate(dynamic_cast<SelectOperatorMPC*>(op));
     case SORT_OP:
       return Translate(dynamic_cast<SortOperator*>(op));
     case SUB_OP:
@@ -122,12 +122,12 @@ class TranslatorInterface {
       return Translate(dynamic_cast<UnionOperator*>(op));
     case WHILE_OP:
       return Translate(dynamic_cast<WhileOperator*>(op));
-    case MUL_OP_SEC:
-      return Translate(dynamic_cast<MulOperatorSEC*>(op));
-    case JOIN_OP_SEC:
-      return Translate(dynamic_cast<JoinOperatorSEC*>(op));
-    case DIV_OP_SEC:
-      return Translate(dynamic_cast<DivOperatorSEC*>(op));
+    case MUL_OP_MPC:
+      return Translate(dynamic_cast<MulOperatorMPC*>(op));
+    case JOIN_OP_MPC:
+      return Translate(dynamic_cast<JoinOperatorMPC*>(op));
+    case DIV_OP_MPC:
+      return Translate(dynamic_cast<DivOperatorMPC*>(op));
     default:
       LOG(ERROR) << "Unexpected operator type: " << op->get_type();
     }
@@ -141,9 +141,9 @@ class TranslatorInterface {
     return NULL;
   }
 
-  virtual JobCode* Translate(AggOperatorSEC* op) {
+  virtual JobCode* Translate(AggOperatorMPC* op) {
     // Only frameworks that support AGG must implement it.
-    LOG(FATAL) << "AGG_SEC operator not supported by framework!";
+    LOG(FATAL) << "AGG_MPC operator not supported by framework!";
     return NULL;
   }
 
@@ -177,9 +177,9 @@ class TranslatorInterface {
     return NULL;
   }
 
-  virtual JobCode* Translate(DivOperatorSEC* op) {
+  virtual JobCode* Translate(DivOperatorMPC* op) {
     // Only frameworks that support DIV must implement it.
-    LOG(FATAL) << "DIV_SEC operator not supported by framework!";
+    LOG(FATAL) << "DIV_MPC operator not supported by framework!";
     return NULL;
   }
 
@@ -195,9 +195,9 @@ class TranslatorInterface {
     return NULL;
   }
 
-  virtual JobCode* Translate(JoinOperatorSEC* op) {
+  virtual JobCode* Translate(JoinOperatorMPC* op) {
     // Only frameworks that support JOIN must implement it.
-    LOG(FATAL) << "JOIN_SEC operator not supported by framework!";
+    LOG(FATAL) << "JOIN_MPC operator not supported by framework!";
     return NULL;
   }
 
@@ -219,9 +219,9 @@ class TranslatorInterface {
     return NULL;
   }
 
-  virtual JobCode* Translate(MulOperatorSEC* op) {
+  virtual JobCode* Translate(MulOperatorMPC* op) {
     // Only frameworks that support MUL must implement it.
-    LOG(FATAL) << "MUL_SEC operator not supported by framework!";
+    LOG(FATAL) << "MUL_MPC operator not supported by framework!";
     return NULL;
   }
 
@@ -237,9 +237,9 @@ class TranslatorInterface {
     return NULL;
   }
 
-  virtual JobCode* Translate(SelectOperatorSEC* op) {
+  virtual JobCode* Translate(SelectOperatorMPC* op) {
     // Only frameworks that support SELECT must implement it.
-    LOG(FATAL) << "SELECT_SEC operator not supported by framework!";
+    LOG(FATAL) << "SELECT_MPC operator not supported by framework!";
     return NULL;
   }
 

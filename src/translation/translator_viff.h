@@ -65,11 +65,11 @@ class TranslatorViff : public TranslatorInterface {
   string GetSourcePath(OperatorInterface* op);
   string WriteToFiles(OperatorInterface* op, const string& op_code);
   
-  ViffJobCode* Translate(AggOperatorSEC* op);
-  ViffJobCode* Translate(SelectOperatorSEC* op);
-  ViffJobCode* Translate(MulOperatorSEC* op);
-  ViffJobCode* Translate(DivOperatorSEC* op);
-  ViffJobCode* Translate(JoinOperatorSEC* op);
+  ViffJobCode* Translate(AggOperatorMPC* op);
+  ViffJobCode* Translate(SelectOperatorMPC* op);
+  ViffJobCode* Translate(MulOperatorMPC* op);
+  ViffJobCode* Translate(DivOperatorMPC* op);
+  ViffJobCode* Translate(JoinOperatorMPC* op);
 
   ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,
                                ConditionTree* condition_tree, string math_op);
@@ -79,7 +79,7 @@ class TranslatorViff : public TranslatorInterface {
                         Value* right_val, Relation* output_rel);
   string GenerateColumns(vector<Column*> columns);  
   string GenerateColumnTypes(Relation* rel);
-  string GenerateAggSECOp(const string& op);
+  string GenerateAggMPCOp(const string& op);
 };
 
 } // namespace translator

@@ -304,7 +304,7 @@ namespace translator {
     }
 
     TranslateDAG(&protocol_ops, dag, &leaves, &proc);
-    string return_rt = "    return rt\n\n"; // just a hack for now
+    string return_rt = "    return rt\n\n"; // TODO(nikolaj): just a hack for now
     string gather_ops = TranslateGatherLeaves(leaves);
     string make_shares = TranslateMakeShares(input_rels_paths);
     string data_transfer = TranslateDataTransfer();
@@ -314,7 +314,7 @@ namespace translator {
     return WriteToFiles(op, code);
   }
 
-  ViffJobCode* TranslatorViff::Translate(SelectOperatorSEC* op) {
+  ViffJobCode* TranslatorViff::Translate(SelectOperatorMPC* op) {
     // TODO(nikolaj): Implement non-dummy version
     TemplateDictionary dict("dummy");
     Relation* input_rel = op->get_relations()[0];
@@ -328,26 +328,26 @@ namespace translator {
     return job_code;
   }
 
-  ViffJobCode* TranslatorViff::Translate(AggOperatorSEC* op) {
+  ViffJobCode* TranslatorViff::Translate(AggOperatorMPC* op) {
     TemplateDictionary dict("aggsec");
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
     vector<Column*> group_by_cols = op->get_group_bys();  
     Column* agg_col = op->get_columns()[0];
-    string agg_op = GenerateAggSECOp(op->get_operator());
+    string agg_op = GenerateAggMPCOp(op->get_operator());
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
     dict.SetValue("IN_REL", input_name);
     dict.SetValue("GROUP_BY_COLS", GenerateColumns(group_by_cols));
     dict.SetValue("AGG_COL", boost::lexical_cast<string>(agg_col->get_index()));
     dict.SetValue("AGG_OP", agg_op);
     string code;
-    ExpandTemplate(FLAGS_viff_templates_dir + "AggSECTemplate.py",
+    ExpandTemplate(FLAGS_viff_templates_dir + "AggMPCTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;
   }
 
-  ViffJobCode* TranslatorViff::Translate(JoinOperatorSEC* op) {
+  ViffJobCode* TranslatorViff::Translate(JoinOperatorMPC* op) {
     TemplateDictionary dict("joinsec");
     vector<Relation*> relations = op->get_relations();
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
@@ -356,17 +356,17 @@ namespace translator {
     dict.SetValue("LEFT_COL", boost::lexical_cast<string>(op->get_col_left()->get_index()));
     dict.SetValue("RIGHT_COL", boost::lexical_cast<string>(op->get_col_right()->get_index()));
     string code;
-    ExpandTemplate(FLAGS_viff_templates_dir + "JoinSECTemplate.py",
+    ExpandTemplate(FLAGS_viff_templates_dir + "JoinMPCTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;
   }
 
-  ViffJobCode* TranslatorViff::Translate(MulOperatorSEC* op) {
+  ViffJobCode* TranslatorViff::Translate(MulOperatorMPC* op) {
     return TranslateMathOp(op, op->get_values(), op->get_condition_tree(), "*");
   }
 
-  ViffJobCode* TranslatorViff::Translate(DivOperatorSEC* op) {
+  ViffJobCode* TranslatorViff::Translate(DivOperatorMPC* op) {
     return TranslateMathOp(op, op->get_values(), op->get_condition_tree(), "/");
   }
 
@@ -379,7 +379,7 @@ namespace translator {
     return types + ")";
   }
 
-  string TranslatorViff::GenerateAggSECOp(const string& op) {
+  string TranslatorViff::GenerateAggMPCOp(const string& op) {
     return "x " + op + " y";
   }
 
@@ -406,7 +406,7 @@ namespace translator {
     dict.SetValue("IN_REL", input_name);
     dict.SetValue("LAMBDA", lambda);
     string code = "";
-    ExpandTemplate(FLAGS_viff_templates_dir + "MathSECTemplate.py",
+    ExpandTemplate(FLAGS_viff_templates_dir + "MathMPCTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;

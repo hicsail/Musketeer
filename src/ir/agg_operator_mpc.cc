@@ -16,7 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "ir/mul_operator_sec.h"
+#include "ir/agg_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -26,17 +26,18 @@
 namespace musketeer {
 namespace ir {
 
-  OperatorType MulOperatorSEC::get_type() {
-    return MUL_OP_SEC;
+  OperatorType AggOperatorMPC::get_type() {
+    return AGG_OP_MPC;
   }
 
-  bool MulOperatorSEC::isMPC() {
+  bool AggOperatorMPC::isMPC() {
     return true;
   }
 
-  OperatorInterface* MulOperatorSEC::clone() {
-    return new MulOperatorSEC(get_input_dir(), get_condition_tree(),
-                              get_relations(), values, get_output_relation());
+  OperatorInterface* AggOperatorMPC::clone() {
+    return new AggOperatorMPC(get_input_dir(), get_condition_tree(), group_bys,
+                              math_operator, get_relations(), columns,
+                              get_output_relation());
   }
 
 } // namespace ir
