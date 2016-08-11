@@ -90,7 +90,7 @@ class AggOperator : public OperatorInterface {
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
 
- private:
+ protected:
   vector<Column*> group_bys;
   string math_operator;
   vector<Column*> columns;

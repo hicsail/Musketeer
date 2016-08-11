@@ -19,7 +19,7 @@
 #ifndef MUSKETEER_SELECT_OPERATOR_SEC_H
 #define MUSKETEER_SELECT_OPERATOR_SEC_H
 
-#include "ir/operator_interface.h"
+#include "ir/select_operator.h"
 
 #include <stdint.h>
 
@@ -38,34 +38,20 @@
 namespace musketeer {
 namespace ir {
 
-class SelectOperatorSEC : public OperatorInterface {
+class SelectOperatorSEC : public SelectOperator {
  public:
   
   SelectOperatorSEC(const string& input_dir, ConditionTree* condition_tree,
                  const vector<Column*>& columns_,
                  const vector<Relation*>& relations,
                  Relation* output_relation):
-    OperatorInterface(input_dir, relations, output_relation, condition_tree),
-      columns(columns_) {
-  }
-
-  ~SelectOperatorSEC() {
-    for (vector<Column*>::iterator it = columns.begin();
-         it != columns.end(); ++it) {
-      delete *it;
-    }
-    columns.clear();
+    SelectOperator(input_dir, condition_tree, columns_, relations, output_relation) {
   }
 
   OperatorType get_type();
-  bool mapOnly();
-  vector<Column*> get_columns();
-  pair<uint64_t, uint64_t> get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size);
+  bool isMPC();
   OperatorInterface* clone();
 
- private:
-  vector<Column*> columns;
 };
 
 } // namespace ir

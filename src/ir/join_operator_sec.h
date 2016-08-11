@@ -19,7 +19,7 @@
 #ifndef MUSKETEER_JOIN_OPERATOR_SEC_H
 #define MUSKETEER_JOIN_OPERATOR_SEC_H
 
-#include "ir/operator_interface.h"
+#include "ir/join_operator.h"
 
 #include <stdint.h>
 
@@ -35,32 +35,21 @@
 namespace musketeer {
 namespace ir {
 
-class JoinOperatorSEC: public OperatorInterface {
+class JoinOperatorSEC: public JoinOperator {
  public:
   JoinOperatorSEC(const string& input_dir, const vector<Relation*>& relations,
                vector<Column*> left_cols, vector<Column*> right_cols,
                Relation* output_relation):
-    OperatorInterface(input_dir, relations, output_relation),
-      left_cols_(left_cols), right_cols_(right_cols) {
+    JoinOperator(input_dir, relations, left_cols, right_cols, output_relation) {
   }
 
   ~JoinOperatorSEC() {
     // TODO(ionel): Implement.
   }
 
-  Column* get_col_left();
-  Column* get_col_right();
-  vector<Column*> get_left_cols();
-  vector<Column*> get_right_cols();
   OperatorType get_type();
-  bool mapOnly();
-  pair<uint64_t, uint64_t> get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size);
+  bool isMPC();
   OperatorInterface* clone();
-
- private:
-  vector<Column*> left_cols_;
-  vector<Column*> right_cols_;
 };
 
 } // namespace ir

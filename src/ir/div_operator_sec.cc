@@ -26,37 +26,17 @@
 namespace musketeer {
 namespace ir {
 
-  vector<Value*> DivOperatorSEC::get_values() {
-    return values;
+  bool DivOperatorSEC::isMPC() {
+    return true;
   }
 
   OperatorType DivOperatorSEC::get_type() {
     return DIV_OP_SEC;
   }
 
-  pair<uint64_t, uint64_t> DivOperatorSEC::get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size) {
-    vector<Relation*> rels = get_relations();
-    string input_rel = rels[0]->get_name();
-    pair<uint64_t, uint64_t> div_rel_size;
-    if (rel_size->find(input_rel) != rel_size->end()) {
-      div_rel_size = (*rel_size)[input_rel];
-    } else {
-      // This should not happen.
-      LOG(INFO) << "Called out of order";
-      div_rel_size = make_pair(1, numeric_limits<uint64_t>::max());
-    }
-    return UpdateIfSmaller(get_output_relation()->get_name(), div_rel_size,
-                           rel_size);
-  }
-
-  bool DivOperatorSEC::mapOnly() {
-    return true;
-  }
-
   OperatorInterface* DivOperatorSEC::clone() {
     return new DivOperatorSEC(get_input_dir(), get_condition_tree(),
-                           get_relations(), values, get_output_relation());
+                              get_relations(), values, get_output_relation());
   }
 
 } // namespace ir

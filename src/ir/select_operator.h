@@ -81,7 +81,7 @@ class SelectOperator : public OperatorInterface {
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
 
- private:
+ protected:
   vector<Column*> columns;
 };
 

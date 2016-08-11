@@ -26,31 +26,11 @@
 namespace musketeer {
 namespace ir {
 
-  vector<Value*> MulOperatorSEC::get_values() {
-    return values;
-  }
-
   OperatorType MulOperatorSEC::get_type() {
     return MUL_OP_SEC;
   }
 
-  pair<uint64_t, uint64_t> MulOperatorSEC::get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size) {
-    vector<Relation*> rels = get_relations();
-    string input_rel = rels[0]->get_name();
-    pair<uint64_t, uint64_t> mul_rel_size;
-    if (rel_size->find(input_rel) != rel_size->end()) {
-      mul_rel_size = (*rel_size)[input_rel];
-    } else {
-      // This should not happen.
-      LOG(INFO) << "Called out of order";
-      mul_rel_size = make_pair(1, numeric_limits<uint64_t>::max());
-    }
-    return UpdateIfSmaller(get_output_relation()->get_name(), mul_rel_size,
-                           rel_size);
-  }
-
-  bool MulOperatorSEC::mapOnly() {
+  bool MulOperatorSEC::isMPC() {
     return true;
   }
 

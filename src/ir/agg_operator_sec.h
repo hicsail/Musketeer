@@ -52,11 +52,6 @@ class AggOperatorSEC : public AggOperator {
   OperatorType get_type();
   bool isMPC();
   OperatorInterface* clone();
-
- private:
-  vector<Column*> group_bys;
-  string math_operator;
-  vector<Column*> columns;
 };
 
 } // namespace ir

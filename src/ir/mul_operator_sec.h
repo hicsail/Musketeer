@@ -19,7 +19,7 @@
 #ifndef MUL_OPERATOR_SEC_H
 #define MUL_OPERATOR_SEC_H
 
-#include "ir/operator_interface.h"
+#include "ir/mul_operator.h"
 
 #include <map>
 #include <string>
@@ -37,33 +37,19 @@
 namespace musketeer {
 namespace ir {
 
-class MulOperatorSEC : public OperatorInterface {
+class MulOperatorSEC : public MulOperator {
  public:
   
   MulOperatorSEC(const string& input_dir, ConditionTree* condition_tree,
                  const vector<Relation*>& relations, const vector<Value*>& values_,
                  Relation* output_rel):
-  OperatorInterface(input_dir, relations, output_rel, condition_tree),
-    values(values_) {
+    MulOperator(input_dir, condition_tree, relations, values_, output_rel) {
   }
 
-  ~MulOperatorSEC() {
-    for (vector<Value*>::iterator it = values.begin();
-         it != values.end(); ++it) {
-      delete *it;
-    }
-    values.clear();
-  }
-
-  vector<Value*> get_values();
+  bool isMPC();
   OperatorType get_type();
-  bool mapOnly();
-  pair<uint64_t, uint64_t> get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
-
- private:
-  vector<Value*> values;
+  
 };
 
 } // namespace ir

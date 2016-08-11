@@ -70,13 +70,13 @@ class MulOperator : public OperatorInterface {
   }
 
   vector<Value*> get_values();
-  OperatorType get_type();
+  virtual OperatorType get_type();
   bool mapOnly();
   pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
 
- private:
+ protected:
   vector<Value*> values;
 };
 

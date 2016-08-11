@@ -52,13 +52,13 @@ class JoinOperator: public OperatorInterface {
   Column* get_col_right();
   vector<Column*> get_left_cols();
   vector<Column*> get_right_cols();
-  OperatorType get_type();
+  virtual OperatorType get_type();
   bool mapOnly();
   pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
 
- private:
+ protected:
   vector<Column*> left_cols_;
   vector<Column*> right_cols_;
 };
