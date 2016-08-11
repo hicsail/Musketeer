@@ -38,11 +38,6 @@ class ViffFramework: public FrameworkInterface {
   void Dispatch(const string& binary, const string& relation);
   FmwType GetType();
   uint32_t ScoreDAG(const node_list& nodes, const relation_size& rel_size);
-  double ScoreMapOnly(OperatorInterface* op, const relation_size& rel_size);
-  double ScoreMapRedGroup(OperatorInterface* op, const relation_size& rel_size);
-  double ScoreMapRedNoGroup(OperatorInterface* op, const relation_size& rel_size);
-  double ScoreMapRedTwoInputs(OperatorInterface* op, const relation_size& rel_size);
-  double ScoreJoin(OperatorInterface* op, const relation_size& rel_size);
   double ScoreOperator(shared_ptr<OperatorNode> op_node,
                        const relation_size& rel_size);
   double ScoreClusterState();
@@ -54,9 +49,6 @@ class ViffFramework: public FrameworkInterface {
   double ScoreRuntime(uint64_t data_size_kb, const node_list& nodes,
                       const relation_size& rel_size);
   double ScorePush(uint64_t data_size_kb);
-
- private:
-  bool HasReduce(OperatorInterface* op);
 };
 
 } // namespace framework

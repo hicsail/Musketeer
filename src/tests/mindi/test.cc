@@ -137,27 +137,27 @@ namespace mindi {
       mindi->GroupBySEC(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
                         col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
 
-    vector<Column*> left;
-    left.push_back(col(local_rev_per)[0]);
-    vector<Column*> right;
-    right.push_back(col(total_rev)[0]);
+    // vector<Column*> left;
+    // left.push_back(col(local_rev_per)[0]);
+    // vector<Column*> right;
+    // right.push_back(col(total_rev)[0]);
 
-    shared_ptr<OperatorNode> local_total_rev = 
-      mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
+    // shared_ptr<OperatorNode> local_total_rev = 
+    //   mindi->JoinSEC(local_rev_per, "local_total_rev", total_rev, left, right);
 
-    ConditionTree* market_share_cond_tree =
-      new ConditionTree(new CondOperator("/"),
-                        new ConditionTree(col(local_total_rev)[1]->clone()),
-                        new ConditionTree(col(local_total_rev)[2]->clone()));
+    // ConditionTree* market_share_cond_tree =
+    //   new ConditionTree(new CondOperator("/"),
+    //                     new ConditionTree(col(local_total_rev)[1]->clone()),
+    //                     new ConditionTree(col(local_total_rev)[2]->clone()));
     
-    vector<Column*> market_share_cols;
-    market_share_cols.push_back(col(local_total_rev)[0]->clone());
-    market_share_cols.push_back(col(local_total_rev)[1]->clone());
-    market_share_cols.push_back(col(local_total_rev)[2]->clone());
+    // vector<Column*> market_share_cols;
+    // market_share_cols.push_back(col(local_total_rev)[0]->clone());
+    // market_share_cols.push_back(col(local_total_rev)[1]->clone());
+    // market_share_cols.push_back(col(local_total_rev)[2]->clone());
 
-    shared_ptr<OperatorNode> market_share =
-      mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
-                       "market_share");
+    // shared_ptr<OperatorNode> market_share =
+    //   mindi->SelectSEC(local_total_rev, market_share_cols, market_share_cond_tree,
+    //                    "market_share");
     
     // ConditionTree* market_share_squared_tree =
     //   new ConditionTree(new CondOperator("*"),

@@ -207,6 +207,10 @@ class OperatorInterface {
     return has_groupby;
   }
 
+  virtual bool isMPC() {
+    return false;
+  }
+
   virtual pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size) = 0;
 

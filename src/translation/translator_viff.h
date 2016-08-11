@@ -59,7 +59,7 @@ class TranslatorViff : public TranslatorInterface {
                                                            set<string>* visited);
   bool CanSchedule(OperatorInterface* op, set<string>* processed);
   void TranslateDAG(string* code, const op_nodes& next_set,
-                    set<shared_ptr<OperatorNode> >* leaves,
+                    set<shared_ptr<OperatorNode>>* leaves,
                     set<string>* processed);
   string GetBinaryPath(OperatorInterface* op);
   string GetSourcePath(OperatorInterface* op);
@@ -73,10 +73,11 @@ class TranslatorViff : public TranslatorInterface {
 
   ViffJobCode* TranslateMathOp(OperatorInterface* op, vector<Value*> values,
                                ConditionTree* condition_tree, string math_op);
-  
+
   string GenerateLambda(const string& op,
                         Relation* rel, Value* left_val,
                         Value* right_val, Relation* output_rel);
+  string GenerateColumns(vector<Column*> columns);  
   string GenerateColumnTypes(Relation* rel);
   string GenerateAggSECOp(const string& op);
 };

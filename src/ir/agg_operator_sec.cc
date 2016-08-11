@@ -26,59 +26,18 @@
 namespace musketeer {
 namespace ir {
 
-  vector<Column*> AggOperatorSEC::get_group_bys() {
-    return group_bys;
-  }
-
-  string AggOperatorSEC::get_operator() {
-    return math_operator;
-  }
-
-  vector<Column*> AggOperatorSEC::get_columns() {
-    return columns;
-  }
-
   OperatorType AggOperatorSEC::get_type() {
     return AGG_OP_SEC;
   }
 
-  bool AggOperatorSEC::hasGroupby() {
-    if ((group_bys.size() == 1 && group_bys[0]->get_relation().empty()) ||
-        group_bys.size() == 0) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  pair<uint64_t, uint64_t> AggOperatorSEC::get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size) {
-    vector<Relation*> rels = get_relations();
-    string input_rel = rels[0]->get_name();
-    pair<uint64_t, uint64_t> agg_rel_size;
-    if (rel_size->find(input_rel) != rel_size->end()) {
-      agg_rel_size = make_pair(1, (*rel_size)[input_rel].second);
-    } else {
-      // This should not happen.
-      LOG(INFO) << "Called out of order";
-      agg_rel_size = make_pair(1, numeric_limits<uint64_t>::max());
-    }
-     return UpdateIfSmaller(get_output_relation()->get_name(), agg_rel_size,
-                           rel_size);
-  }
-
-  bool AggOperatorSEC::mapOnly() {
-    return false;
-  }
-
-  bool AggOperatorSEC::hasAction() {
-    return !hasGroupby();
+  bool AggOperatorSEC::isMPC() {
+    return true;
   }
 
   OperatorInterface* AggOperatorSEC::clone() {
     return new AggOperatorSEC(get_input_dir(), get_condition_tree(), group_bys,
-                           math_operator, get_relations(), columns,
-                           get_output_relation());
+                              math_operator, get_relations(), columns,
+                              get_output_relation());
   }
 
 } // namespace ir

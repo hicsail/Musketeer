@@ -37,7 +37,6 @@ namespace musketeer {
 
   string Column::toString(const string& fmw) {
     if (!fmw.compare("hadoop")) {
-      cout << "relation: " << relation << endl;
       return translateTypeJava() + ".valueOf(" + relation + "[" +
         boost::lexical_cast<string>(index) + "])";
     }
@@ -61,8 +60,7 @@ namespace musketeer {
       return "COLI(" + boost::lexical_cast<string>(index) + ")";
     }
     if (!fmw.compare("viff")) {
-      string idx_str = boost::lexical_cast<string>(index);
-      
+      return boost::lexical_cast<string>(index);
     }
     LOG(ERROR) << "Unexpected framework: " << fmw;
     return NULL;

@@ -332,21 +332,12 @@ namespace translator {
     TemplateDictionary dict("aggsec");
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
-    // only aggregate single columns on single columns for now
-    Column* group_by_col = op->get_group_bys()[0];
-    Column* agg_col = NULL;
-    vector<Column*> all_cols = op->get_output_relation()->get_columns();
-    for (vector<Column*>::iterator i = all_cols.begin(); i != all_cols.end(); ++i) {
-      if (group_by_col->get_index() != (*i)->get_index()) {
-        agg_col = *i;
-        break;
-      }
-    }
-    assert(agg_col);
+    vector<Column*> group_by_cols = op->get_group_bys();  
+    Column* agg_col = op->get_columns()[0];
     string agg_op = GenerateAggSECOp(op->get_operator());
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
     dict.SetValue("IN_REL", input_name);
-    dict.SetValue("GROUP_BY_COL", boost::lexical_cast<string>(group_by_col->get_index()));
+    dict.SetValue("GROUP_BY_COLS", GenerateColumns(group_by_cols));
     dict.SetValue("AGG_COL", boost::lexical_cast<string>(agg_col->get_index()));
     dict.SetValue("AGG_OP", agg_op);
     string code;
@@ -390,6 +381,16 @@ namespace translator {
 
   string TranslatorViff::GenerateAggSECOp(const string& op) {
     return "x " + op + " y";
+  }
+
+  string TranslatorViff::GenerateColumns(vector<Column*> columns) {
+    string col_string = "(";
+    for (vector<Column*>::iterator i = columns.begin(); i != columns.end(); ++i) {
+      col_string += (*i)->toString("viff") + ", ";
+    }
+    col_string += ")";
+    LOG(INFO) << col_string;
+    return col_string;
   }
 
   ViffJobCode* TranslatorViff::TranslateMathOp(OperatorInterface* op, vector<Value*> values,

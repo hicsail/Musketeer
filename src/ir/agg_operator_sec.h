@@ -19,7 +19,8 @@
 #ifndef MUSKETEER_AGG_OPERATOR_SEC_H
 #define MUSKETEER_AGG_OPERATOR_SEC_H
 
-#include "ir/operator_interface.h"
+// #include "ir/operator_interface.h"
+#include "ir/agg_operator.h"
 
 #include <limits>
 #include <map>
@@ -37,57 +38,19 @@
 namespace musketeer {
 namespace ir {
 
-class AggOperatorSEC : public OperatorInterface {
+class AggOperatorSEC : public AggOperator {
  public:
-  AggOperatorSEC(const string& input_dir, const pANTLR3_BASE_TREE condition_tree,
-              const vector<Column*>& group_bys_, const string& operator_,
-              const vector<Relation*>& relations,
-              const vector<Column*>& columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel,
-                      new ConditionTree(condition_tree)),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
-  }
-
-  AggOperatorSEC(const string& input_dir,
-              const vector<pANTLR3_BASE_TREE>& condition_tree,
-              const vector<Column*>& group_bys_, const string& operator_,
-              const vector<Relation*>& relations,
-              const vector<Column*> columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel,
-                      new ConditionTree(condition_tree)),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
-  }
 
   AggOperatorSEC(const string& input_dir, ConditionTree* condition_tree,
-              const vector<Column*>& group_bys_, string operator_,
-              const vector<Relation*>& relations,
-              const vector<Column*> columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel, condition_tree),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
+                 const vector<Column*>& group_bys_, string operator_,
+                 const vector<Relation*>& relations,
+                 const vector<Column*> columns_, Relation* output_rel):
+    AggOperator(input_dir, condition_tree, group_bys_, operator_, relations,
+                columns_, output_rel) {
   }
 
-  ~AggOperatorSEC() {
-    for (vector<Column*>::iterator it = group_bys.begin();
-         it != group_bys.end(); ++it) {
-      delete *it;
-    }
-    group_bys.clear();
-    for (vector<Column*>::iterator it = columns.begin();
-         it != columns.end(); ++it) {
-      delete *it;
-    }
-    columns.clear();
-  }
-
-  vector<Column*> get_group_bys();
-  string get_operator();
-  vector<Column*> get_columns();
   OperatorType get_type();
-  bool hasAction();
-  bool hasGroupby();
-  bool mapOnly();
-  pair<uint64_t, uint64_t> get_output_size(
-      map<string, pair<uint64_t, uint64_t> >* rel_size);
+  bool isMPC();
   OperatorInterface* clone();
 
  private:

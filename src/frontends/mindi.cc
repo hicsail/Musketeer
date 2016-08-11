@@ -449,10 +449,9 @@ namespace musketeer {
       new ConditionTree(new Value("true", BOOLEAN_TYPE));
     OperatorInterface* group_by_op;
     vector<Column*> key_cols;
-
-    // I don't think this is correct
+    Column* updated_key_col = new Column(rel_out_name, index, key_col->get_type());
     key_cols.push_back(key_col);
-    columns.push_back(new Column(rel_out_name, index, key_col->get_type()));
+    columns.push_back(updated_key_col);
     Relation* output_rel = new Relation(rel_out_name, columns);
     switch (reducer) {
     case PLUS_GROUP: {

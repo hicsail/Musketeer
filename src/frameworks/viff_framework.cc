@@ -58,6 +58,11 @@ namespace framework {
     return FMW_VIFF;
   }
 
+  double ViffFramework::ScoreClusterState() {
+    return 0.0;
+  }
+
+
   uint32_t ViffFramework::ScoreDAG(const node_list& nodes,
                                    const relation_size& rel_size) {
     node_set to_schedule;
@@ -66,7 +71,6 @@ namespace framework {
     input_nodes.push_back(nodes.front());
     for (node_list::const_iterator it = nodes.begin(); it != nodes.end();
          ++it) {
-      // cout << (*it)->get_operator()->get_type_string() << endl;
       to_schedule.insert(*it);
       num_ops_to_schedule++;
     }
@@ -86,31 +90,9 @@ namespace framework {
     }
   }
 
-  double ViffFramework::ScoreMapOnly(OperatorInterface* op, const relation_size& rel_size) {
-    return 0.0;
-  }
-
-  double ViffFramework::ScoreMapRedNoGroup(OperatorInterface* op, const relation_size& rel_size) {
-    return 0.0;
-  }
-
-  double ViffFramework::ScoreMapRedGroup(OperatorInterface* op, const relation_size& rel_size) {
-    return 0.0;
-  }
-
-  double ViffFramework::ScoreMapRedTwoInputs(OperatorInterface* op, const relation_size& rel_size) {
-    return 0.0;
-  }
-
-  double ViffFramework::ScoreJoin(OperatorInterface* op, const relation_size& rel_size) {
-    return 0.0;
-  }
-
   double ViffFramework::ScoreOperator(shared_ptr<OperatorNode> op_node, const relation_size& rel_size) {
     OperatorInterface* op = op_node->get_operator();
-    if (op->get_type() == AGG_OP_SEC || op->get_type() == SELECT_OP_SEC || 
-        op->get_type() == MUL_OP_SEC || op->get_type() == JOIN_OP_SEC ||
-        op->get_type() == DIV_OP_SEC) {
+    if (op->isMPC()) {
       cout << "Secure operator detected." << endl;
       return 1.0; 
     }
@@ -118,10 +100,6 @@ namespace framework {
       cout << "Non-secure operator detected." << endl;
       return FLAGS_max_scheduler_cost;
     }
-  }
-
-  double ViffFramework::ScoreClusterState() {
-    return 0.0;
   }
 
   double ViffFramework::ScoreCompile() {
@@ -139,8 +117,6 @@ namespace framework {
   double ViffFramework::ScoreRuntime(uint64_t data_size_kb,
                                      const node_list& nodes,
                                      const relation_size& rel_size) {
-    // data_size_kb is not used because we already account for it in
-    // the PULL and LOAD scores.
     double cur_cost = 0;
     for (node_list::const_iterator it = nodes.begin(); it != nodes.end();
          ++it) {
@@ -157,39 +133,14 @@ namespace framework {
   bool ViffFramework::CanMerge(const op_nodes& dag,
                                const node_set& to_schedule,
                                int32_t num_ops_to_schedule) {
-    // cout << "size of node set to schedule: " << num_ops_to_schedule << endl;
-    // cout << "###DAG###" << endl;
-    // PrintDag(dag);
-    // cout << "###DAG###" << endl;
-    // if (dag.size() == 1 &&
-    //     // to_schedule.size() == 1 &&
-    //     (dag[0]->get_operator()->get_type() == AGG_OP_SEC ||
-    //      dag[0]->get_operator()->get_type() == SELECT_OP_SEC)) {
-    //   return true;
-    // }
-    // return false;
-    
     // make sure all operators are secure operators (no mixing operators for now)
     for (node_set::const_iterator it = to_schedule.begin();
          it != to_schedule.end(); ++it) {
-      if ((*it)->get_operator()->get_type() != AGG_OP_SEC && 
-          (*it)->get_operator()->get_type() != SELECT_OP_SEC &&
-          (*it)->get_operator()->get_type() != MUL_OP_SEC &&
-          (*it)->get_operator()->get_type() != JOIN_OP_SEC &&
-          (*it)->get_operator()->get_type() != DIV_OP_SEC) {
+      if (!(*it)->get_operator()->isMPC()) {
         return false;
       }
     }
     return true;
-  }
-
-  bool ViffFramework::HasReduce(OperatorInterface* op) {
-    return op->get_type() == INTERSECTION_OP ||
-      op->get_type() == CROSS_JOIN_OP || op->get_type() == DIFFERENCE_OP ||
-      op->get_type() == DISTINCT_OP || op->get_type() == JOIN_OP ||
-      op->get_type() == AGG_OP || op->get_type() == COUNT_OP ||
-      op->get_type() == MAX_OP || op->get_type() == MIN_OP ||
-      op->get_type() == SORT_OP || op->get_type() == AGG_OP_SEC;
   }
 
 } // namespace framework
