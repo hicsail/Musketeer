@@ -238,6 +238,11 @@ class OperatorInterface {
     return false;
   }
 
+  virtual OperatorInterface* toMPC() {
+    LOG(FATAL) << "No MPC equivalent!";
+    return NULL;
+  }
+
   virtual pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size) = 0;
 

@@ -17,6 +17,7 @@
  */
 
 #include "ir/select_operator.h"
+#include "ir/select_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -51,6 +52,11 @@ namespace ir {
 
   bool SelectOperator::mapOnly() {
     return true;
+  }
+
+  OperatorInterface* SelectOperator::toMPC() {
+    return new SelectOperatorMPC(get_input_dir(), get_condition_tree(), columns,
+                                 get_relations(), get_output_relation());
   }
 
   OperatorInterface* SelectOperator::clone() {

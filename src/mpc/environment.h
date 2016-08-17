@@ -57,7 +57,7 @@ namespace mpc {
         };
     
     private:
-        map<string, vector<Obligation*>> env;
+        map<string, vector<Obligation*>> env; // queue instead of vector would be more natural
 
         void extend(vector<Obligation*>& left, vector<Obligation*>& right);
     }; 

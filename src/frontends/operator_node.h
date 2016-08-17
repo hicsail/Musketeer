@@ -52,6 +52,7 @@ class OperatorNode {
   /* } */
 
   OperatorInterface* get_operator();
+  void replace_operator(OperatorInterface* new_operator);
   void AddChild(shared_ptr<OperatorNode> child);
   void AddParent(shared_ptr<OperatorNode> parent);
   void AddLoopChild(shared_ptr<OperatorNode> loopChild);

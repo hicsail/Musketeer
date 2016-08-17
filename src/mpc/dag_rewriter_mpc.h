@@ -20,7 +20,7 @@
 #define MUSKETEER_MPC_COMPILER_H
 
 #include "base/utils.h"
-#include "base/common.h" // need this to get OperatorType
+#include "base/common.h"
 #include "mpc/obligation.h"
 #include "mpc/environment.h"
 #include <map>
@@ -44,6 +44,12 @@ namespace mpc {
                                map<string, bool>& mpc_mode);
         void InitEnvAndMode(Environment& obls, map<string, bool>& mpc_mode,
                             set<string>* inputs);
+        OperatorType ToMPC(OperatorType op_type);
+        void RewriteDAG(op_nodes& dag, Environment& obls, map<string, bool>& mpc_mode,
+                        op_nodes* result_dag);
+        void Replace(shared_ptr<OperatorNode> old_node, 
+                     shared_ptr<OperatorNode> new_node);
+
     }; 
     
 } // namespace mpc

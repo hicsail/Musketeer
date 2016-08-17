@@ -69,6 +69,7 @@ class MulOperator : public OperatorInterface {
     values.clear();
   }
 
+  OperatorInterface* toMPC();
   vector<Value*> get_values();
   virtual OperatorType get_type();
   bool mapOnly();

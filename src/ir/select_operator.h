@@ -79,6 +79,7 @@ class SelectOperator : public OperatorInterface {
   vector<Column*> get_columns();
   pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size);
+  OperatorInterface* toMPC();
   OperatorInterface* clone();
 
  protected:

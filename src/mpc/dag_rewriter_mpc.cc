@@ -18,6 +18,7 @@
 
 #include "mpc/dag_rewriter_mpc.h"
 #include "ir/agg_operator.h"
+#include <queue>
 
 namespace musketeer {
 namespace mpc {
@@ -33,8 +34,7 @@ namespace mpc {
         DetermineInputs(dag, &inputs);
         InitEnvAndMode(obls, mode, &inputs);
         DeriveObligations(order, obls, mode);
-        cout << "BAH" << endl;
-        cout << obls;      
+        RewriteDAG(dag, obls, mode, result_dag);
     }
 
     bool DAGRewriterMPC::CanPass(Obligation* obl, OperatorInterface* cur) {
@@ -63,11 +63,11 @@ namespace mpc {
         if (op_type == AGG_OP) {
             string group_by_type = dynamic_cast<ir::AggOperator*>(node->get_operator())->get_operator();
             for (int i = 0; i < num_children; ++i) {
-                obls.push_obligation(rel_name, new Obligation(op_type, group_by_type));
+                obls.push_obligation(rel_name, new Obligation(ToMPC(op_type), group_by_type));
             }
             // Leaf special case (sort of ugly)
             if (num_children == 0) {
-                obls.push_obligation(rel_name, new Obligation(op_type, group_by_type));    
+                obls.push_obligation(rel_name, new Obligation(ToMPC(op_type), group_by_type));    
             }
             return false; // just emitted an obligation so we can stay in local mode
         }
@@ -128,6 +128,59 @@ namespace mpc {
             mpc_mode[(*i)] = false;
             obls.push_obligations((*i), vector<Obligation*>());
         }
+    }
+
+    // TODO(nikolaj): create OpConverter class and move this there
+    OperatorType DAGRewriterMPC::ToMPC(OperatorType op_type) {
+        switch(op_type) {
+        case AGG_OP:
+            return AGG_OP_MPC;
+        default:
+            LOG(ERROR) << "No MPC equivalent.";
+            return op_type;
+        }
+    }
+
+    void DAGRewriterMPC::Replace(shared_ptr<OperatorNode> old_node, 
+                                 shared_ptr<OperatorNode> new_node) {
+
+    }
+
+    void DAGRewriterMPC::RewriteDAG(op_nodes& dag, Environment& obls, 
+                                    map<string, bool>& mpc_mode,
+                                    op_nodes* result_dag) {
+        set<shared_ptr<OperatorNode> > visited;
+        queue<shared_ptr<OperatorNode> > to_visit;
+        for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
+            to_visit.push(*it);
+            visited.insert(*it);
+        }
+
+        while (!to_visit.empty()) {
+            shared_ptr<OperatorNode> cur_node = to_visit.front();
+            string rel_name = cur_node->get_operator()->get_output_relation()->get_name();
+            to_visit.pop();
+
+            if (!cur_node->IsLeaf()) {
+                op_nodes children = cur_node->get_children();
+                
+                for (op_nodes::iterator it = children.begin(); it != children.end();
+                     ++it) {
+                    if (visited.insert(*it).second) {
+                        to_visit.push(*it);
+                    }
+                }
+            }
+
+            if (mpc_mode[rel_name]) {
+                OperatorInterface* mpc_op = cur_node->get_operator()->toMPC();
+                cur_node->replace_operator(mpc_op);   
+            }
+            else if (obls.has_obligation(rel_name)) { // Note that these are mutually exclusive
+                
+            }
+        }
+        
     }
 
 } // namespace mpc

@@ -24,6 +24,10 @@ namespace musketeer {
     return node_operator;
   }
 
+  void OperatorNode::replace_operator(OperatorInterface* new_operator) {
+    node_operator = new_operator;
+  }
+
   void OperatorNode::AddChild(shared_ptr<OperatorNode> child) {
     children.push_back(child);
   }

@@ -17,6 +17,7 @@
  */
 
 #include "ir/mul_operator.h"
+#include "ir/mul_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -52,6 +53,11 @@ namespace ir {
 
   bool MulOperator::mapOnly() {
     return true;
+  }
+
+  OperatorInterface* MulOperator::toMPC() {
+    return new MulOperatorMPC(get_input_dir(), get_condition_tree(),
+                              get_relations(), values, get_output_relation());
   }
 
   OperatorInterface* MulOperator::clone() {

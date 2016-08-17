@@ -101,6 +101,21 @@ namespace mindi {
       mindi->GroupBy(first_val_blank, local_rev_group_by_cols, PLUS_GROUP,
                      col(first_val_blank)[1]->clone(), "local_rev");
 
+    ConditionTree* projected_cond_tree =
+      new ConditionTree(new CondOperator("*"),
+                        new ConditionTree(col(local_rev)[0]->clone()),
+                        new ConditionTree(new Value("0", INTEGER_TYPE)));
+    
+    vector<Column*> projected_cols;
+    projected_cols.push_back(col(local_rev)[0]->clone());
+    projected_cols.push_back(col(local_rev)[1]->clone());
+
+    shared_ptr<OperatorNode> project =
+      mindi->Select(local_rev,
+                    projected_cols,
+                    projected_cond_tree,
+                    "project");
+
     return selected_input;
   }
 
