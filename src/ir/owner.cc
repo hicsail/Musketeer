@@ -16,51 +16,19 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_COMMON_H
-#define MUSKETEER_COMMON_H
+#include "ir/owner.h"
 
-using namespace std;  // NOLINT
+#include <algorithm>
+#include <string>
 
-#include <glog/logging.h>
-#include <gflags/gflags.h>
+namespace musketeer {
 
-typedef enum {
-  AGG_OP,
-  AGG_OP_MPC,
-  BLACK_BOX_OP,
-  COUNT_OP,
-  CROSS_JOIN_OP,
-  DIFFERENCE_OP,
-  DISTINCT_OP,
-  DIV_OP,
-  INPUT_OP,
-  INTERSECTION_OP,
-  JOIN_OP,
-  MAX_OP,
-  MIN_OP,
-  MUL_OP,
-  PROJECT_OP,
-  SELECT_OP,
-  SORT_OP,
-  SUB_OP,
-  SUM_OP,
-  UDF_OP,
-  UNION_OP,
-  WHILE_OP,
-  SELECT_OP_MPC,
-  MUL_OP_MPC,
-  JOIN_OP_MPC,
-  DIV_OP_MPC
-} OperatorType;
+  string Owner::get_name() {
+    return name;
+  }
 
-typedef enum {
-  MIN_GROUP,
-  MAX_GROUP,
-  COUNT_GROUP,
-  PLUS_GROUP,
-  MINUS_GROUP,
-  DIVIDE_GROUP,
-  MULTIPLY_GROUP
-} GroupByType;
+  void Owner::set_name(string name_) {
+    name = name_;
+  }
 
-#endif  // MUSKETEER_COMMON_H
+} // namespace musketeer

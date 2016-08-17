@@ -24,6 +24,7 @@ submit_job: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(AN
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/ir all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/scheduling all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/core all
+	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/mpc all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/tests/mindi all
 	$(call quiet-command, \
 		$(CXX) $(CPPFLAGS) \
@@ -44,6 +45,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/ir all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/scheduling all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/core all
+	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/mpc all
 	$(MAKE) $(MAKEFLAGS) -C $(SRC_ROOT_DIR)/tests/mindi all
 	$(call quiet-command, \
 		$(CXX) $(CPPFLAGS) \
@@ -102,6 +104,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/ir/mul_operator_mpc.o \
 		$(BUILD_DIR)/ir/project_operator.o \
 		$(BUILD_DIR)/ir/relation.o \
+		$(BUILD_DIR)/ir/owner.o \
 		$(BUILD_DIR)/ir/select_operator.o \
 		$(BUILD_DIR)/ir/select_operator_mpc.o \
 		$(BUILD_DIR)/ir/sub_operator.o \
@@ -110,6 +113,9 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/ir/udf_operator.o \
 		$(BUILD_DIR)/ir/union_operator.o \
 		$(BUILD_DIR)/ir/while_operator.o \
+		$(BUILD_DIR)/mpc/dag_rewriter_mpc.o \
+		$(BUILD_DIR)/mpc/obligation.o \
+		$(BUILD_DIR)/mpc/environment.o \
 		$(BUILD_DIR)/monitoring/hadoop_monitor.o \
 		$(BUILD_DIR)/monitoring/spark_monitor.o \
 		$(BUILD_DIR)/translation/hadoop_job_code.o \

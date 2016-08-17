@@ -73,13 +73,13 @@ class SchedulerDynamic : public SchedulerInterface {
 
   void DynamicScheduleDAG(const op_nodes& dag);
   void ScheduleDAG(const op_nodes& dag);
-  void TopologicalOrder(const op_nodes& dag, op_nodes* order);
+  // void TopologicalOrder(const op_nodes& dag, op_nodes* order);
   bindings_lt ComputeOptimal(const op_nodes& serial_dag);
   bindings_lt ComputeHeuristic(const op_nodes& serial_dag);
 
  private:
-  void TopologicalOrderInternal(shared_ptr<OperatorNode> node,
-      op_nodes* result, set<shared_ptr<OperatorNode> >* visited);
+  // void TopologicalOrderInternal(shared_ptr<OperatorNode> node,
+  //     op_nodes* result, set<shared_ptr<OperatorNode> >* visited);
   void ConstructSubDAGWhile(shared_ptr<OperatorNode> cur_node,
                             const node_set& nodes, node_set* visited,
                             node_queue* to_visit);

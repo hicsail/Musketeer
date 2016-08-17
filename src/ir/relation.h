@@ -25,6 +25,7 @@
 
 #include "base/common.h"
 #include "ir/column.h"
+#include "ir/owner.h"
 
 namespace musketeer {
 
@@ -32,6 +33,11 @@ class Relation {
  public:
   Relation(const string& name_, const vector<Column*>& columns_):
     name(name_), columns(columns_), immutable(false) {
+  }
+
+  Relation(const string& name_, const vector<Column*>& columns_, 
+           const vector<Owner*>& owners_):
+    name(name_), columns(columns_), owners(owners_), immutable(false) {
   }
 
   ~Relation() {
@@ -46,6 +52,9 @@ class Relation {
   string get_name();
   void set_name(string name_);
   vector<Column*> get_columns();
+  vector<Owner*> get_owners();
+  void add_owner(Owner* owner);
+  void add_owners(vector<Owner*> owners_);
   void set_immutable(bool immutable);
   bool isImmutable();
   Relation* copy(string name);
@@ -53,6 +62,7 @@ class Relation {
  private:
   string name;
   vector<Column*> columns;
+  vector<Owner*> owners;
   // Set to true if a relation is not updated in a while loop.
   // False otherwise, including the case when the relation is not part
   // of a while loop.

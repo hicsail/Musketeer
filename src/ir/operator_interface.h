@@ -164,37 +164,64 @@ class OperatorInterface {
   virtual OperatorType get_type() = 0;
 
   const char* get_type_string() {
-    LOG(INFO) << "Don't use this method!";
-    static const char* type2str[] = {
-     "AGG_OP",
-     "AGG_OP_SEC",
-     "BLACK_BOX_OP",
-     "COUNT_OP",
-     "CROSS_JOIN_OP",
-     "DIFFERENCE_OP",
-     "DISTINCT_OP",
-     "DIV_OP",
-     "INPUT_OP",
-     "INTERSECTION_OP",
-     "JOIN_OP",
-     "MAX_OP",
-     "MIN_OP",
-     "MUL_OP",
-     "PROJECT_OP",
-     "SELECT_OP",
-     "SORT_OP",
-     "SUB_OP",
-     "SUM_OP",
-     "UDF_OP",
-     "UNION_OP",
-     "WHILE_OP",
-     "SELECT_OP_SEC",
-     "MUL_OP_SEC",
-     "JOIN_OP_SEC",
-     "DIV_OP_SEC"
-    };
-
-    return type2str[get_type()];
+    switch(get_type()) {
+    case AGG_OP:
+      return "AGG_OP";
+    case AGG_OP_MPC:
+      return "AGG_OP_MPC";
+    case BLACK_BOX_OP:
+      return "BLACK_BOX_OP";
+    case COUNT_OP:
+      return "COUNT_OP";
+    case CROSS_JOIN_OP:
+      return "CROSS_JOIN_OP";
+    case DIFFERENCE_OP:
+      return "DIFFERENCE_OP";
+    case DISTINCT_OP:
+      return "DISTINCT_OP";
+    case DIV_OP:
+      return "DIV_OP";
+    case INPUT_OP:
+      return "INPUT_OP";
+    case INTERSECTION_OP:
+      return "INTERSECTION_OP";
+    case JOIN_OP:
+      return "JOIN_OP";
+    case MAX_OP:
+      return "MAX_OP";
+    case MIN_OP:
+      return "MIN_OP";
+    case MUL_OP:
+      return "MUL_OP";
+    case PROJECT_OP:
+      return "PROJECT_OP";
+    case SELECT_OP:
+      return "SELECT_OP";
+    case SORT_OP:
+      return "SORT_OP";
+    case SUB_OP:
+      return "SUB_OP";
+    case SUM_OP:
+      return "SUM_OP";
+    case UDF_OP:
+      return "UDF_OP";
+    case UNION_OP:
+      return "UNION_OP";
+    case WHILE_OP:
+      return "WHILE_OP";
+    case SELECT_OP_MPC:
+      return "SELECT_OP_MPC";
+    case MUL_OP_MPC:
+      return "MUL_OP_MPC";
+    case JOIN_OP_MPC:
+      return "JOIN_OP_MPC";
+    case DIV_OP_MPC:
+      return "DIV_OP_MPC";
+    default: {
+      LOG(ERROR) << "Unknown operator type: " << get_type();
+      return NULL;
+    }
+  }
   }
 
   virtual bool mapOnly() = 0;

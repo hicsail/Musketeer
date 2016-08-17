@@ -32,12 +32,14 @@
 #include "frontends/beeraph.h"
 #include "frontends/operator_node.h"
 #include "frontends/tree_traversal.h"
+#include "mpc/dag_rewriter_mpc.h"
 #include "RLPlusLexer.h"
 #include "RLPlusParser.h"
 #include "scheduling/operator_scheduler.h"
 #include "scheduling/scheduler_dynamic.h"
 
 using namespace musketeer; // NOLINT
+using namespace musketeer::mpc; // NOLINT
 using namespace musketeer::core; // NOLINT
 using namespace musketeer::framework; // NOLINT
 using namespace musketeer::scheduling; // NOLINT
@@ -309,6 +311,17 @@ int main(int argc, char *argv[]) {
     vector<shared_ptr<OperatorNode>> dag;
     shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
     dag.push_back(test);
+
+    PrintDagGV(dag);
+
+    DAGRewriterMPC rewriter;
+    rewriter.RewriteDAG(dag, NULL);
+
+    PrintDagGV(dag);
+
+    if (true) {
+      return 0; 
+    }
 
     if (FLAGS_output_ir_dag_gv) {
       PrintDagGV(dag);

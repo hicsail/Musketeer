@@ -151,7 +151,7 @@ namespace musketeer {
                << "->"
                << (*it)->get_operator()->get_output_relation()->get_name()
                << " [label=\"" <<
-            cur_node->get_operator()->get_type_string()
+            (*it)->get_operator()->get_type_string()
                << "\"];" << endl;
           if (visited.insert(*it).second) {
             to_visit.push(*it);
@@ -189,6 +189,42 @@ namespace musketeer {
       }
     }
     return output_rels;
+  }
+
+  // Topological sorts a DAG. The second variable will contain the sorted nodes.
+  void TopologicalOrder(const op_nodes& dag,
+                                          op_nodes* order) {
+    node_set visited = node_set();
+    for (op_nodes::const_iterator it = dag.begin(); it != dag.end(); ++it) {
+      TopologicalOrderInternal(*it, order, &visited);
+    }
+  }
+
+  void TopologicalOrderInternal(shared_ptr<OperatorNode> node,
+                                op_nodes* order, node_set* visited) {
+    op_nodes children_non_loop = node->get_children();
+    op_nodes children = node->get_loop_children();
+    // Append non_loop children so that all children can be visited in a loop.
+    children.insert(children.end(), children_non_loop.begin(),
+                    children_non_loop.end());
+    order->push_back(node);
+    visited->insert(node);
+    LOG(INFO) << "Topological order: "
+              << node->get_operator()->get_output_relation()->get_name();
+    for (op_nodes::iterator it = children.begin(); it != children.end(); ++it) {
+      bool dependency_satisfied = true;
+      op_nodes parents = (*it)->get_parents();
+      for (op_nodes::iterator p_it = parents.begin(); p_it != parents.end();
+           ++p_it) {
+        if (visited->find(*p_it) == visited->end()) {
+          dependency_satisfied = false;
+          break;
+        }
+      }
+      if (dependency_satisfied && visited->find(*it) == visited->end()) {
+        TopologicalOrderInternal(*it, order, visited);
+      }
+    }
   }
 
   bool CheckRenameRequired(OperatorInterface* op) {

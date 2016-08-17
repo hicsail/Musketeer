@@ -18,7 +18,6 @@
 
 #include "frontends/mindi.h"
 
-#include "base/common.h"
 #include "base/flags.h"
 #include "ir/agg_operator.h"
 #include "ir/agg_operator_mpc.h"

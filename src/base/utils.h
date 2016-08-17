@@ -51,6 +51,8 @@ namespace musketeer {
   string FmwToString(uint8_t fmw);
   string FrameworkToString(FmwType fmw);
   shared_ptr<OperatorNode> IsInWhileBody(const node_list& nodes);
+  void TopologicalOrder(const op_nodes& dag, op_nodes* order);
+  
   void PrintNodesVector(const string& message, const op_nodes& nodes);
   void PrintStringVector(const string& message, const vector<string>& nodes);
   void PrintStringSet(const string& message,  const set<string>& nodes);
@@ -70,5 +72,8 @@ namespace musketeer {
   uint64_t MulNoOverflow(uint64_t a, uint64_t b);
   uint32_t ClampCost(uint32_t cost);
 
+  void TopologicalOrderInternal(shared_ptr<OperatorNode> node, op_nodes* result,
+                                set<shared_ptr<OperatorNode> >* visited);
+  
 } // namespace musketeer
 #endif

@@ -80,7 +80,7 @@ class AggOperator : public OperatorInterface {
   }
 
   vector<Column*> get_group_bys();
-  string get_operator();
+  string get_operator(); // TODO(nikolaj): change to use GroupByType
   vector<Column*> get_columns();
   virtual OperatorType get_type();
   bool hasAction();

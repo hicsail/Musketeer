@@ -25,20 +25,11 @@
 #include "frontends/operator_node.h"
 #include "ir/condition_tree.h"
 #include "ir/relation.h"
+#include "base/common.h"
 
 namespace musketeer {
 
 using ir::ConditionTree;
-
-typedef enum {
-  MIN_GROUP,
-  MAX_GROUP,
-  COUNT_GROUP,
-  PLUS_GROUP,
-  MINUS_GROUP,
-  DIVIDE_GROUP,
-  MULTIPLY_GROUP
-} GroupByType;
 
 class Mindi {
  public:
