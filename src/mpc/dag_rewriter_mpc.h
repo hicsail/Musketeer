@@ -44,11 +44,11 @@ namespace mpc {
                                map<string, bool>& mpc_mode);
         void InitEnvAndMode(Environment& obls, map<string, bool>& mpc_mode,
                             set<string>* inputs);
-        OperatorType ToMPC(OperatorType op_type);
+        // OperatorType ToMPC(OperatorType op_type);
         void RewriteDAG(op_nodes& dag, Environment& obls, map<string, bool>& mpc_mode,
                         op_nodes* result_dag);
-        void Replace(shared_ptr<OperatorNode> old_node, 
-                     shared_ptr<OperatorNode> new_node);
+        void InsertNode(shared_ptr<OperatorNode> at_node, 
+                        shared_ptr<OperatorNode> new_node);
 
     }; 
     

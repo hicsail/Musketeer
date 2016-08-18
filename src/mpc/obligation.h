@@ -21,6 +21,11 @@
 
 #include "base/utils.h"
 #include "base/common.h"
+#include "ir/operator_interface.h"
+#include "frontends/operator_node.h"
+#include "ir/relation.h"
+
+#include <boost/lexical_cast.hpp>
 #include <map>
 
 namespace musketeer {
@@ -29,20 +34,26 @@ namespace mpc {
     // this should really be a class hiearchy
     class Obligation {
     public:
-        Obligation(OperatorType op_type_, string group_by_type_):
-            op_type(op_type_), group_by_type(group_by_type_) {
-            };
-        OperatorType get_op_type() const;
-        string get_group_by_type() const;
+        Obligation(shared_ptr<OperatorNode> op_node, int index) {
+            OperatorInterface* _op = op_node->get_operator();
+            op = _op->toMPC();
+            string rel_name = _op->get_output_relation()->get_name();
+            Relation* new_rel = _op->get_output_relation()->copy(rel_name + "_obl_" + boost::lexical_cast<string>(index));
+            op->set_output_relation(new_rel);
+            // PassThrough(op_node);
+        };
+        
+        OperatorInterface* get_operator();
+        void PassThrough(shared_ptr<OperatorNode> op_node);
 
         friend std::ostream& operator<<(std::ostream& _stream, Obligation const& obl) { 
-            _stream << "Obligation(" << obl.get_op_type() << ", " << obl.get_group_by_type() << ")";
+            // TODO(nikolaj): Implement.
+            _stream << "Obligation(" << ")";
             return _stream;
         };
         
     private:
-        OperatorType op_type;
-        string group_by_type;
+        OperatorInterface* op;
     }; 
 
 } // namespace mpc

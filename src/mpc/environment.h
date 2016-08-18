@@ -34,6 +34,8 @@ namespace mpc {
         
         // TODO(nikolaj): Implement destructor
 
+        // Initialize empty entry under rel_name
+        void init_for(string rel_name);
         // Push back single obligation to rel_name
         void push_obligation(string rel_name, Obligation* obl);
         // Push back obligations to rel_name
@@ -48,8 +50,9 @@ namespace mpc {
             _stream << "Env()" << "\n";
             for (map<string, vector<Obligation*>>::const_iterator it = env.env.begin(); it != env.env.end(); ++it) {
                 _stream << it->first << " {\n";
+                _stream << (it->second).size();
                 for (vector<Obligation*>::const_iterator o = (it->second).begin(); o != (it->second).end(); ++o) {
-                    _stream << "\t" << (*o)->get_group_by_type() << "\n";
+                    // _stream << "\t" << (*o)->get_group_by_type() << "\n";
                 }
                 _stream << "}\n";
             }

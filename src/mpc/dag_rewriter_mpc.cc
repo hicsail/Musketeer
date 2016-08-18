@@ -19,6 +19,7 @@
 #include "mpc/dag_rewriter_mpc.h"
 #include "ir/agg_operator.h"
 #include <queue>
+#include <algorithm>
 
 namespace musketeer {
 namespace mpc {
@@ -61,23 +62,23 @@ namespace mpc {
         string rel_name = node->get_operator()->get_output_relation()->get_name();
         int num_children = node->get_children().size();
         if (op_type == AGG_OP) {
-            string group_by_type = dynamic_cast<ir::AggOperator*>(node->get_operator())->get_operator();
+            LOG(INFO) << rel_name << " is an AGG_OP. Emitting obligation.";
             for (int i = 0; i < num_children; ++i) {
-                obls.push_obligation(rel_name, new Obligation(ToMPC(op_type), group_by_type));
+                obls.push_obligation(rel_name, new Obligation(node, i));
             }
             // Leaf special case (sort of ugly)
             if (num_children == 0) {
-                obls.push_obligation(rel_name, new Obligation(ToMPC(op_type), group_by_type));    
+                obls.push_obligation(rel_name, new Obligation(node, 0));    
             }
             return false; // just emitted an obligation so we can stay in local mode
         }
         else if (op_type == JOIN_OP) {
-            obls.push_obligations(rel_name, vector<Obligation*>()); // intialize obligations
+            obls.init_for(rel_name);
             return true;
         }
         else {
-            obls.push_obligations(rel_name, vector<Obligation*>()); // intialize obligations
-            return true;
+            obls.init_for(rel_name);
+            return false;
         }
     }
 
@@ -85,14 +86,16 @@ namespace mpc {
                                            map<string, bool>& mpc_mode) {
         for (vector<shared_ptr<OperatorNode>>::iterator cur = order.begin(); cur != order.end(); ++cur) {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
+            LOG(INFO) << "Deriving obligations for " << rel->get_name();
             vector<shared_ptr<OperatorNode>> parents = (*cur)->get_parents();
             if (parents.size() == 0) {
                 mpc_mode[rel->get_name()] = false;
-                obls.push_obligations(rel->get_name(), vector<Obligation*>());
+                obls.init_for(rel->get_name());
             }
             else if (parents.size() == 1) {
                 string par_name = parents[0]->get_operator()->get_output_relation()->get_name();
-                
+                LOG(INFO) << "Found parent: " << par_name;
+
                 if (mpc_mode[par_name]) {
                     // We're already in MPC mode. No need to push obligations further.
                     mpc_mode[rel->get_name()] = true;
@@ -104,20 +107,20 @@ namespace mpc {
                     Obligation* par_obl = obls.pop_obligation(par_name);
                     mpc_mode[rel->get_name()] = 
                         ProcessObligation(par_obl, (*cur)->get_operator(),
-                                          rel->get_name(), obls);
+                                          par_name, obls);
                 }
                 else {
                     // We didn't push or block obligations so check if we need to
                     // emit new obligations and update mode
-                    EmitObligation(*cur, obls);
-                    // mpc_mode[rel->get_name()] = EmitObligation(*cur, obls); 
+                    mpc_mode[rel->get_name()] = EmitObligation(*cur, obls); 
                 }
             }
             else if (parents.size() == 2) {
                 // TODO(nikolaj): Implement.
+                LOG(ERROR) << "Unsupported number of parent nodes";
             }
             else {
-                LOG(ERROR) << "Unexpected number of parent nodes";
+                LOG(FATAL) << "Unexpected number of parent nodes";
             }
         }
     }
@@ -126,23 +129,43 @@ namespace mpc {
                                         set<string>* inputs) {
         for (set<string>::iterator i = inputs->begin(); i != inputs->end(); ++i) {
             mpc_mode[(*i)] = false;
-            obls.push_obligations((*i), vector<Obligation*>());
+            obls.init_for((*i));
         }
     }
 
-    // TODO(nikolaj): create OpConverter class and move this there
-    OperatorType DAGRewriterMPC::ToMPC(OperatorType op_type) {
-        switch(op_type) {
-        case AGG_OP:
-            return AGG_OP_MPC;
-        default:
-            LOG(ERROR) << "No MPC equivalent.";
-            return op_type;
-        }
-    }
+    void DAGRewriterMPC::InsertNode(shared_ptr<OperatorNode> at_node, 
+                                    shared_ptr<OperatorNode> new_node) {
+        op_nodes at_children = at_node->get_children();
+        OperatorInterface* at_op = at_node->get_operator();
+        Relation* at_rel = at_op->get_output_relation();
 
-    void DAGRewriterMPC::Replace(shared_ptr<OperatorNode> old_node, 
-                                 shared_ptr<OperatorNode> new_node) {
+        OperatorInterface* new_op = new_node->get_operator();
+        Relation* new_rel = new_op->get_output_relation();
+
+        LOG(INFO) << "Inserting obligation node: " << new_rel->get_name();
+
+        new_node->set_children(at_children);
+        
+        op_nodes wrapper;
+        wrapper.push_back(new_node);
+        at_node->set_children(wrapper);
+
+        for (vector<shared_ptr<OperatorNode>>::iterator c = at_children.begin();
+             c != at_children.end(); ++c) {
+            // Disconnect each child from at_node, connect to new_node
+            op_nodes child_parents = (*c)->get_parents();
+            child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
+                                child_parents.end());
+            child_parents.push_back(new_node);
+            // Update relations
+            // TODO(nikolaj): Implement.
+            
+
+            // for (vector<shared_ptr<OperatorNode>>::iterator p = child_parents.begin();
+            //      p != child_parents.end(); ++p) {
+                
+            // }
+        }
 
     }
 
@@ -172,15 +195,16 @@ namespace mpc {
                 }
             }
 
+            // Note that the conditions below are mutually exclusive (by design)
             if (mpc_mode[rel_name]) {
                 OperatorInterface* mpc_op = cur_node->get_operator()->toMPC();
                 cur_node->replace_operator(mpc_op);   
             }
-            else if (obls.has_obligation(rel_name)) { // Note that these are mutually exclusive
-                
+            else if (obls.has_obligation(rel_name)) {
+                OperatorInterface* obl_op = obls.pop_obligation(rel_name)->get_operator();
+                InsertNode(cur_node, make_shared<OperatorNode>(obl_op));
             }
-        }
-        
+        }        
     }
 
 } // namespace mpc

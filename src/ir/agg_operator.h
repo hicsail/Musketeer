@@ -79,6 +79,7 @@ class AggOperator : public OperatorInterface {
     columns.clear();
   }
 
+  OperatorInterface* toMPC();
   vector<Column*> get_group_bys();
   string get_operator(); // TODO(nikolaj): change to use GroupByType
   vector<Column*> get_columns();

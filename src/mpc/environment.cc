@@ -21,6 +21,12 @@
 namespace musketeer {
 namespace mpc {
     
+    void Environment::init_for(string rel_name) {
+        if (env.find(rel_name) == env.end()) {
+            env[rel_name] = vector<Obligation*>();
+        }
+    }
+
     void Environment::push_obligation(string rel_name, Obligation* obl) {
         if (env.find(rel_name) == env.end()) {
             env[rel_name] = vector<Obligation*>();

@@ -20,15 +20,29 @@
 
 namespace musketeer {
 namespace mpc {
-    
-    OperatorType Obligation::get_op_type() const {
-        return op_type;
+
+    OperatorInterface* Obligation::get_operator() {
+        return op;
     }
 
-    string Obligation::get_group_by_type() const {
-        return group_by_type;
-    }
+    void Obligation::PassThrough(shared_ptr<OperatorNode> op_node) {
+        // OperatorInterface* _op = op_node->get_operator();
+        // vector<Relation*> input_rels;
+        // Relation* par_out_rel = _op->get_output_relation();
+        // input_rels.push_back(par_out_rel);
+        // op->set_relations(input_rels);
+        // // TODO(nikolaj): Also need to handle operator-specific columns and fields (e.g., group_by_cols)
 
+        // op_nodes children = op_node->get_children();
+        // for (op_nodes::iterator i = children.begin(); i != children.end(); ++i) {
+        //     vector<Relation*> child_rels;
+        //     for (vector<Relation*>::iterator r = .begin(); i != .end(); ++i)
+        //     {
+                
+        //     }
+        // }
+
+    };      
 
 } // namespace mpc
 } // namespace musketeer

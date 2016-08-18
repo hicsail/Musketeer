@@ -17,6 +17,7 @@
  */
 
 #include "ir/agg_operator.h"
+#include "ir/agg_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -73,6 +74,12 @@ namespace ir {
 
   bool AggOperator::hasAction() {
     return !hasGroupby();
+  }
+
+  OperatorInterface* AggOperator::toMPC() {
+    return new AggOperatorMPC(get_input_dir(), get_condition_tree(), group_bys,
+                              math_operator, get_relations(), columns,
+                              get_output_relation());
   }
 
   OperatorInterface* AggOperator::clone() {
