@@ -1,3 +1,7 @@
+This project extends Musketeer (see below) with support for multiparty computation.
+
+## Original Musketeer README
+
 Musketeer is a workflow manager which can dynamically map front-end workflow
 descriptions to a range of back-end execution engines. It is developed by
 CamSaS (http://camsas.org) at the University of Cambridge Computer Laboratory.
