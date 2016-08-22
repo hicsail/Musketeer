@@ -43,6 +43,7 @@ class Column : public Value {
 
   Column* clone();
   string get_relation();
+  void set_relation(string _relation);
   int32_t get_index();
   string toString(const string& fmw);
   string translateTypeJava();

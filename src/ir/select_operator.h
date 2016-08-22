@@ -74,6 +74,7 @@ class SelectOperator : public OperatorInterface {
     columns.clear();
   }
 
+  void update_columns();
   OperatorType get_type();
   bool mapOnly();
   vector<Column*> get_columns();

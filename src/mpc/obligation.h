@@ -21,30 +21,42 @@
 
 #include "base/utils.h"
 #include "base/common.h"
-#include "ir/operator_interface.h"
-#include "frontends/operator_node.h"
+#include "ir/aggregation.h"
 #include "ir/relation.h"
+#include "ir/select_operator.h"
+#include "frontends/operator_node.h"
 
 #include <boost/lexical_cast.hpp>
 #include <map>
 
+using namespace musketeer::ir;
+
 namespace musketeer {
 namespace mpc {
 
-    // this should really be a class hiearchy
+    // TODO(nikolaj): Make an obligation class hiearchy
     class Obligation {
     public:
         Obligation(shared_ptr<OperatorNode> op_node, int index) {
             OperatorInterface* _op = op_node->get_operator();
-            op = _op->toMPC();
+            // TODO(nikolaj): check operator type
+            op = dynamic_cast<Aggregation*>(_op->toMPC());
+            type = op->get_group_by_type();
             string rel_name = _op->get_output_relation()->get_name();
-            Relation* new_rel = _op->get_output_relation()->copy(rel_name + "_obl_" + boost::lexical_cast<string>(index));
+            Relation* new_rel = _op->get_output_relation()->copy(
+                rel_name + "_obl_" + boost::lexical_cast<string>(index));
             op->set_output_relation(new_rel);
-            // PassThrough(op_node);
         };
         
         OperatorInterface* get_operator();
+        /*
+            Must call this method when pushing the obligation through a node.
+            Relations, columns, etc. on op will get updated.
+        */
         void PassThrough(shared_ptr<OperatorNode> op_node);
+        bool CanPassOperator(OperatorInterface* other);
+
+        bool CanPass(SelectOperator* other);
 
         friend std::ostream& operator<<(std::ostream& _stream, Obligation const& obl) { 
             // TODO(nikolaj): Implement.
@@ -53,7 +65,8 @@ namespace mpc {
         };
         
     private:
-        OperatorInterface* op;
+        Aggregation* op;
+        GroupByType type;
     }; 
 
 } // namespace mpc

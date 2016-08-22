@@ -17,7 +17,6 @@
  */
 
 #include "mpc/dag_rewriter_mpc.h"
-#include "ir/agg_operator.h"
 #include <queue>
 #include <algorithm>
 
@@ -99,7 +98,7 @@ namespace mpc {
                 if (mpc_mode[par_name]) {
                     // We're already in MPC mode. No need to push obligations further.
                     mpc_mode[rel->get_name()] = true;
-                    continue; // make sure this applies to the outer loop
+                    continue;
                 }
 
                 if (obls.has_obligation(par_name)) {
@@ -157,14 +156,23 @@ namespace mpc {
             child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
                                 child_parents.end());
             child_parents.push_back(new_node);
-            // Update relations
-            // TODO(nikolaj): Implement.
             
+            // Update the relations attached to the operator on the child node
+            OperatorInterface* child_op = (*c)->get_operator();
+            vector<Relation*> child_rels = child_op->get_relations();
+            vector<Relation*> updated_rels;
 
-            // for (vector<shared_ptr<OperatorNode>>::iterator p = child_parents.begin();
-            //      p != child_parents.end(); ++p) {
-                
-            // }
+            for (vector<Relation*>::iterator r = child_rels.begin(); 
+                 r != child_rels.end(); ++r) {
+                if (*r != at_rel) {
+                    updated_rels.push_back(*r);
+                }
+                else {
+                    updated_rels.push_back(new_rel);    
+                }
+            }
+            child_op->set_relations(updated_rels);
+            child_op->update_columns();
         }
 
     }

@@ -30,6 +30,15 @@ namespace ir {
     return columns;
   }
 
+  void SelectOperator::update_columns() {
+    vector<Column*> columns = get_columns();
+    string relation = get_relations()[0]->get_name();
+    for (vector<Column*>::iterator it = columns.begin();
+         it != columns.end(); ++it) {
+      (*it)->set_relation(relation);
+    }
+  }
+
   OperatorType SelectOperator::get_type() {
     return SELECT_OP;
   }

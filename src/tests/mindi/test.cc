@@ -103,8 +103,8 @@ namespace mindi {
 
     ConditionTree* projected_cond_tree =
       new ConditionTree(new CondOperator("*"),
-                        new ConditionTree(col(local_rev)[0]->clone()),
-                        new ConditionTree(new Value("0", INTEGER_TYPE)));
+                        new ConditionTree(col(local_rev)[1]->clone()),
+                        new ConditionTree(new Value("10", INTEGER_TYPE)));
     
     vector<Column*> projected_cols;
     projected_cols.push_back(col(local_rev)[0]->clone());

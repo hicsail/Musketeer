@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Nikolaj Volgushev <nikolaj@bu.edu>
+// Copyright (c) 2015 Ionel Gog <ionel.gog@cl.cam.ac.uk>
 
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,31 +16,8 @@
  * permissions and limitations under the License.
  */
 
-#include "mpc/obligation.h"
+#include "base/ir_utils.h"
 
 namespace musketeer {
-namespace mpc {
 
-    OperatorInterface* Obligation::get_operator() {
-        return op;
-    }
-
-    void Obligation::PassThrough(shared_ptr<OperatorNode> op_node) {
-
-    }
-
-    bool Obligation::CanPassOperator(OperatorInterface* other) {
-        switch (other->get_type()) {
-        case SELECT_OP:
-            return CanPass(dynamic_cast<SelectOperator*>(other));
-        default:
-            return false;
-        }
-    }
-
-    bool Obligation::CanPass(SelectOperator* other) {
-        return false;
-    }
-
-} // namespace mpc
 } // namespace musketeer

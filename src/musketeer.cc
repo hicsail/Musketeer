@@ -211,7 +211,7 @@ map<string, FrameworkInterface*> AddFrameworks(string frams) {
       LOG(INFO) << "Adding WildCherry Framework";
     } else if (!it->compare("viff")) {
       frameworks["viff"] = new ViffFramework();
-      LOG(INFO) << "Adding Viff (MPC) Framework";
+      LOG(INFO) << "Adding VIFF (MPC) Framework";
     }
   }
   return frameworks;

@@ -56,6 +56,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/base/hdfs_utils.o \
 		$(BUILD_DIR)/base/job.pb.o \
 		$(BUILD_DIR)/base/utils.o \
+		$(BUILD_DIR)/base/ir_utils.o \
 		$(BUILD_DIR)/core/daemon.o \
 		$(BUILD_DIR)/core/daemon_connection.o \
 		$(BUILD_DIR)/core/history_storage.o \
@@ -83,8 +84,9 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/frontends/operator_node.o \
 		$(BUILD_DIR)/frontends/relations_type.o \
 		$(BUILD_DIR)/frontends/tree_traversal.o \
-		$(BUILD_DIR)/ir/agg_operator_mpc.o \
+		$(BUILD_DIR)/ir/aggregation.o \
 		$(BUILD_DIR)/ir/agg_operator.o \
+		$(BUILD_DIR)/ir/agg_operator_mpc.o \
 		$(BUILD_DIR)/ir/black_box_operator.o \
 		$(BUILD_DIR)/ir/column.o \
 		$(BUILD_DIR)/ir/condition_tree.o \

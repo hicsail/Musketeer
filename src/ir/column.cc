@@ -31,6 +31,10 @@ namespace musketeer {
     return relation;
   }
 
+  void Column::set_relation(string _relation) {
+    relation = _relation;
+  }
+
   int32_t Column::get_index() {
     return index;
   }

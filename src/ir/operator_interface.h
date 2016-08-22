@@ -243,6 +243,8 @@ class OperatorInterface {
     return NULL;
   }
 
+  virtual void update_columns() {}
+
   virtual pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size) = 0;
 

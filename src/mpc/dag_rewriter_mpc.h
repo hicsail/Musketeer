@@ -23,6 +23,9 @@
 #include "base/common.h"
 #include "mpc/obligation.h"
 #include "mpc/environment.h"
+#include "frontends/operator_node.h"
+#include "ir/operator_interface.h"
+
 #include <map>
 
 namespace musketeer {
@@ -44,12 +47,10 @@ namespace mpc {
                                map<string, bool>& mpc_mode);
         void InitEnvAndMode(Environment& obls, map<string, bool>& mpc_mode,
                             set<string>* inputs);
-        // OperatorType ToMPC(OperatorType op_type);
         void RewriteDAG(op_nodes& dag, Environment& obls, map<string, bool>& mpc_mode,
                         op_nodes* result_dag);
         void InsertNode(shared_ptr<OperatorNode> at_node, 
-                        shared_ptr<OperatorNode> new_node);
-
+                        shared_ptr<OperatorNode> new_node);        
     }; 
     
 } // namespace mpc

@@ -16,8 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "ir/agg_operator.h"
-#include "ir/agg_operator_mpc.h"
+#include "ir/aggregation.h"
 
 #include <limits>
 #include <map>
@@ -27,23 +26,40 @@
 namespace musketeer {
 namespace ir {
 
-  vector<Column*> AggOperator::get_group_bys() {
+  GroupByType Aggregation::type_lookup(string operator_) {
+    if (operator_ == "+") {
+      return PLUS_GROUP;
+    }
+    else if (operator_ == "-") {
+      return MINUS_GROUP;
+    }
+    else if (operator_ == "*") {
+      return DIVIDE_GROUP;
+    }
+    else if (operator_ == "/") {
+      return MULTIPLY_GROUP;
+    }
+    else {
+      LOG(FATAL) << "Unknown group by operator: " << operator_;
+      return PLUS_GROUP; // default 
+    }
+  }
+
+  Aggregation::~Aggregation() {}
+
+  vector<Column*> Aggregation::get_group_bys() {
     return group_bys;
   }
 
-  string AggOperator::get_operator() {
-    return math_operator;
+  GroupByType Aggregation::get_group_by_type() {
+    return group_by_type;
   }
 
-  vector<Column*> AggOperator::get_columns() {
+  vector<Column*> Aggregation::get_columns() {
     return columns;
   }
 
-  OperatorType AggOperator::get_type() {
-    return AGG_OP;
-  }
-
-  bool AggOperator::hasGroupby() {
+  bool Aggregation::hasGroupby() {
     if ((group_bys.size() == 1 && group_bys[0]->get_relation().empty()) ||
         group_bys.size() == 0) {
       return false;
@@ -52,7 +68,7 @@ namespace ir {
     }
   }
 
-  pair<uint64_t, uint64_t> AggOperator::get_output_size(
+  pair<uint64_t, uint64_t> Aggregation::get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size) {
     vector<Relation*> rels = get_relations();
     string input_rel = rels[0]->get_name();
@@ -68,15 +84,15 @@ namespace ir {
                            rel_size);
   }
 
-  bool AggOperator::mapOnly() {
+  bool Aggregation::mapOnly() {
     return false;
   }
 
-  bool AggOperator::hasAction() {
+  bool Aggregation::hasAction() {
     return !hasGroupby();
   }
 
-  void AggOperator::update_columns() {
+  void Aggregation::update_columns() {
     string relation = get_relations()[0]->get_name();
     vector<Column*> cols = get_columns();
     for (vector<Column*>::iterator it = cols.begin(); it != cols.end();
@@ -88,18 +104,6 @@ namespace ir {
          it != group_bys.end(); ++it) {
       (*it)->set_relation(relation);
     }
-  }
-
-  OperatorInterface* AggOperator::toMPC() {
-    return new AggOperatorMPC(get_input_dir(), get_condition_tree(), group_bys,
-                              math_operator, get_relations(), columns,
-                              get_output_relation());
-  }
-
-  OperatorInterface* AggOperator::clone() {
-    return new AggOperator(get_input_dir(), get_condition_tree(), group_bys,
-                           math_operator, get_relations(), columns,
-                           get_output_relation());
   }
 
 } // namespace ir

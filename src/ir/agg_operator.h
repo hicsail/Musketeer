@@ -19,7 +19,8 @@
 #ifndef MUSKETEER_AGG_OPERATOR_H
 #define MUSKETEER_AGG_OPERATOR_H
 
-#include "ir/operator_interface.h"
+// #include "ir/operator_interface.h"
+#include "ir/aggregation.h"
 
 #include <limits>
 #include <map>
@@ -37,15 +38,15 @@
 namespace musketeer {
 namespace ir {
 
-class AggOperator : public OperatorInterface {
+class AggOperator : public Aggregation {
  public:
   AggOperator(const string& input_dir, const pANTLR3_BASE_TREE condition_tree,
               const vector<Column*>& group_bys_, const string& operator_,
               const vector<Relation*>& relations,
               const vector<Column*>& columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel,
-                      new ConditionTree(condition_tree)),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
+    Aggregation(input_dir, condition_tree, group_bys_, operator_, relations,
+                columns_, output_rel),
+      math_operator(operator_) {
   }
 
   AggOperator(const string& input_dir,
@@ -53,17 +54,18 @@ class AggOperator : public OperatorInterface {
               const vector<Column*>& group_bys_, const string& operator_,
               const vector<Relation*>& relations,
               const vector<Column*> columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel,
-                      new ConditionTree(condition_tree)),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
+    Aggregation(input_dir, condition_tree, group_bys_, operator_, relations,
+                columns_, output_rel),
+      math_operator(operator_) {
   }
 
   AggOperator(const string& input_dir, ConditionTree* condition_tree,
               const vector<Column*>& group_bys_, string operator_,
               const vector<Relation*>& relations,
               const vector<Column*> columns_, Relation* output_rel):
-    OperatorInterface(input_dir, relations, output_rel, condition_tree),
-      group_bys(group_bys_), math_operator(operator_), columns(columns_) {
+    Aggregation(input_dir, condition_tree, group_bys_, operator_, relations,
+                columns_, output_rel),
+      math_operator(operator_) {
   }
 
   ~AggOperator() {
@@ -80,6 +82,7 @@ class AggOperator : public OperatorInterface {
   }
 
   OperatorInterface* toMPC();
+  void update_columns();
   vector<Column*> get_group_bys();
   string get_operator(); // TODO(nikolaj): change to use GroupByType
   vector<Column*> get_columns();
