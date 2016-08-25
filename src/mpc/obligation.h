@@ -24,6 +24,7 @@
 #include "ir/aggregation.h"
 #include "ir/relation.h"
 #include "ir/select_operator.h"
+#include "ir/mul_operator.h"
 #include "frontends/operator_node.h"
 
 #include <boost/lexical_cast.hpp>
@@ -37,18 +38,15 @@ namespace mpc {
     // TODO(nikolaj): Make an obligation class hiearchy
     class Obligation {
     public:
-        Obligation(shared_ptr<OperatorNode> op_node, int index) {
-            OperatorInterface* _op = op_node->get_operator();
-            // TODO(nikolaj): check operator type
-            op = dynamic_cast<Aggregation*>(_op->toMPC());
-            type = op->get_group_by_type();
-            string rel_name = _op->get_output_relation()->get_name();
-            Relation* new_rel = _op->get_output_relation()->copy(
-                rel_name + "_obl_" + boost::lexical_cast<string>(index));
-            op->set_output_relation(new_rel);
-        };
-        
+        Obligation(shared_ptr<OperatorNode> op_node, int index);
+        ~Obligation() {
+            // TODO(nikolaj): Implement.
+        }
+
         OperatorInterface* get_operator();
+        
+        // Might need to add methods for taking into account another obligation
+        // when dealing with binary op_nodes, i.e., unions etc.
         /*
             Must call this method when pushing the obligation through a node.
             Relations, columns, etc. on op will get updated.
@@ -57,6 +55,7 @@ namespace mpc {
         bool CanPassOperator(OperatorInterface* other);
 
         bool CanPass(SelectOperator* other);
+        bool CanPass(MulOperator* other);
 
         friend std::ostream& operator<<(std::ostream& _stream, Obligation const& obl) { 
             // TODO(nikolaj): Implement.
@@ -67,6 +66,8 @@ namespace mpc {
     private:
         Aggregation* op;
         GroupByType type;
+
+        void update_op_columns(OperatorInterface* parent);
     }; 
 
 } // namespace mpc

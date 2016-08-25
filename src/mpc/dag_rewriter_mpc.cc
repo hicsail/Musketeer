@@ -37,15 +37,12 @@ namespace mpc {
         RewriteDAG(dag, obls, mode, result_dag);
     }
 
-    bool DAGRewriterMPC::CanPass(Obligation* obl, OperatorInterface* cur) {
-        // TODO(nikolaj): Implement.
-        return false;
-    }
-
-    bool DAGRewriterMPC::ProcessObligation(Obligation* obl, OperatorInterface* cur,  
+    bool DAGRewriterMPC::ProcessObligation(Obligation* obl, shared_ptr<OperatorNode> cur,  
                                            string par_rel_name, Environment& obls) {
-        if (CanPass(obl, cur)) {
-            // TODO(nikolaj): Implement.
+        if (obl->CanPassOperator(cur->get_operator())) {
+            string cur_name = cur->get_operator()->get_output_relation()->get_name();
+            obl->PassThrough(cur);
+            obls.push_obligation(cur_name, obl);
             return false;
         }
         else {
@@ -60,7 +57,7 @@ namespace mpc {
         OperatorType op_type = node->get_operator()->get_type();
         string rel_name = node->get_operator()->get_output_relation()->get_name();
         int num_children = node->get_children().size();
-        if (op_type == AGG_OP) {
+        if (op_type == AGG_OP) { // Don't forget MIN etc.
             LOG(INFO) << rel_name << " is an AGG_OP. Emitting obligation.";
             for (int i = 0; i < num_children; ++i) {
                 obls.push_obligation(rel_name, new Obligation(node, i));
@@ -104,9 +101,8 @@ namespace mpc {
                 if (obls.has_obligation(par_name)) {
                     // Push or block parent obligation and update mode.
                     Obligation* par_obl = obls.pop_obligation(par_name);
-                    mpc_mode[rel->get_name()] = 
-                        ProcessObligation(par_obl, (*cur)->get_operator(),
-                                          par_name, obls);
+                    mpc_mode[rel->get_name()] = ProcessObligation(par_obl, *cur, 
+                        par_name, obls);
                 }
                 else {
                     // We didn't push or block obligations so check if we need to

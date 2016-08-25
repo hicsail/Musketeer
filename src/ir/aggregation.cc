@@ -47,6 +47,14 @@ namespace ir {
 
   Aggregation::~Aggregation() {}
 
+  void Aggregation::set_group_bys(vector<Column*> group_bys_) {
+    group_bys = group_bys_;
+  }
+  
+  void Aggregation::set_columns(vector<Column*> columns_) {
+    columns = columns_;
+  }
+  
   vector<Column*> Aggregation::get_group_bys() {
     return group_bys;
   }

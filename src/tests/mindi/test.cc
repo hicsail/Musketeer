@@ -96,15 +96,15 @@ namespace mindi {
                     "first_val_blank");
 
     vector<Column*> local_rev_group_by_cols;
-    local_rev_group_by_cols.push_back(col(first_val_blank)[0]->clone());
+    local_rev_group_by_cols.push_back(col(first_val_blank)[1]->clone());
     shared_ptr<OperatorNode> local_rev =
       mindi->GroupBy(first_val_blank, local_rev_group_by_cols, PLUS_GROUP,
-                     col(first_val_blank)[1]->clone(), "local_rev");
+                     col(first_val_blank)[0]->clone(), "local_rev");
 
     ConditionTree* projected_cond_tree =
       new ConditionTree(new CondOperator("*"),
                         new ConditionTree(col(local_rev)[1]->clone()),
-                        new ConditionTree(new Value("10", INTEGER_TYPE)));
+                        new ConditionTree(col(local_rev)[0]->clone()));
     
     vector<Column*> projected_cols;
     projected_cols.push_back(col(local_rev)[0]->clone());

@@ -158,7 +158,6 @@ namespace musketeer {
       shared_ptr<OperatorNode>(new OperatorNode(math_op, parents));
     op_node->AddChild(math_node);
 
-
     vector<Relation*> relations;
     relations.push_back(math_output_rel);
     vector<Column*> math_sel_cols;
@@ -378,6 +377,7 @@ namespace musketeer {
     case PLUS_GROUP: {
       group_by_op = new AggOperator(FLAGS_hdfs_input_dir, cond_tree, group_bys,
                                     "+", relations, key_cols, output_rel);
+      // LOG(INFO) << "SIZE: " << dynamic_cast<AggOperator*>(group_by_op)->get_group_bys().size();
       break;
     }
     case MINUS_GROUP: {

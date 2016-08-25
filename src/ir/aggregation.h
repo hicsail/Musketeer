@@ -100,6 +100,8 @@ class Aggregation : public OperatorInterface {
   vector<Column*> get_group_bys();
   GroupByType get_group_by_type();
   vector<Column*> get_columns();
+  void set_group_bys(vector<Column*> group_bys_);
+  void set_columns(vector<Column*> columns_);
   bool hasAction();
   bool hasGroupby();
   bool mapOnly();

@@ -84,7 +84,7 @@ class AggOperator : public Aggregation {
   OperatorInterface* toMPC();
   void update_columns();
   vector<Column*> get_group_bys();
-  string get_operator(); // TODO(nikolaj): change to use GroupByType
+  string get_operator();
   vector<Column*> get_columns();
   virtual OperatorType get_type();
   bool hasAction();
@@ -95,9 +95,7 @@ class AggOperator : public Aggregation {
   OperatorInterface* clone();
 
  protected:
-  vector<Column*> group_bys;
   string math_operator;
-  vector<Column*> columns;
 };
 
 } // namespace ir
