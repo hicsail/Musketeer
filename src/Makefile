@@ -114,6 +114,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/ir/sort_operator.o \
 		$(BUILD_DIR)/ir/udf_operator.o \
 		$(BUILD_DIR)/ir/union_operator.o \
+		$(BUILD_DIR)/ir/union_operator_mpc.o \
 		$(BUILD_DIR)/ir/while_operator.o \
 		$(BUILD_DIR)/mpc/dag_rewriter_mpc.o \
 		$(BUILD_DIR)/mpc/obligation.o \

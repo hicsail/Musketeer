@@ -40,11 +40,12 @@ class UnionOperator: public OperatorInterface {
   OperatorInterface(input_dir, relations, output_rel) {
   }
 
-  OperatorType get_type();
+  virtual OperatorType get_type();
   bool mapOnly();
   pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
+  OperatorInterface* toMPC();
 };
 
 } // namespace ir

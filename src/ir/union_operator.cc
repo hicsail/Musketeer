@@ -17,6 +17,7 @@
  */
 
 #include "ir/union_operator.h"
+#include "ir/union_operator_mpc.h"
 
 namespace musketeer {
 namespace ir {
@@ -68,6 +69,12 @@ namespace ir {
     return new UnionOperator(get_input_dir(), get_relations(),
                              get_output_relation());
   }
+
+  OperatorInterface* UnionOperator::toMPC() {
+    return new UnionOperatorMPC(get_input_dir(), get_relations(),
+                                get_output_relation());
+  }
+
 
 } // namespace ir
 } // namespace musketeer

@@ -39,9 +39,11 @@ namespace mpc {
     
     private:
 
-        bool CanPass(Obligation* obl, OperatorInterface* cur);
         bool ProcessObligation(Obligation* obl, shared_ptr<OperatorNode> cur, 
                                string par_rel_name, Environment& obls);
+        bool ProcessObligation(Obligation* left_obl, Obligation* right_obl,
+                                shared_ptr<OperatorNode> cur, string left_name,
+                                string right_name, Environment& obls);
         bool EmitObligation(shared_ptr<OperatorNode> node, Environment& obls);
         void DeriveObligations(op_nodes& order, Environment& obls, 
                                map<string, bool>& mpc_mode);

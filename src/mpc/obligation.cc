@@ -39,6 +39,14 @@ namespace mpc {
         return op;
     }
 
+    GroupByType Obligation::get_group_by_type() {
+        return type;
+    }
+
+    string Obligation::get_name() {
+        return op->get_output_relation()->get_name();
+    }
+
     // This is a bit of a hack for now
     void Obligation::update_op_columns(OperatorInterface* parent) {
         vector<Column*> parent_out_cols = parent->get_output_relation()->get_columns();
@@ -60,12 +68,14 @@ namespace mpc {
         // TODO(nikolaj): Implement.
     }
 
-    bool Obligation::CanPassOperator(OperatorInterface* other) {
-        switch (other->get_type()) {
+    bool Obligation::CanPassOperator(OperatorInterface* other_op, Obligation* other_obl) {
+        switch (other_op->get_type()) {
         case SELECT_OP:
-            return CanPass(dynamic_cast<SelectOperator*>(other));
+            return CanPass(dynamic_cast<SelectOperator*>(other_op));
         case MUL_OP:
-            return CanPass(dynamic_cast<MulOperator*>(other));
+            return CanPass(dynamic_cast<MulOperator*>(other_op));
+        case UNION_OP:
+            return CanPass(dynamic_cast<UnionOperator*>(other_op), other_obl);
         default:
             return false;
         }
@@ -182,6 +192,19 @@ namespace mpc {
         }
 
         return true;
+    }
+
+    bool Obligation::CanPass(UnionOperator* other_op, Obligation* other_obl) {
+        if (!other_obl || !CanMerge(*other_obl)) {
+            // can't push unless we have two obligations of the same type 
+            return false;
+        }
+        // at this point other_obl is not null
+        return true;
+    }
+
+    bool Obligation::CanMerge(Obligation& other) {
+        return (type == other.get_group_by_type());
     }
 
 } // namespace mpc

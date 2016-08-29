@@ -37,20 +37,49 @@ namespace mpc {
         RewriteDAG(dag, obls, mode, result_dag);
     }
 
-    bool DAGRewriterMPC::ProcessObligation(Obligation* obl, shared_ptr<OperatorNode> cur,  
-                                           string par_rel_name, Environment& obls) {
-        if (obl->CanPassOperator(cur->get_operator())) {
+    // pre-condition: l_obl or r_obl not null
+    bool DAGRewriterMPC::ProcessObligation(Obligation* l_obl, Obligation* r_obl,
+                                           shared_ptr<OperatorNode> cur, string l_name,
+                                           string r_name, Environment& obls) {
+        Obligation* obl = NULL;
+        string par_name;
+        Obligation* other_obl = NULL;
+        string other_par_name;
+
+        if (l_obl) {
+            obl = l_obl;
+            other_obl = r_obl;
+            par_name = l_name;
+            other_par_name = r_name; 
+        }
+        else {
+            // r_obl is not null as per pre-condition
+            obl = r_obl;
+            par_name = r_name;
+        }
+
+        if (obl->CanPassOperator(cur->get_operator(), other_obl)) {
             string cur_name = cur->get_operator()->get_output_relation()->get_name();
-            obl->PassThrough(cur);
+            // we can "marge" obligations and so only need to pass one of them on
+            // the other obligation can be destroyed
+            // delete other_obl;
             obls.push_obligation(cur_name, obl);
             return false;
         }
         else {
-            // Block obligation by pushing it back to parent.
+            // Block obligations by pushing them back to parents.
             // This also means that we need to enter MPC mode.
-            obls.push_obligation(par_rel_name, obl);
+            obls.push_obligation(par_name, obl);
+            if (other_obl) {
+                obls.push_obligation(other_par_name, other_obl);
+            }
             return true;
         }
+    }
+
+    bool DAGRewriterMPC::ProcessObligation(Obligation* obl, shared_ptr<OperatorNode> cur,  
+                                           string par_rel_name, Environment& obls) {
+        return ProcessObligation(obl, NULL, cur, par_rel_name, "", obls);
     }
 
     bool DAGRewriterMPC::EmitObligation(shared_ptr<OperatorNode> node, Environment& obls) {
@@ -58,13 +87,17 @@ namespace mpc {
         string rel_name = node->get_operator()->get_output_relation()->get_name();
         int num_children = node->get_children().size();
         if (op_type == AGG_OP) { // Don't forget MIN etc.
-            LOG(INFO) << rel_name << " is an AGG_OP. Emitting obligation.";
+            LOG(INFO) << rel_name << " is an aggregation.";
             for (int i = 0; i < num_children; ++i) {
-                obls.push_obligation(rel_name, new Obligation(node, i));
+                Obligation* obl = new Obligation(node, i);
+                obls.push_obligation(rel_name, obl);
+                LOG(INFO) << "Emitting obligation " << obl->get_name();
             }
-            // Leaf special case (sort of ugly)
+            // Leaf node special case (sort of ugly)
             if (num_children == 0) {
-                obls.push_obligation(rel_name, new Obligation(node, 0));    
+                Obligation* obl = new Obligation(node, 0);
+                obls.push_obligation(rel_name, obl);
+                LOG(INFO) << "Emitting obligation " << obl->get_name();    
             }
             return false; // just emitted an obligation so we can stay in local mode
         }
@@ -111,8 +144,35 @@ namespace mpc {
                 }
             }
             else if (parents.size() == 2) {
-                // TODO(nikolaj): Implement.
-                LOG(ERROR) << "Unsupported number of parent nodes";
+                string left_name = parents[0]->get_operator()->get_output_relation()->get_name();
+                string right_name = parents[1]->get_operator()->get_output_relation()->get_name();
+                LOG(INFO) << "Found parents: " << left_name << " " << right_name;
+
+                if (mpc_mode[left_name] || mpc_mode[right_name]) {
+                    // We're already in MPC mode. No need to push obligations further.
+                    mpc_mode[rel->get_name()] = true;
+                    continue;
+                }
+
+                if (obls.has_obligation(left_name) || obls.has_obligation(right_name)) {
+                    Obligation* left_obl = NULL;
+                    Obligation* right_obl = NULL;
+
+                    if (obls.has_obligation(left_name)) {
+                        left_obl = obls.pop_obligation(left_name);
+                    }
+                    if (obls.has_obligation(right_name)) {
+                        right_obl = obls.pop_obligation(right_name);
+                    }
+
+                    mpc_mode[rel->get_name()] = ProcessObligation(left_obl, right_obl,
+                        *cur, left_name, right_name, obls);
+                }
+                else {
+                    // We didn't push or block obligations so check if we need to
+                    // emit new obligations and update mode
+                    mpc_mode[rel->get_name()] = EmitObligation(*cur, obls);    
+                }
             }
             else {
                 LOG(FATAL) << "Unexpected number of parent nodes";

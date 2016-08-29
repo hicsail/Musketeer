@@ -217,6 +217,8 @@ class OperatorInterface {
       return "JOIN_OP_MPC";
     case DIV_OP_MPC:
       return "DIV_OP_MPC";
+    case UNION_OP_MPC:
+      return "UNION_OP_MPC";
     default: {
       LOG(ERROR) << "Unknown operator type: " << get_type();
       return NULL;

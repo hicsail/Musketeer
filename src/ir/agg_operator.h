@@ -19,7 +19,6 @@
 #ifndef MUSKETEER_AGG_OPERATOR_H
 #define MUSKETEER_AGG_OPERATOR_H
 
-// #include "ir/operator_interface.h"
 #include "ir/aggregation.h"
 
 #include <limits>
@@ -81,7 +80,6 @@ class AggOperator : public Aggregation {
     columns.clear();
   }
 
-  OperatorInterface* toMPC();
   void update_columns();
   vector<Column*> get_group_bys();
   string get_operator();
@@ -93,6 +91,7 @@ class AggOperator : public Aggregation {
   pair<uint64_t, uint64_t> get_output_size(
       map<string, pair<uint64_t, uint64_t> >* rel_size);
   OperatorInterface* clone();
+  OperatorInterface* toMPC();
 
  protected:
   string math_operator;

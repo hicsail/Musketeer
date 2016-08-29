@@ -80,12 +80,6 @@ namespace mindi {
                     selected_cols,
                     "selected_input");
 
-    vector<Column*> other_agg_cols;
-    other_agg_cols.push_back(col(selected_input)[1]->clone());
-    shared_ptr<OperatorNode> other_agg =
-      mindi->GroupBy(selected_input, other_agg_cols, PLUS_GROUP,
-                     col(selected_input)[0]->clone(), "other_agg");
-
     ConditionTree* first_val_blank_cond_tree =
       new ConditionTree(new CondOperator("*"),
                         new ConditionTree(col(selected_input)[0]->clone()),
@@ -107,8 +101,22 @@ namespace mindi {
       mindi->GroupBy(first_val_blank, local_rev_group_by_cols, PLUS_GROUP,
                      col(first_val_blank)[0]->clone(), "local_rev");
 
-    shared_ptr<OperatorNode> combined = 
-      mindi->Concat(local_rev, "combined", other_agg);
+    ConditionTree* projected_cond_tree =
+      new ConditionTree(new CondOperator("*"),
+                        new ConditionTree(col(local_rev)[1]->clone()),
+                        new ConditionTree(col(local_rev)[0]->clone()));
+    
+    vector<Column*> projected_cols;
+    projected_cols.push_back(col(local_rev)[0]->clone());
+    projected_cols.push_back(col(local_rev)[1]->clone());
+
+    shared_ptr<OperatorNode> project =
+      mindi->Select(local_rev,
+                    projected_cols,
+                    projected_cond_tree,
+                    "project");
+
+    
 
     return selected_input;
   }

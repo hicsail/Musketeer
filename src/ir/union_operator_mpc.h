@@ -16,52 +16,36 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_COMMON_H
-#define MUSKETEER_COMMON_H
+#ifndef MUSKETEER_UNION_OPERATOR_MPC_H
+#define MUSKETEER_UNION_OPERATOR_MPC_H
 
-using namespace std;  // NOLINT
+// #include "ir/operator_interface.h"
+#include "ir/union_operator.h"
 
-#include <glog/logging.h>
-#include <gflags/gflags.h>
+#include <limits>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
-typedef enum {
-  AGG_OP,
-  AGG_OP_MPC,
-  BLACK_BOX_OP,
-  COUNT_OP,
-  CROSS_JOIN_OP,
-  DIFFERENCE_OP,
-  DISTINCT_OP,
-  DIV_OP,
-  INPUT_OP,
-  INTERSECTION_OP,
-  JOIN_OP,
-  MAX_OP,
-  MIN_OP,
-  MUL_OP,
-  PROJECT_OP,
-  SELECT_OP,
-  SORT_OP,
-  SUB_OP,
-  SUM_OP,
-  UDF_OP,
-  UNION_OP,
-  WHILE_OP,
-  SELECT_OP_MPC,
-  MUL_OP_MPC,
-  JOIN_OP_MPC,
-  DIV_OP_MPC,
-  UNION_OP_MPC
-} OperatorType;
+#include "base/common.h"
+#include "ir/relation.h"
 
-typedef enum {
-  MIN_GROUP,
-  MAX_GROUP,
-  COUNT_GROUP,
-  PLUS_GROUP,
-  MINUS_GROUP,
-  DIVIDE_GROUP,
-  MULTIPLY_GROUP
-} GroupByType;
+namespace musketeer {
+namespace ir {
 
-#endif  // MUSKETEER_COMMON_H
+class UnionOperatorMPC: public UnionOperator {
+ public:
+  UnionOperatorMPC(const string& input_dir, const vector<Relation*>& relations,
+                   Relation* output_rel):
+    UnionOperator(input_dir, relations, output_rel) {
+  }
+
+  OperatorType get_type();
+  bool isMPC();
+  OperatorInterface* clone();
+};
+
+} // namespace ir
+} // namespace musketeer
+#endif

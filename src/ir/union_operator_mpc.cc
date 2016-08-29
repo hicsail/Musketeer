@@ -16,52 +16,23 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_COMMON_H
-#define MUSKETEER_COMMON_H
+#include "ir/union_operator_mpc.h"
 
-using namespace std;  // NOLINT
+namespace musketeer {
+namespace ir {
 
-#include <glog/logging.h>
-#include <gflags/gflags.h>
+  OperatorType UnionOperatorMPC::get_type() {
+    return UNION_OP_MPC;
+  }
 
-typedef enum {
-  AGG_OP,
-  AGG_OP_MPC,
-  BLACK_BOX_OP,
-  COUNT_OP,
-  CROSS_JOIN_OP,
-  DIFFERENCE_OP,
-  DISTINCT_OP,
-  DIV_OP,
-  INPUT_OP,
-  INTERSECTION_OP,
-  JOIN_OP,
-  MAX_OP,
-  MIN_OP,
-  MUL_OP,
-  PROJECT_OP,
-  SELECT_OP,
-  SORT_OP,
-  SUB_OP,
-  SUM_OP,
-  UDF_OP,
-  UNION_OP,
-  WHILE_OP,
-  SELECT_OP_MPC,
-  MUL_OP_MPC,
-  JOIN_OP_MPC,
-  DIV_OP_MPC,
-  UNION_OP_MPC
-} OperatorType;
+  bool UnionOperatorMPC::isMPC() {
+  	return true;
+  }
 
-typedef enum {
-  MIN_GROUP,
-  MAX_GROUP,
-  COUNT_GROUP,
-  PLUS_GROUP,
-  MINUS_GROUP,
-  DIVIDE_GROUP,
-  MULTIPLY_GROUP
-} GroupByType;
+  OperatorInterface* UnionOperatorMPC::clone() {
+  	return new UnionOperatorMPC(get_input_dir(), get_relations(),
+                                get_output_relation());
+  }
 
-#endif  // MUSKETEER_COMMON_H
+} // namespace ir
+} // namespace musketeer

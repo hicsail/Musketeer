@@ -25,6 +25,7 @@
 #include "ir/relation.h"
 #include "ir/select_operator.h"
 #include "ir/mul_operator.h"
+#include "ir/union_operator.h"
 #include "frontends/operator_node.h"
 
 #include <boost/lexical_cast.hpp>
@@ -41,33 +42,29 @@ namespace mpc {
         Obligation(shared_ptr<OperatorNode> op_node, int index);
         ~Obligation() {
             // TODO(nikolaj): Implement.
+            delete op;
         }
 
         OperatorInterface* get_operator();
+        GroupByType get_group_by_type();
+        string get_name();
         
-        // Might need to add methods for taking into account another obligation
-        // when dealing with binary op_nodes, i.e., unions etc.
-        /*
-            Must call this method when pushing the obligation through a node.
-            Relations, columns, etc. on op will get updated.
-        */
+        // Must call this method when pushing the obligation through a node.
+        // Relations, columns, etc. on op will get updated.
         void PassThrough(shared_ptr<OperatorNode> op_node);
-        bool CanPassOperator(OperatorInterface* other);
-
+        // other_obl is null for unary operators
+        bool CanPassOperator(OperatorInterface* other_op, Obligation* other_obl);
+        
         bool CanPass(SelectOperator* other);
         bool CanPass(MulOperator* other);
+        bool CanPass(UnionOperator* other_op, Obligation* other_obl);
 
-        friend std::ostream& operator<<(std::ostream& _stream, Obligation const& obl) { 
-            // TODO(nikolaj): Implement.
-            _stream << "Obligation(" << ")";
-            return _stream;
-        };
-        
     private:
         Aggregation* op;
         GroupByType type;
 
         void update_op_columns(OperatorInterface* parent);
+        bool CanMerge(Obligation& other);
     }; 
 
 } // namespace mpc
