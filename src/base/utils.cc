@@ -193,7 +193,7 @@ namespace musketeer {
 
   // Topological sorts a DAG. The second variable will contain the sorted nodes.
   void TopologicalOrder(const op_nodes& dag,
-                                          op_nodes* order) {
+                        op_nodes* order) {
     node_set visited = node_set();
     for (op_nodes::const_iterator it = dag.begin(); it != dag.end(); ++it) {
       TopologicalOrderInternal(*it, order, &visited);

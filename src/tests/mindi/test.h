@@ -27,8 +27,11 @@ namespace mindi {
 
 class Test {
  public:
-  shared_ptr<OperatorNode> Run();
+  vector<shared_ptr<OperatorNode>> proj_union_test();
+  vector<shared_ptr<OperatorNode>> join_test();
+  vector<shared_ptr<OperatorNode>> Run();
   vector<Column*> col(shared_ptr<OperatorNode> op_node);
+
 };
 
 } // namespace mindi

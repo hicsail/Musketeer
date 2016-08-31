@@ -52,7 +52,9 @@ namespace mpc {
         void RewriteDAG(op_nodes& dag, Environment& obls, map<string, bool>& mpc_mode,
                         op_nodes* result_dag);
         void InsertNode(shared_ptr<OperatorNode> at_node, 
-                        shared_ptr<OperatorNode> new_node);        
+                        shared_ptr<OperatorNode> new_node);
+        void PropagateOwnership(op_nodes& dag);
+
     }; 
     
 } // namespace mpc

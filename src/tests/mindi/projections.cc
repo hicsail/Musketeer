@@ -116,8 +116,6 @@ namespace mindi {
                     projected_cond_tree,
                     "project");
 
-    
-
     return selected_input;
   }
 

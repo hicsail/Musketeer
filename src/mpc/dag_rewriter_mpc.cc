@@ -17,6 +17,8 @@
  */
 
 #include "mpc/dag_rewriter_mpc.h"
+#include "ir/relation.h"
+#include "ir/owner.h"
 #include <queue>
 #include <algorithm>
 
@@ -28,6 +30,7 @@ namespace mpc {
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, op_nodes* result_dag) {
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
+        PropagateOwnership(order);
         Environment obls;
         map<string, bool> mode;
         set<string> inputs;
@@ -85,9 +88,9 @@ namespace mpc {
     bool DAGRewriterMPC::EmitObligation(shared_ptr<OperatorNode> node, Environment& obls) {
         OperatorType op_type = node->get_operator()->get_type();
         string rel_name = node->get_operator()->get_output_relation()->get_name();
-        int num_children = node->get_children().size();
         if (op_type == AGG_OP) { // Don't forget MIN etc.
             LOG(INFO) << rel_name << " is an aggregation.";
+            int num_children = node->get_children().size();
             for (int i = 0; i < num_children; ++i) {
                 Obligation* obl = new Obligation(node, i);
                 obls.push_obligation(rel_name, obl);
@@ -116,10 +119,18 @@ namespace mpc {
         for (vector<shared_ptr<OperatorNode>>::iterator cur = order.begin(); cur != order.end(); ++cur) {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
             LOG(INFO) << "Deriving obligations for " << rel->get_name();
+            if (!rel->isShared()) {
+                // the output relation (and consequently the input relations) 
+                // is owned by only one party so we don't need mpc OR obligations
+                LOG(INFO) << "Relation " << rel->get_name() << " is not shared";
+                mpc_mode[rel->get_name()] = false;
+                continue;    
+            }
+            
             vector<shared_ptr<OperatorNode>> parents = (*cur)->get_parents();
             if (parents.size() == 0) {
-                mpc_mode[rel->get_name()] = false;
-                obls.init_for(rel->get_name());
+                LOG(INFO) << "Root rel found: " << rel->get_name();
+                mpc_mode[rel->get_name()] = EmitObligation(*cur, obls);
             }
             else if (parents.size() == 1) {
                 string par_name = parents[0]->get_operator()->get_output_relation()->get_name();
@@ -236,8 +247,8 @@ namespace mpc {
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, Environment& obls, 
                                     map<string, bool>& mpc_mode,
                                     op_nodes* result_dag) {
-        set<shared_ptr<OperatorNode> > visited;
-        queue<shared_ptr<OperatorNode> > to_visit;
+        set<shared_ptr<OperatorNode>> visited;
+        queue<shared_ptr<OperatorNode>> to_visit;
         for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
             to_visit.push(*it);
             visited.insert(*it);
@@ -250,7 +261,6 @@ namespace mpc {
 
             if (!cur_node->IsLeaf()) {
                 op_nodes children = cur_node->get_children();
-                
                 for (op_nodes::iterator it = children.begin(); it != children.end();
                      ++it) {
                     if (visited.insert(*it).second) {
@@ -269,6 +279,17 @@ namespace mpc {
                 InsertNode(cur_node, make_shared<OperatorNode>(obl_op));
             }
         }        
+    }
+
+    void DAGRewriterMPC::PropagateOwnership(op_nodes& dag) {
+        for (vector<shared_ptr<OperatorNode>>::iterator i = dag.begin(); i != dag.end(); ++i) {
+            OperatorInterface* op = (*i)->get_operator();
+            Relation* out_rel = op->get_output_relation();
+            vector<Relation*> in_rels = op->get_relations();
+            for (vector<Relation*>::iterator r = in_rels.begin(); r != in_rels.end(); ++r) {
+                out_rel->add_owners((*r)->get_owners());
+            }
+        }
     }
 
 } // namespace mpc

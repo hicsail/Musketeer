@@ -308,9 +308,9 @@ int main(int argc, char *argv[]) {
     RLPlusParser_expr_return expr_ret = parser->expr(parser);
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
     // vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
-    vector<shared_ptr<OperatorNode>> dag;
-    shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
-    dag.push_back(test);
+    vector<shared_ptr<OperatorNode>> dag = tests::mindi::Test().Run();
+    // shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
+    // dag.push_back(test);
 
     PrintDagGV(dag);
 

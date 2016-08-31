@@ -44,7 +44,25 @@ namespace musketeer {
   }
 
   Relation* Relation::copy(string new_name) {
-    return new Relation(new_name, columns);
+    return new Relation(new_name, columns, owners);
+  }
+
+  set<Owner*> Relation::get_owners() {
+    return owners;
+  }
+
+  void Relation::add_owner(Owner* owner) {
+    owners.insert(owner);
+  }
+
+  void Relation::add_owners(set<Owner*> owners_) {
+    for (set<Owner*>::iterator i = owners_.begin(); i != owners_.end(); ++i) {
+      owners.insert(*i);
+    }
+  }
+
+  bool Relation::isShared() {
+    return (owners.size() > 1);    
   }
 
 } // namespace musketeer

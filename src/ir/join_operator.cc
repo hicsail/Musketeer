@@ -17,6 +17,7 @@
  */
 
 #include "ir/join_operator.h"
+#include "ir/join_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -88,6 +89,11 @@ namespace ir {
   OperatorInterface* JoinOperator::clone() {
     return new JoinOperator(get_input_dir(), get_relations(), left_cols_,
                             right_cols_, get_output_relation());
+  }
+
+  OperatorInterface* JoinOperator::toMPC() {
+    return new JoinOperatorMPC(get_input_dir(), get_relations(), left_cols_,
+                               right_cols_, get_output_relation());
   }
 
 } // namespace ir

@@ -40,7 +40,7 @@ namespace mindi {
     return op_node->get_operator()->get_output_relation()->get_columns();
   }
 
-  vector<shared_ptr<OperatorNode>> Test::proj_union_test() {
+  shared_ptr<OperatorNode> Test::Run() {
     Mindi* mindi = new Mindi();
 
     vector<Column*> input_cols;
@@ -113,76 +113,7 @@ namespace mindi {
     shared_ptr<OperatorNode> combined = 
       mindi->Concat(local_rev, "combined", other_agg);
 
-    vector<shared_ptr<OperatorNode>> dag;
-    dag.push_back(selected_input);
-    return dag;
-  }
-
-  vector<shared_ptr<OperatorNode>> Test::join_test() {
-    Mindi* mindi = new Mindi();
-
-    vector<shared_ptr<OperatorNode>> parents;
-
-    vector<Column*> tax_input_cols;
-    tax_input_cols.push_back(new Column("tax_data", 0, INTEGER_TYPE));
-    tax_input_cols.push_back(new Column("tax_data", 1, INTEGER_TYPE_PRIV));
-
-    set<Owner*> tax_owners;
-    tax_owners.insert(new Owner("tax company"));
-    
-    Relation* tax_input_rel = new Relation("tax_data", tax_input_cols, tax_owners);
-    vector<Relation*> tax_input_rels;
-    tax_input_rels.push_back(tax_input_rel);
-
-    OperatorInterface* tax_input_op = new InputOperator(FLAGS_hdfs_input_dir, tax_input_rels, tax_input_rel);
-    shared_ptr<OperatorNode> tax_input_op_node = 
-      shared_ptr<OperatorNode>(new OperatorNode(tax_input_op, parents));
-    
-    vector<Column*> ed_input_cols;
-    ed_input_cols.push_back(new Column("ed_data", 0, INTEGER_TYPE));
-    ed_input_cols.push_back(new Column("ed_data", 1, INTEGER_TYPE_PRIV));
-
-    set<Owner*> ed_owners;
-    ed_owners.insert(new Owner("ed company"));
-    ed_owners.insert(new Owner("another ed company"));
-    
-    Relation* ed_input_rel = new Relation("ed_data", ed_input_cols, ed_owners);
-    vector<Relation*> ed_input_rels;
-    ed_input_rels.push_back(ed_input_rel);
-
-    OperatorInterface* ed_input_op = new InputOperator(
-      FLAGS_hdfs_input_dir, ed_input_rels, ed_input_rel);
-    shared_ptr<OperatorNode> ed_input_op_node = 
-      shared_ptr<OperatorNode>(new OperatorNode(ed_input_op, parents));
-    
-    vector<Column*> tax_tot_group_by_cols;
-    tax_tot_group_by_cols.push_back(col(tax_input_op_node)[0]->clone());
-    shared_ptr<OperatorNode> tax_tot =
-      mindi->GroupBy(tax_input_op_node, tax_tot_group_by_cols, PLUS_GROUP,
-                     col(tax_input_op_node)[1]->clone(), "tax_tot");
-
-    vector<Column*> ed_tot_group_by_cols;
-    ed_tot_group_by_cols.push_back(col(ed_input_op_node)[0]->clone());
-    shared_ptr<OperatorNode> ed_tot =
-      mindi->GroupBy(ed_input_op_node, ed_tot_group_by_cols, PLUS_GROUP,
-                     col(ed_input_op_node)[1]->clone(), "ed_tot");
-
-    vector<Column*> left;
-    left.push_back(col(tax_tot)[0]);
-    vector<Column*> right;
-    right.push_back(col(ed_tot)[0]);
-
-    shared_ptr<OperatorNode> tax_ed = 
-      mindi->Join(tax_tot, "tax_ed", ed_tot, left, right);
-
-    vector<shared_ptr<OperatorNode>> dag;
-    dag.push_back(tax_tot);
-    dag.push_back(ed_tot);
-    return dag;
-  }
-
-  vector<shared_ptr<OperatorNode>> Test::Run() {
-    return proj_union_test();
+    return selected_input;
   }
 
 } // namespace mindi

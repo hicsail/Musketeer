@@ -48,7 +48,9 @@ namespace mpc {
         OperatorInterface* get_operator();
         GroupByType get_group_by_type();
         string get_name();
-        
+        int get_agg_index();
+        vector<Column*> get_group_bys();
+
         // Must call this method when pushing the obligation through a node.
         // Relations, columns, etc. on op will get updated.
         void PassThrough(shared_ptr<OperatorNode> op_node);
@@ -64,7 +66,7 @@ namespace mpc {
         GroupByType type;
 
         void update_op_columns(OperatorInterface* parent);
-        bool CanMerge(Obligation& other);
+        bool CanMerge(Obligation& other_obl);
     }; 
 
 } // namespace mpc

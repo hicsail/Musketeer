@@ -16,35 +16,22 @@
  * permissions and limitations under the License.
  */
 
-#ifndef MUSKETEER_UNION_OPERATOR_MPC_H
-#define MUSKETEER_UNION_OPERATOR_MPC_H
+#ifndef MUSKETEER_TESTS_MINDI_TEST_H
+#define MUSKETEER_TESTS_MINDI_TEST_H
 
-#include "ir/union_operator.h"
-
-#include <limits>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "base/common.h"
-#include "ir/relation.h"
+#include "frontends/mindi.h"
 
 namespace musketeer {
-namespace ir {
+namespace tests {
+namespace mindi {
 
-class UnionOperatorMPC: public UnionOperator {
+class Test {
  public:
-  UnionOperatorMPC(const string& input_dir, const vector<Relation*>& relations,
-                   Relation* output_rel):
-    UnionOperator(input_dir, relations, output_rel) {
-  }
-
-  OperatorType get_type();
-  bool isMPC();
-  OperatorInterface* clone();
+  shared_ptr<OperatorNode> Run();
+  vector<Column*> col(shared_ptr<OperatorNode> op_node);
 };
 
-} // namespace ir
+} // namespace mindi
+} // namespace tests
 } // namespace musketeer
 #endif

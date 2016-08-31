@@ -47,6 +47,14 @@ namespace mpc {
         return op->get_output_relation()->get_name();
     }
 
+    int Obligation::get_agg_index() {
+        return op->get_columns()[0]->get_index();
+    }
+
+    vector<Column*> Obligation::get_group_bys() {
+        return op->get_group_bys();
+    }
+
     // This is a bit of a hack for now
     void Obligation::update_op_columns(OperatorInterface* parent) {
         vector<Column*> parent_out_cols = parent->get_output_relation()->get_columns();
@@ -203,8 +211,29 @@ namespace mpc {
         return true;
     }
 
-    bool Obligation::CanMerge(Obligation& other) {
-        return (type == other.get_group_by_type());
+    bool Obligation::CanMerge(Obligation& other_obl) {
+        OperatorInterface* other = other_obl.get_operator();
+        if (op->get_output_relation()->get_columns().size() 
+            != other->get_output_relation()->get_columns().size()) {
+            return false;
+        }
+
+        int agg_index = get_agg_index();
+        int other_agg_index = other_obl.get_agg_index();
+
+        if (agg_index != other_agg_index) {
+            return false;
+        }
+
+        if (type != other_obl.get_group_by_type()) {
+            return false;
+        }
+
+        // currently there is no need to check if all the indeces
+        // of the group by cols align since that is an invariant of
+        // how they are created
+
+        return true;
     }
 
 } // namespace mpc
