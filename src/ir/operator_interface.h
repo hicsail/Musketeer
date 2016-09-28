@@ -241,7 +241,7 @@ class OperatorInterface {
   }
 
   virtual OperatorInterface* toMPC() {
-    LOG(FATAL) << "No MPC equivalent!";
+    LOG(FATAL) << "No MPC equivalent for: " << get_type_string();
     return NULL;
   }
 

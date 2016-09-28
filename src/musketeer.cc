@@ -319,15 +319,6 @@ int main(int argc, char *argv[]) {
 
     PrintDagGV(dag);
 
-    if (true) {
-      return 0; 
-    }
-
-    if (FLAGS_output_ir_dag_gv) {
-      PrintDagGV(dag);
-    } else {
-      PrintDag(dag);
-    }
     if (!strcmp(job->operator_merge().c_str(), "1")) {
       LOG(INFO) << "Scheduling entire DAG";
       if (FLAGS_use_dynamic_scheduler) {

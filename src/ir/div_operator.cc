@@ -17,6 +17,7 @@
  */
 
 #include "ir/div_operator.h"
+#include "ir/div_operator_mpc.h"
 
 #include <limits>
 #include <map>
@@ -53,6 +54,12 @@ namespace ir {
   bool DivOperator::mapOnly() {
     return true;
   }
+
+  OperatorInterface* DivOperator::toMPC() {
+    return new DivOperatorMPC(get_input_dir(), get_condition_tree(),
+                              get_relations(), values, get_output_relation());
+  }
+
 
   OperatorInterface* DivOperator::clone() {
     return new DivOperator(get_input_dir(), get_condition_tree(),

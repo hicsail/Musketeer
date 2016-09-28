@@ -25,6 +25,7 @@
 #include "ir/relation.h"
 #include "ir/select_operator.h"
 #include "ir/mul_operator.h"
+#include "ir/div_operator.h"
 #include "ir/union_operator.h"
 #include "frontends/operator_node.h"
 
@@ -59,7 +60,7 @@ namespace mpc {
         
         bool CanPass(SelectOperator* other);
         bool CanPass(MulOperator* other);
-        bool CanPass(UnionOperator* other_op, Obligation* other_obl);
+        bool CanPass(DivOperator* other);
 
     private:
         Aggregation* op;

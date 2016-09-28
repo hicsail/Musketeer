@@ -82,8 +82,8 @@ namespace mpc {
             return CanPass(dynamic_cast<SelectOperator*>(other_op));
         case MUL_OP:
             return CanPass(dynamic_cast<MulOperator*>(other_op));
-        case UNION_OP:
-            return CanPass(dynamic_cast<UnionOperator*>(other_op), other_obl);
+        case DIV_OP:
+            return CanPass(dynamic_cast<DivOperator*>(other_op));
         default:
             return false;
         }
@@ -202,12 +202,56 @@ namespace mpc {
         return true;
     }
 
-    bool Obligation::CanPass(UnionOperator* other_op, Obligation* other_obl) {
-        if (!other_obl || !CanMerge(*other_obl)) {
-            // can't push unless we have two obligations of the same type 
+    bool Obligation::CanPass(DivOperator* other) {
+        // TODO(nikolaj): this is basically identical to the CanPass method for
+        // MulOperator (and other projections). This needs refactoring. 
+
+        if (op->get_output_relation()->get_columns().size() 
+            != other->get_output_relation()->get_columns().size()) {
+            LOG(ERROR) << "Output sizes of obligation and mul operator different.";
             return false;
         }
-        // at this point other_obl is not null
+
+        // assuming no nested ops, only single product
+        vector<Value*> values = other->get_values();
+        Value* left = values[0];
+        Value* right = values[1];
+        
+        Column* left_col = dynamic_cast<Column*>(left);
+        Column* right_col = dynamic_cast<Column*>(right);
+        int index_agg = op->get_columns()[0]->get_index();
+        int index_proj;
+
+        if (left_col) {
+            index_proj = left_col->get_index();
+        }
+        else if (right_col) {
+            index_proj = right_col->get_index();
+        }
+        else {
+            LOG(ERROR) << "Both operands in the arithmetic expression are values.";
+            return false;
+        }
+        // TODO(nikolaj): Should check somewhere if math operations commute
+
+        if (index_agg == index_proj) {
+            // it's safe to push if the projection only affects
+            // the agg column
+            return true;
+        }
+        // Reaching this point means that we're potentially affecting the key space
+        // of the aggregation
+        if (left_col && right_col) {
+            // We're computing the product of two columns. No way of knowing if either
+            // one is 0 so can't safely push.
+            return false;
+        }
+
+        if (left->get_value() == "0" || right->get_value() == "0") {
+            // multiplication by 0 changes key space so we can't push
+            return false;
+        }
+
         return true;
     }
 

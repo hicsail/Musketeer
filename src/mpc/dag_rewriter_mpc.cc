@@ -63,7 +63,7 @@ namespace mpc {
 
         if (obl->CanPassOperator(cur->get_operator(), other_obl)) {
             string cur_name = cur->get_operator()->get_output_relation()->get_name();
-            // we can "marge" obligations and so only need to pass one of them on
+            // we can "merge" obligations and so we only need to pass one of them on
             // the other obligation can be destroyed
             // delete other_obl;
             obls.push_obligation(cur_name, obl);
@@ -104,7 +104,7 @@ namespace mpc {
             }
             return false; // just emitted an obligation so we can stay in local mode
         }
-        else if (op_type == JOIN_OP) {
+        else if (op_type == JOIN_OP || op_type == UNION_OP) {
             obls.init_for(rel_name);
             return true;
         }
