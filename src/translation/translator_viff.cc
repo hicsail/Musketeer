@@ -159,16 +159,6 @@ namespace translator {
     return input_rels_out;
   }
 
-  string TranslatorViff::TranslateHeader() {
-    string header;
-    TemplateDictionary dict("header");
-    dict.SetValue("INPUT_PARTY_ID", FLAGS_viff_input_party_id);
-    dict.SetValue("VIFF_NODE_ADDRESSES", FLAGS_viff_node_addresses);
-    ExpandTemplate(FLAGS_viff_templates_dir + "HeaderTemplate.py",
-                   ctemplate::DO_NOT_STRIP, &dict, &header);
-    return header;
-  }
-
   // Check if all the inputs of the operator have been processed.
   bool TranslatorViff::CanSchedule(OperatorInterface* op,
                                    set<string>* processed) {
@@ -216,29 +206,38 @@ namespace translator {
     }
   }
 
-  string TranslatorViff::TranslateMakeShares(set<pair<Relation*, string>> input_rels_paths) {
-    string make_shares_code = "";
-    for (set<pair<Relation*, string>>::iterator it = input_rels_paths.begin(); 
-         it != input_rels_paths.end(); ++it) {
-      string code;
-      TemplateDictionary dict("makeshares");
-      dict.SetValue("COL_TYPES", GenerateColumnTypes(it->first));
-      dict.SetValue("REL", it->first->get_name());
-      dict.SetValue("INPUT_PATH", it->second);
-      ExpandTemplate(FLAGS_viff_templates_dir + "MakeSharesTemplate.py",
-                     ctemplate::DO_NOT_STRIP, &dict, &code);
-      make_shares_code += code;
-    }
-    return make_shares_code;
+  string TranslatorViff::TranslateImportAndUtils() {
+    string import_and_utils;
+    TemplateDictionary dict("import_and_utils");
+    ExpandTemplate(FLAGS_viff_templates_dir + "ImportAndUtilsTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &import_and_utils);
+    return import_and_utils;
   }
 
-  string TranslatorViff::TranslateProtocolInput(set<pair<Relation*, string>> input_rels_paths) {
+  string TranslatorViff::TranslateCloseProtocol() {
+    string close_protocol;
+    TemplateDictionary dict("close_protocol");
+    ExpandTemplate(FLAGS_viff_templates_dir + "CloseProtocolTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &close_protocol);
+    return close_protocol;
+  }
+
+  string TranslatorViff::TranslateMain() {
+    string main;
+    TemplateDictionary dict("main");
+    ExpandTemplate(FLAGS_viff_templates_dir + "MainTemplate.py",
+                   ctemplate::DO_NOT_STRIP, &dict, &main);
+    return main;
+  }
+
+  string TranslatorViff::TranslateInput(set<pair<Relation*, string>> input_rels_paths) {
     string input_rels_code = "";
     for (set<pair<Relation*, string>>::iterator it = input_rels_paths.begin(); 
          it != input_rels_paths.end(); ++it) {
       string in_code;
       TemplateDictionary dict("input");
-      dict.SetValue("REL_NAME", it->first->get_name());
+      dict.SetValue("REL", it->first->get_name());
+      dict.SetValue("INPUT_PATH", it->second);
       ExpandTemplate(FLAGS_viff_templates_dir + "InputTemplate.py",
                      ctemplate::DO_NOT_STRIP, &dict, &in_code);
       input_rels_code += in_code;
@@ -246,35 +245,14 @@ namespace translator {
     return input_rels_code;
   }
 
-  string TranslatorViff::TranslateGatherLeaves(set<shared_ptr<OperatorNode>> leaves) {
-    string code = "";
-    for (set<shared_ptr<OperatorNode>>::iterator i = leaves.begin(); i != leaves.end(); ++i) {
-      TemplateDictionary dict("gather");
-      dict.SetValue("REL", (*i)->get_operator()->get_output_relation()->get_name());
-      string cur_code;
-      ExpandTemplate(FLAGS_viff_templates_dir + "GatherTemplate.py",
-                     ctemplate::DO_NOT_STRIP, &dict, &cur_code);
-      code += cur_code;
-    }
-    return code;
-  }
-
-  string TranslatorViff::TranslateDataTransfer() {
-    TemplateDictionary dict("transfer");
-    string code;
-    ExpandTemplate(FLAGS_viff_templates_dir + "DataTransferTemplate.py",
-                   ctemplate::DO_NOT_STRIP, &dict, &code);
-    return code;
-  }
-
-  string TranslatorViff::TranslateStoreLeaves(set<shared_ptr<OperatorNode>> leaves) {
+  string TranslatorViff::TranslateOutput(set<shared_ptr<OperatorNode>> leaves) {
     string store_code = "";
     for (set<shared_ptr<OperatorNode>>::iterator i = leaves.begin(); i != leaves.end(); ++i) {
       TemplateDictionary dict("store");
       dict.SetValue("REL", (*i)->get_operator()->get_output_relation()->get_name());
       dict.SetValue("OUTPUT_PATH", (*i)->get_operator()->get_output_path());
       string cur_code;
-      ExpandTemplate(FLAGS_viff_templates_dir + "StoreTemplate.py",
+      ExpandTemplate(FLAGS_viff_templates_dir + "OutputTemplate.py",
                      ctemplate::DO_NOT_STRIP, &dict, &cur_code);
       store_code += cur_code;
     }
@@ -287,12 +265,9 @@ namespace translator {
     OperatorInterface* op = op_node->get_operator();
     std::vector<Relation*> v = op->get_relations();
     
-    string header = TranslateHeader();
+    string import_and_utils = TranslateImportAndUtils();
     set<pair<Relation*, string>> input_rels_paths = GetInputRelsAndPaths(dag);
-
-    set<string> nodelist = set<string>();
-    set<string> inputs = set<string>();
-    string protocol_inputs = TranslateProtocolInput(input_rels_paths);
+    string inputs = TranslateInput(input_rels_paths);
     
     string protocol_ops;
     set<shared_ptr<OperatorNode>> leaves = set<shared_ptr<OperatorNode>>();
@@ -304,25 +279,29 @@ namespace translator {
     }
 
     TranslateDAG(&protocol_ops, dag, &leaves, &proc);
-    string return_rt = "    return rt\n\n"; // TODO(nikolaj): just a hack for now
-    string gather_ops = TranslateGatherLeaves(leaves);
-    string make_shares = TranslateMakeShares(input_rels_paths);
-    string data_transfer = TranslateDataTransfer();
-    string store_leaves = TranslateStoreLeaves(leaves);
-    string code = header + protocol_inputs + protocol_ops + gather_ops + 
-                  return_rt + make_shares + data_transfer + store_leaves;
+    string output = TranslateOutput(leaves);
+    string close_protocol = TranslateCloseProtocol();
+    string main = TranslateMain();
+    // string make_shares = TranslateMakeShares(input_rels_paths);
+    // string data_transfer = TranslateDataTransfer();
+    // string store_leaves = TranslateStoreLeaves(leaves);
+    // string code = header + protocol_inputs + protocol_ops + gather_ops + 
+    //               return_rt + make_shares + data_transfer + store_leaves;
+    string code = import_and_utils + inputs + protocol_ops + output
+                  + close_protocol + main;
+
     return WriteToFiles(op, code);
   }
 
   ViffJobCode* TranslatorViff::Translate(SelectOperatorMPC* op) {
     // TODO(nikolaj): Implement non-dummy version
-    TemplateDictionary dict("dummy");
+    TemplateDictionary dict("select");
     Relation* input_rel = op->get_relations()[0];
     string input_name = input_rel->get_name();
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
     dict.SetValue("IN_REL", input_name);
     string code;
-    ExpandTemplate(FLAGS_viff_templates_dir + "TempDummyTemplate.py",
+    ExpandTemplate(FLAGS_viff_templates_dir + "SelectTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &code);
     ViffJobCode* job_code = new ViffJobCode(op, code);
     return job_code;
@@ -337,7 +316,7 @@ namespace translator {
     string agg_op = GenerateAggMPCOp(op->get_operator());
     dict.SetValue("OUT_REL", op->get_output_relation()->get_name());
     dict.SetValue("IN_REL", input_name);
-    dict.SetValue("GROUP_BY_COLS", GenerateColumns(group_by_cols));
+    dict.SetValue("GROUP_BY_COL", boost::lexical_cast<string>(group_by_cols[0]->get_index()));
     dict.SetValue("AGG_COL", boost::lexical_cast<string>(agg_col->get_index()));
     dict.SetValue("AGG_OP", agg_op);
     string code;
@@ -380,7 +359,13 @@ namespace translator {
   }
 
   string TranslatorViff::GenerateAggMPCOp(const string& op) {
-    return "x " + op + " y";
+    if (op == "+") {
+      return "sum";
+    }
+    else {
+      LOG(ERROR) << "Unknown or unsupported agg operator: " << op;
+      return "unknown";      
+    }
   }
 
   string TranslatorViff::GenerateColumns(vector<Column*> columns) {

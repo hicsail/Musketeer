@@ -1,1 +1,1 @@
-    {{OUT_REL}} = relational.project({{IN_REL}}, {{LAMBDA}})
+    {{OUT_REL}} = ext.project({{IN_REL}}, {{LAMBDA}})

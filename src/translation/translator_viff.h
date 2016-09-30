@@ -47,12 +47,12 @@ class TranslatorViff : public TranslatorInterface {
 
   
  private:
-  string TranslateHeader();
-  string TranslateGatherLeaves(set<shared_ptr<OperatorNode>> leaves);
-  string TranslateMakeShares(set<pair<Relation*, string>> input_rels_paths);
-  string TranslateProtocolInput(set<pair<Relation*, string>> input_rels_paths);
-  string TranslateDataTransfer();
-  string TranslateStoreLeaves(set<shared_ptr<OperatorNode>> leaves);
+  string TranslateImportAndUtils();
+  string TranslateInput(set<pair<Relation*, string>> input_rels_paths);
+  string TranslateOutput(set<shared_ptr<OperatorNode>> leaves);
+  string TranslateCloseProtocol();
+  string TranslateMain();
+
   set<pair<Relation*, string>> GetInputRelsAndPaths(const op_nodes& dag);
   vector<Relation*>* DetermineInputsSpark(const op_nodes& dag,
                                                            set<string>* inputs,
