@@ -91,12 +91,15 @@ DECLARE_int32(spark_web_ui_port);
 
 // Viff flags.
 DECLARE_string(viff_templates_dir);
-DECLARE_string(viff_input_party_id);
-DECLARE_string(viff_node_addresses);
+DECLARE_string(viff_config_loc);
 
 // WildCherry flags.
 DECLARE_string(wildcherry_dir);
 DECLARE_string(wildcherry_loop_its);
 DECLARE_string(wildcherry_templates_dir);
 DECLARE_bool(wildcherry_use_hdfs);
+
+// Universal MPC flags.
+DECLARE_string(data_owner_id);
+
 #endif

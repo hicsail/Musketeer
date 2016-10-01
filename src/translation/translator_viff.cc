@@ -225,6 +225,7 @@ namespace translator {
   string TranslatorViff::TranslateMain() {
     string main;
     TemplateDictionary dict("main");
+    dict.SetValue("VIFF_CONFIG_LOC", FLAGS_viff_config_loc);
     ExpandTemplate(FLAGS_viff_templates_dir + "MainTemplate.py",
                    ctemplate::DO_NOT_STRIP, &dict, &main);
     return main;
@@ -436,7 +437,7 @@ namespace translator {
       if (col_index == col_index_left) {
         if (columns.size() > 1) {
           if (!op.compare("/")) {
-            maths += "relational.divide(" + input_name + boost::lexical_cast<string>(col_index + 1) + ", ";
+            maths += "divide(" + input_name + boost::lexical_cast<string>(col_index + 1) + ", ";
           }
           else {
             maths += input_name + boost::lexical_cast<string>(col_index + 1) +

@@ -144,15 +144,18 @@ DEFINE_int32(spark_web_ui_port, 8080, "Spark Web UI Port");
 
 // Viff flags.
 DEFINE_string(viff_templates_dir, "src/translation/viff_templates/", "Viff templates directory");
-DEFINE_string(viff_input_party_id, "1", "Id used by Viff to indentify input party");
-DEFINE_string(viff_node_addresses, "'http://localhost:9001','http://localhost:9002','http://localhost:9003'",
-              "Addresses to send secret shares.");
+DEFINE_string(viff_config_loc, "", "Location of Viff configuration file");
+
 // Wildcherry flags.
 DEFINE_string(wildcherry_templates_dir, "src/translation/wildcherry_templates/",
               "WildCherry templates directory");
 DEFINE_string(wildcherry_dir, "", "Location of Wildcherry");
 DEFINE_bool(wildcherry_use_hdfs, false,
             "Whether Wildcherry jobs should read from HDFS or local files");
+
+// MPC flags
+DEFINE_string(data_owner_id, "1", "ID used to indicate data ownership");
+
 
 inline void init(int argc, char *argv[]) {
   // Set up usage message.

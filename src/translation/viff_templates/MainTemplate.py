@@ -3,7 +3,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     Runtime.add_options(parser)
     options, args = parser.parse_args()
-    pid, players = load_config(args[0])
+    pid, players = load_config("{{VIFF_CONFIG_LOC}}")
     Zp = GF(find_prime(2**65, blum=True))
     
     runtime_class = make_runtime_class(
