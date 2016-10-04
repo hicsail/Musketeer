@@ -128,9 +128,12 @@ namespace mpc {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
             LOG(INFO) << "Deriving obligations for " << rel->get_name();
             
-            PrintDagGVToFile(dag, obls, mpc_mode, stream);
+            PrintDagGVToFile(make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode, stream);
+            stream << endl;
+            PrintDagGVToFile((*cur), dag, obls, mpc_mode, stream);
             stream << endl;
             
+
             if (!rel->isShared()) {
                 // the output relation (and consequently the input relations) 
                 // is owned by only one party so we don't need mpc OR obligations

@@ -93,26 +93,44 @@ namespace musketeer {
     return result;
   }
 
-  void PrintDagGVToFile(op_nodes& dag, mpc::Environment& obls, 
-                        map<string, bool>& mpc_mode, ofstream& stream) {
+  string to_gv(string name, string op_name, bool highlight) {
+    string label = "label=\\\"" + op_name + "\\\"";
+    string style = "";
+    if (highlight) {
+      style = "style=\\\"fill: #f77; font-weight: bold\\\"";
+    }
+    return " " + name + "[" + label + " " + style + "]; \\"; 
+  }
+
+  string node_to_gv(shared_ptr<OperatorNode> node, bool highlight) {
+    string name = node->get_operator()->get_output_relation()->get_name();
+    string op_name = node->get_operator()->get_type_string();
+    return to_gv(name, op_name, highlight); 
+  }
+
+  void PrintDagGVToFile(shared_ptr<OperatorNode> current, op_nodes& dag, 
+                        mpc::Environment& obls, map<string, bool>& mpc_mode,
+                        ofstream& stream) {
     set<shared_ptr<OperatorNode> > visited;
     queue<shared_ptr<OperatorNode> > to_visit;
 
-    stream << "\"digraph OpDAG {" << endl;
-    stream << "node [rx=5 ry=5 labelStyle=\"font: 300 14px 'Helvetica Neue', Helvetica\"]" << endl;
-    stream << "edge [labelStyle=\"font: 300 14px 'Helvetica Neue', Helvetica\"]" << endl;
+    stream << "\"digraph OpDAG { \\" << endl;
+    stream << " node [rx=5 ry=5 labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
+    stream << " edge [labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
     
     for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
       to_visit.push(*it);
       visited.insert(*it);
-      stream << (*it)->get_operator()->get_output_relation()->get_name()
-           << " [label=\"" << (*it)->get_operator()->get_type_string() << "\"]"
-           << "; " << endl;
+      stream << " " << (*it)->get_operator()->get_output_relation()->get_name()
+           << " [label=\\\"" << (*it)->get_operator()->get_type_string() << "\\\"]"
+           << "; \\" << endl;
     }
 
     while (!to_visit.empty()) {
       shared_ptr<OperatorNode> cur_node = to_visit.front();
+      stream << node_to_gv(cur_node, cur_node == current) << endl;
       string cur_name = cur_node->get_operator()->get_output_relation()->get_name();
+      string cur_op_name = cur_node->get_operator()->get_type_string();
       to_visit.pop();
 
       queue<mpc::Obligation*> original_order;
@@ -143,6 +161,7 @@ namespace musketeer {
         for (op_nodes::iterator it = children.begin(); it != children.end();
              ++it) {
           string child_name = (*it)->get_operator()->get_output_relation()->get_name();
+          string child_op_name = (*it)->get_operator()->get_type_string();
           mpc::Obligation* obl = obl_lookup[child_name];
           if (!obl) {
             if (!non_blocked.empty()) {
@@ -150,30 +169,26 @@ namespace musketeer {
               non_blocked.pop();
             }
           }
-
+          
           if (!obl) {
-            stream << cur_name
+            stream << " " << cur_name
                  << "->"
                  << child_name
-                 << " [label=\"" 
-                 << (*it)->get_operator()->get_type_string()
-                 << "\"];" << endl;
-            cout << cur_name << " no obls" << endl;
+                 << " \\" << endl;
           }
           else {
-            stream << cur_name
+            string obl_op_name = obl->get_operator()->get_type_string(); 
+            stream << to_gv(obl->get_name(), obl_op_name, false);
+
+            stream << " " << cur_name
                  << "->"
                  << obl->get_name()
-                 << " [label=\"" 
-                 << obl->get_operator()->get_type_string()
-                 << "\"];" << endl;
+                 << " \\" << endl;
 
-            stream << obl->get_name()
+            stream << " " << obl->get_name()
                  << "->"
                  << child_name
-                 << " [label=\"" 
-                 << (*it)->get_operator()->get_type_string()
-                 << "\"];" << endl;  
+                 << " \\" << endl;  
           }
 
           if (visited.insert(*it).second) {
@@ -187,7 +202,7 @@ namespace musketeer {
         original_order.pop();
       }
     }
-    stream << "}\"," << endl;
+    stream << " }\", " << endl;
   }
   
   void PrintDag(op_nodes dag) {
