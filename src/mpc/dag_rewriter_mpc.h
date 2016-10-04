@@ -27,6 +27,8 @@
 #include "ir/operator_interface.h"
 
 #include <map>
+#include <iostream>
+#include <fstream>
 
 namespace musketeer {
 namespace mpc {
@@ -46,13 +48,15 @@ namespace mpc {
                                 string right_name, Environment& obls);
         bool EmitObligation(shared_ptr<OperatorNode> node, Environment& obls);
         void DeriveObligations(op_nodes& order, Environment& obls, 
-                               map<string, bool>& mpc_mode);
+                               map<string, bool>& mpc_mode, ofstream& stream,
+                               op_nodes& dag);
         void InitEnvAndMode(Environment& obls, map<string, bool>& mpc_mode,
                             set<string>* inputs);
         void RewriteDAG(op_nodes& dag, Environment& obls, map<string, bool>& mpc_mode,
                         op_nodes* result_dag);
-        void InsertNode(shared_ptr<OperatorNode> at_node, 
-                        shared_ptr<OperatorNode> new_node);
+        shared_ptr<OperatorNode> InsertNode(shared_ptr<OperatorNode> at_node,
+                                            shared_ptr<OperatorNode> child_node, 
+                                            shared_ptr<OperatorNode> new_node);
         void PropagateOwnership(op_nodes& dag);
 
     }; 

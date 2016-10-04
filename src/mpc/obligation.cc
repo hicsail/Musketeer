@@ -23,7 +23,8 @@
 namespace musketeer {
 namespace mpc {
 
-    Obligation::Obligation(shared_ptr<OperatorNode> op_node, int index) {
+    Obligation::Obligation(shared_ptr<OperatorNode> op_node, int index): blocked_by(nullptr) {
+        // blocked_by;
         OperatorInterface* _op = op_node->get_operator();
         // TODO(nikolaj): check operator type
         op = dynamic_cast<Aggregation*>(_op->toMPC());
@@ -53,6 +54,15 @@ namespace mpc {
 
     vector<Column*> Obligation::get_group_bys() {
         return op->get_group_bys();
+    }
+
+    shared_ptr<OperatorNode> Obligation::get_blocked_by() {
+        return blocked_by;
+    }
+
+    void Obligation::set_blocked_by(shared_ptr<OperatorNode> op_node) {
+        blocked_by = op_node;
+        cout << "blocked_by " << blocked_by << endl;
     }
 
     // This is a bit of a hack for now

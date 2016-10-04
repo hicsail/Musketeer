@@ -28,9 +28,13 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include "base/common.h"
 #include "frontends/operator_node.h"
+// TODO: this doesn't belong here
+#include "mpc/environment.h"
 
 namespace musketeer {
 
@@ -44,8 +48,12 @@ namespace musketeer {
 
   bool CheckChildrenInSet(const op_nodes& dag, const node_set& nodes);
   string ExecCmd(const string& cmd);
+  op_nodes CloneDag(op_nodes& dag); 
   void PrintDag(op_nodes dag);
   void PrintDagGV(op_nodes dag);
+  // TODO: make this more general by passing in a stream
+  void PrintDagGVToFile(op_nodes& dag, musketeer::mpc::Environment& obls,
+                        map<string, bool>& mpc_mode, ofstream& stream);
   vector<string> GetDagOutputs(op_nodes dag);
   bool CheckRenameRequired(OperatorInterface* op);
   string FmwToString(uint8_t fmw);

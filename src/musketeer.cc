@@ -322,6 +322,10 @@ int main(int argc, char *argv[]) {
 
     PrintDagGV(dag);
 
+    if (true) {
+      return -1;
+    }
+
     if (!strcmp(job->operator_merge().c_str(), "1")) {
       LOG(INFO) << "Scheduling entire DAG";
       if (FLAGS_use_dynamic_scheduler) {

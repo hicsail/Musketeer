@@ -19,10 +19,13 @@
 #ifndef MUSKETEER_MPC_ENVIRONMENT_H
 #define MUSKETEER_MPC_ENVIRONMENT_H
 
-#include "base/utils.h"
-#include "base/common.h"
 #include "mpc/obligation.h"
+// #include "base/utils.h"
+// #include "base/common.h"
 #include <map>
+#include <list>
+
+// using namespace musketeer::mpc;
 
 namespace musketeer {
 namespace mpc {
@@ -38,31 +41,18 @@ namespace mpc {
         void init_for(string rel_name);
         // Push back single obligation to rel_name
         void push_obligation(string rel_name, Obligation* obl);
-        // Push back obligations to rel_name
-        void push_obligations(string rel_name, vector<Obligation*> obls);
         // Determine if there are any obligations on rel_name
         bool has_obligation(string rel_name);
         // Returns last obligation on rel_name
         // Returns NULL if no obligation to pop
         Obligation* pop_obligation(string rel_name);
 
-        friend std::ostream& operator<<(std::ostream& _stream, Environment const& env) { 
-            _stream << "Env()" << "\n";
-            for (map<string, vector<Obligation*>>::const_iterator it = env.env.begin(); it != env.env.end(); ++it) {
-                _stream << it->first << " {\n";
-                _stream << (it->second).size();
-                for (vector<Obligation*>::const_iterator o = (it->second).begin(); o != (it->second).end(); ++o) {
-                    // _stream << "\t" << (*o)->get_group_by_type() << "\n";
-                }
-                _stream << "}\n";
-            }
-            return _stream;
-        };
-    
-    private:
-        map<string, vector<Obligation*>> env; // queue instead of vector would be more natural
+        string toJSON();
 
-        void extend(vector<Obligation*>& left, vector<Obligation*>& right);
+        friend std::ostream& operator<<(std::ostream& _stream, Environment const& env);
+        
+    private:
+        map<string, list<Obligation*>> env;
     }; 
 
 

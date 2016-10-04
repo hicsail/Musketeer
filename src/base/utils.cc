@@ -39,6 +39,8 @@
 #include "RLPlusLexer.h"
 #include "RLPlusParser.h"
 
+#include "mpc/obligation.h"
+
 namespace musketeer {
 
   // Checks if all the nodes in the dag are in the nodes set.
@@ -91,6 +93,103 @@ namespace musketeer {
     return result;
   }
 
+  void PrintDagGVToFile(op_nodes& dag, mpc::Environment& obls, 
+                        map<string, bool>& mpc_mode, ofstream& stream) {
+    set<shared_ptr<OperatorNode> > visited;
+    queue<shared_ptr<OperatorNode> > to_visit;
+
+    stream << "\"digraph OpDAG {" << endl;
+    stream << "node [rx=5 ry=5 labelStyle=\"font: 300 14px 'Helvetica Neue', Helvetica\"]" << endl;
+    stream << "edge [labelStyle=\"font: 300 14px 'Helvetica Neue', Helvetica\"]" << endl;
+    
+    for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
+      to_visit.push(*it);
+      visited.insert(*it);
+      stream << (*it)->get_operator()->get_output_relation()->get_name()
+           << " [label=\"" << (*it)->get_operator()->get_type_string() << "\"]"
+           << "; " << endl;
+    }
+
+    while (!to_visit.empty()) {
+      shared_ptr<OperatorNode> cur_node = to_visit.front();
+      string cur_name = cur_node->get_operator()->get_output_relation()->get_name();
+      to_visit.pop();
+
+      queue<mpc::Obligation*> original_order;
+      queue<mpc::Obligation*> non_blocked;
+      map<string, mpc::Obligation*> obl_lookup;
+      
+      while (obls.has_obligation(cur_name)) {
+        mpc::Obligation* obl = obls.pop_obligation(cur_name);
+        shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
+        
+        if (blocker) {
+          string blocker_name = blocker->get_operator()->get_output_relation()->get_name();
+          obl_lookup[blocker_name] = obl;
+        }
+        else {
+          non_blocked.push(obl);
+        }
+        
+        original_order.push(obl);
+      }
+
+      if (!cur_node->IsLeaf()) {
+
+        op_nodes children = cur_node->get_loop_children();
+        op_nodes non_loop_children = cur_node->get_children();
+        children.insert(children.end(), non_loop_children.begin(),
+                        non_loop_children.end());
+        for (op_nodes::iterator it = children.begin(); it != children.end();
+             ++it) {
+          string child_name = (*it)->get_operator()->get_output_relation()->get_name();
+          mpc::Obligation* obl = obl_lookup[child_name];
+          if (!obl) {
+            if (!non_blocked.empty()) {
+              obl = non_blocked.front();
+              non_blocked.pop();
+            }
+          }
+
+          if (!obl) {
+            stream << cur_name
+                 << "->"
+                 << child_name
+                 << " [label=\"" 
+                 << (*it)->get_operator()->get_type_string()
+                 << "\"];" << endl;
+            cout << cur_name << " no obls" << endl;
+          }
+          else {
+            stream << cur_name
+                 << "->"
+                 << obl->get_name()
+                 << " [label=\"" 
+                 << obl->get_operator()->get_type_string()
+                 << "\"];" << endl;
+
+            stream << obl->get_name()
+                 << "->"
+                 << child_name
+                 << " [label=\"" 
+                 << (*it)->get_operator()->get_type_string()
+                 << "\"];" << endl;  
+          }
+
+          if (visited.insert(*it).second) {
+            to_visit.push(*it);
+          }
+        }
+      }
+
+      while (!original_order.empty()) {
+        obls.push_obligation(cur_name, original_order.front());
+        original_order.pop();
+      }
+    }
+    stream << "}\"," << endl;
+  }
+  
   void PrintDag(op_nodes dag) {
     set<shared_ptr<OperatorNode> > visited;
     queue<shared_ptr<OperatorNode> > to_visit;
@@ -123,6 +222,45 @@ namespace musketeer {
       }
     }
   }
+
+  void PrintDagGVToFile(op_nodes dag, ofstream& stream) {
+    set<shared_ptr<OperatorNode> > visited;
+    queue<shared_ptr<OperatorNode> > to_visit;
+    stream << "digraph OpDAG {" << endl;
+    stream << "node [shape=box]; ";
+    for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
+      to_visit.push(*it);
+      visited.insert(*it);
+      stream << (*it)->get_operator()->get_output_relation()->get_name()
+           << " [label=\"" << (*it)->get_operator()->get_type_string() << "\"]"
+           << "; ";
+    }
+    stream << endl;
+    while (!to_visit.empty()) {
+      shared_ptr<OperatorNode> cur_node = to_visit.front();
+      to_visit.pop();
+      if (!cur_node->IsLeaf()) {
+        op_nodes children = cur_node->get_loop_children();
+        op_nodes non_loop_children = cur_node->get_children();
+        children.insert(children.end(), non_loop_children.begin(),
+                        non_loop_children.end());
+        for (op_nodes::iterator it = children.begin(); it != children.end();
+             ++it) {
+          stream << cur_node->get_operator()->get_output_relation()->get_name()
+               << "->"
+               << (*it)->get_operator()->get_output_relation()->get_name()
+               << " [label=\"" <<
+            (*it)->get_operator()->get_type_string()
+               << "\"];" << endl;
+          if (visited.insert(*it).second) {
+            to_visit.push(*it);
+          }
+        }
+      }
+    }
+    stream << "}" << endl;  
+  }
+  
 
   void PrintDagGV(op_nodes dag) {
     set<shared_ptr<OperatorNode> > visited;

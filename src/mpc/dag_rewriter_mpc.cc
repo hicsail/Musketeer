@@ -28,6 +28,8 @@ namespace mpc {
     DAGRewriterMPC::DAGRewriterMPC() {}
 
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, op_nodes* result_dag) {
+        ofstream json_file;
+        json_file.open("dags.txt", std::ios_base::app);
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
         PropagateOwnership(order);
@@ -36,7 +38,8 @@ namespace mpc {
         set<string> inputs;
         DetermineInputs(dag, &inputs);
         InitEnvAndMode(obls, mode, &inputs);
-        DeriveObligations(order, obls, mode);
+        DeriveObligations(order, obls, mode, json_file, dag);
+        json_file.close();
         RewriteDAG(dag, obls, mode, result_dag);
     }
 
@@ -61,8 +64,9 @@ namespace mpc {
             par_name = r_name;
         }
 
+        string cur_name = cur->get_operator()->get_output_relation()->get_name();
+        
         if (obl->CanPassOperator(cur->get_operator(), other_obl)) {
-            string cur_name = cur->get_operator()->get_output_relation()->get_name();
             // we can "merge" obligations and so we only need to pass one of them on
             // the other obligation can be destroyed
             // delete other_obl;
@@ -72,8 +76,11 @@ namespace mpc {
         else {
             // Block obligations by pushing them back to parents.
             // This also means that we need to enter MPC mode.
+            LOG(INFO) << cur_name << " blocked obligation.";
+            obl->set_blocked_by(cur);
             obls.push_obligation(par_name, obl);
             if (other_obl) {
+                other_obl->set_blocked_by(cur);
                 obls.push_obligation(other_par_name, other_obl);
             }
             return true;
@@ -115,10 +122,15 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::DeriveObligations(op_nodes& order, Environment& obls, 
-                                           map<string, bool>& mpc_mode) {
+                                           map<string, bool>& mpc_mode, ofstream& stream,
+                                           op_nodes& dag) {
         for (vector<shared_ptr<OperatorNode>>::iterator cur = order.begin(); cur != order.end(); ++cur) {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
             LOG(INFO) << "Deriving obligations for " << rel->get_name();
+            
+            PrintDagGVToFile(dag, obls, mpc_mode, stream);
+            stream << endl;
+            
             if (!rel->isShared()) {
                 // the output relation (and consequently the input relations) 
                 // is owned by only one party so we don't need mpc OR obligations
@@ -152,7 +164,7 @@ namespace mpc {
                     // We didn't push or block obligations so check if we need to
                     // emit new obligations and update mode
                     mpc_mode[rel->get_name()] = EmitObligation(*cur, obls); 
-                }
+                }            
             }
             else if (parents.size() == 2) {
                 string left_name = parents[0]->get_operator()->get_output_relation()->get_name();
@@ -199,8 +211,9 @@ namespace mpc {
         }
     }
 
-    void DAGRewriterMPC::InsertNode(shared_ptr<OperatorNode> at_node, 
-                                    shared_ptr<OperatorNode> new_node) {
+    shared_ptr<OperatorNode> DAGRewriterMPC::InsertNode(shared_ptr<OperatorNode> at_node,
+                                                        shared_ptr<OperatorNode> child_node, 
+                                                        shared_ptr<OperatorNode> new_node) {        
         op_nodes at_children = at_node->get_children();
         OperatorInterface* at_op = at_node->get_operator();
         Relation* at_rel = at_op->get_output_relation();
@@ -210,38 +223,51 @@ namespace mpc {
 
         LOG(INFO) << "Inserting obligation node: " << new_rel->get_name();
 
-        new_node->set_children(at_children);
-        
-        op_nodes wrapper;
-        wrapper.push_back(new_node);
-        at_node->set_children(wrapper);
-
-        for (vector<shared_ptr<OperatorNode>>::iterator c = at_children.begin();
-             c != at_children.end(); ++c) {
-            // Disconnect each child from at_node, connect to new_node
-            op_nodes child_parents = (*c)->get_parents();
-            child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
-                                child_parents.end());
-            child_parents.push_back(new_node);
-            
-            // Update the relations attached to the operator on the child node
-            OperatorInterface* child_op = (*c)->get_operator();
-            vector<Relation*> child_rels = child_op->get_relations();
-            vector<Relation*> updated_rels;
-
-            for (vector<Relation*>::iterator r = child_rels.begin(); 
-                 r != child_rels.end(); ++r) {
-                if (*r != at_rel) {
-                    updated_rels.push_back(*r);
-                }
-                else {
-                    updated_rels.push_back(new_rel);    
-                }
-            }
-            child_op->set_relations(updated_rels);
-            child_op->update_columns();
+        if (!child_node) {
+            LOG(INFO) << "No child node found";
+            at_children.push_back(new_node);
+            // TODO(nikolaj): check if we need to do anything else
+            return new_node;
         }
 
+        at_children.erase(remove(at_children.begin(), at_children.end(), child_node), 
+                          at_children.end());
+        at_children.push_back(new_node);
+        at_node->set_children(at_children);
+
+        for (std::vector<shared_ptr<OperatorNode>>::iterator i = at_children.begin(); i != at_children.end(); ++i)
+        {
+            cout << (*i)->get_operator()->get_output_relation()->get_name() << endl;
+        }
+
+        op_nodes wrapper;
+        wrapper.push_back(child_node);
+        new_node->set_children(wrapper);
+
+        op_nodes child_parents = child_node->get_parents();
+        child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
+                            child_parents.end());
+        child_parents.push_back(new_node);
+            
+        // Update the relations attached to the operator on the child node
+        OperatorInterface* child_op = child_node->get_operator();
+        vector<Relation*> child_rels = child_op->get_relations();
+        vector<Relation*> updated_rels;
+
+        for (vector<Relation*>::iterator r = child_rels.begin(); 
+             r != child_rels.end(); ++r) {
+            if (*r != at_rel) {
+                updated_rels.push_back(*r);
+            }
+            else {
+                cout << "pushing " << new_rel->get_name() << endl;
+                updated_rels.push_back(new_rel);    
+            }
+        }
+        child_op->set_relations(updated_rels);
+        child_op->update_columns();
+    
+        return new_node;
     }
 
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, Environment& obls, 
@@ -257,6 +283,7 @@ namespace mpc {
         while (!to_visit.empty()) {
             shared_ptr<OperatorNode> cur_node = to_visit.front();
             string rel_name = cur_node->get_operator()->get_output_relation()->get_name();
+            LOG(INFO) << "Visiting node " << rel_name;
             to_visit.pop();
 
             if (!cur_node->IsLeaf()) {
@@ -275,8 +302,15 @@ namespace mpc {
                 cur_node->replace_operator(mpc_op);   
             }
             else if (obls.has_obligation(rel_name)) {
-                OperatorInterface* obl_op = obls.pop_obligation(rel_name)->get_operator();
-                InsertNode(cur_node, make_shared<OperatorNode>(obl_op));
+                Obligation* obl = obls.pop_obligation(rel_name);
+                OperatorInterface* obl_op = obl->get_operator();
+                shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
+                cout << rel_name << " " << blocker << endl;
+                shared_ptr<OperatorNode> inserted = 
+                    InsertNode(cur_node, blocker, make_shared<OperatorNode>(obl_op));
+            }
+            else {
+                // LOG(ERROR) << ""
             }
         }        
     }

@@ -41,7 +41,7 @@ namespace mindi {
   }
 
   vector<shared_ptr<OperatorNode>> Test::Run() {
-        Mindi* mindi = new Mindi();
+    Mindi* mindi = new Mindi();
 
     vector<Column*> input_cols;
 
@@ -105,34 +105,49 @@ namespace mindi {
                     first_val_blank_cond_tree,
                     "first_val_blank");
     
-    ConditionTree* local_rev_scaled_cond_tree =
-      new ConditionTree(new CondOperator("*"),
+    ConditionTree* local_rev_per_cond_tree =
+      new ConditionTree(new CondOperator("/"),
                         new ConditionTree(col(first_val_blank)[1]->clone()),
-                        new ConditionTree(new Value("100", INTEGER_TYPE)));
+                        new ConditionTree(new Value("10", INTEGER_TYPE)));
+    
+    vector<Column*> local_rev_per_cols;
+    local_rev_per_cols.push_back(col(first_val_blank)[0]->clone());
+    local_rev_per_cols.push_back(col(first_val_blank)[1]->clone());
+
+    shared_ptr<OperatorNode> local_rev_per =
+      mindi->Select(first_val_blank,
+                    local_rev_per_cols,
+                    local_rev_per_cond_tree,
+                    "local_rev_per");
+
+    ConditionTree* local_rev_scaled_cond_tree =
+      new ConditionTree(new CondOperator("/"),
+                        new ConditionTree(col(local_rev)[1]->clone()),
+                        new ConditionTree(new Value("1000", INTEGER_TYPE)));
     
     vector<Column*> local_rev_scaled_cols;
-    local_rev_scaled_cols.push_back(col(first_val_blank)[0]->clone());
-    local_rev_scaled_cols.push_back(col(first_val_blank)[1]->clone());
+    local_rev_scaled_cols.push_back(col(local_rev)[0]->clone());
+    local_rev_scaled_cols.push_back(col(local_rev)[1]->clone());
 
     shared_ptr<OperatorNode> local_rev_scaled =
-      mindi->Select(first_val_blank,
+      mindi->Select(local_rev,
                     local_rev_scaled_cols,
                     local_rev_scaled_cond_tree,
                     "local_rev_scaled");
 
     vector<Column*> total_rev_group_by_cols;
-    total_rev_group_by_cols.push_back(col(first_val_blank)[0]->clone());
+    total_rev_group_by_cols.push_back(col(local_rev_scaled)[0]->clone());
     shared_ptr<OperatorNode> total_rev =
-      mindi->GroupBy(first_val_blank, total_rev_group_by_cols, PLUS_GROUP,
-                     col(first_val_blank)[1]->clone(), "total_rev"); // double check on the column
+      mindi->GroupBy(local_rev_scaled, total_rev_group_by_cols, PLUS_GROUP,
+                     col(local_rev_scaled)[1]->clone(), "total_rev"); // double check on the column
 
     vector<Column*> left;
-    left.push_back(col(local_rev_scaled)[0]);
+    left.push_back(col(local_rev_per)[0]);
     vector<Column*> right;
     right.push_back(col(total_rev)[0]);
 
     shared_ptr<OperatorNode> local_total_rev = 
-      mindi->Join(local_rev_scaled, "local_total_rev", total_rev, left, right);
+      mindi->Join(local_rev_per, "local_total_rev", total_rev, left, right);
 
     ConditionTree* market_share_cond_tree =
       new ConditionTree(new CondOperator("/"),

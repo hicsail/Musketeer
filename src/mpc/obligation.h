@@ -19,8 +19,8 @@
 #ifndef MUSKETEER_OBLIGATION_H
 #define MUSKETEER_OBLIGATION_H
 
-#include "base/utils.h"
-#include "base/common.h"
+// #include "base/utils.h"
+// #include "base/common.h"
 #include "ir/aggregation.h"
 #include "ir/relation.h"
 #include "ir/select_operator.h"
@@ -33,6 +33,7 @@
 #include <map>
 
 using namespace musketeer::ir;
+// using namespace musketeer::mpc;
 
 namespace musketeer {
 namespace mpc {
@@ -51,6 +52,8 @@ namespace mpc {
         string get_name();
         int get_agg_index();
         vector<Column*> get_group_bys();
+        shared_ptr<OperatorNode> get_blocked_by();
+        void set_blocked_by(shared_ptr<OperatorNode> op_node);
 
         // Must call this method when pushing the obligation through a node.
         // Relations, columns, etc. on op will get updated.
@@ -65,6 +68,7 @@ namespace mpc {
     private:
         Aggregation* op;
         GroupByType type;
+        shared_ptr<OperatorNode> blocked_by;
 
         void update_op_columns(OperatorInterface* parent);
         bool CanMerge(Obligation& other_obl);
