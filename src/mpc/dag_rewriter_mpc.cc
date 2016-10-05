@@ -52,11 +52,9 @@ namespace mpc {
 
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, op_nodes* result_dag) {
         stringstream stream;
-        // ofstream json_file;
-        // json_file.open("dags.txt", std::ios_base::app);
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
-        PropagateOwnership(order);
+        // PropagateOwnership(order);
         Environment obls;
         map<string, bool> mode;
         set<string> inputs;
@@ -164,13 +162,13 @@ namespace mpc {
             PrintDagGVToFile((*cur), dag, obls, mpc_mode, stream);
             stream << endl;
             
-            if (!rel->isShared()) {
-                // the output relation (and consequently the input relations) 
-                // is owned by only one party so we don't need mpc OR obligations
-                LOG(INFO) << "Relation " << rel->get_name() << " is not shared";
-                mpc_mode[rel->get_name()] = false;
-                continue;    
-            }
+            // if (!rel->isShared()) {
+            //     // the output relation (and consequently the input relations) 
+            //     // is owned by only one party so we don't need mpc OR obligations
+            //     LOG(INFO) << "Relation " << rel->get_name() << " is not shared";
+            //     mpc_mode[rel->get_name()] = false;
+            //     continue;    
+            // }
             
             vector<shared_ptr<OperatorNode>> parents = (*cur)->get_parents();
             if (parents.size() == 0) {
@@ -268,10 +266,15 @@ namespace mpc {
         at_children.push_back(new_node);
         at_node->set_children(at_children);
 
-        for (std::vector<shared_ptr<OperatorNode>>::iterator i = at_children.begin(); i != at_children.end(); ++i)
-        {
-            cout << (*i)->get_operator()->get_output_relation()->get_name() << endl;
-        }
+        // for (std::vector<shared_ptr<OperatorNode>>::iterator i = at_children.begin(); i != at_children.end(); ++i) {
+        //     cout << (*i)->get_operator()->get_output_relation()->get_name() << endl;
+        // }
+
+        vector<Relation*> new_rels;
+        new_rels.push_back(at_rel);
+
+        new_op->set_relations(new_rels);
+        new_op->update_columns();
 
         op_nodes wrapper;
         wrapper.push_back(child_node);

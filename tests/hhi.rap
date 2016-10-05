@@ -1,0 +1,10 @@
+CREATE RELATION cab_data WITH COLUMNS (INTEGER, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, INTEGER),
+PROJECT [cab_data_0, cab_data_17] FROM (cab_data) AS selected_input,
+AGG [selected_input_0, +] FROM (selected_input) GROUP BY [selected_input_0] AS local_rev,
+MUL [0, local_rev_0] FROM (local_rev) AS first_val_blank,
+MUL [100, first_val_blank_1] FROM (first_val_blank) AS local_rev_scaled,
+AGG [first_val_blank_1, +] FROM (first_val_blank) GROUP BY [first_val_blank_1] AS total_rev,
+(local_rev_scaled) JOIN (total_rev) ON local_rev_scaled_0 AND total_rev_0 AS local_total_rev,
+DIV [local_total_rev_1, local_total_rev_2] FROM (local_total_rev) AS market_share,
+MUL [local_total_rev_1, local_total_rev_1] FROM (market_share) AS market_share_squared,
+AGG [market_share_squared_1, +] FROM (market_share_squared) GROUP BY [market_share_squared_0] AS hhi

@@ -314,8 +314,8 @@ int main(int argc, char *argv[]) {
     parser = RLPlusParserNew(tokens);
     RLPlusParser_expr_return expr_ret = parser->expr(parser);
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
-    // vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
-    vector<shared_ptr<OperatorNode>> dag = tests::mindi::Test().Run();
+    vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
+    // vector<shared_ptr<OperatorNode>> dag = tests::mindi::Test().Run();
     // shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
     // dag.push_back(test);
 
@@ -326,9 +326,9 @@ int main(int argc, char *argv[]) {
 
     PrintDagGV(dag);
 
-    if (true) {
-      return -1;
-    }
+    // if (true) {
+    //   return -1;
+    // }
 
     if (!strcmp(job->operator_merge().c_str(), "1")) {
       LOG(INFO) << "Scheduling entire DAG";
