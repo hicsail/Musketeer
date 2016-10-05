@@ -48,6 +48,9 @@ DECLARE_bool(use_dynamic_scheduler);
 DECLARE_string(hdfs_master);
 DECLARE_string(hdfs_port);
 
+// Visualization flags.
+DECLARE_string(viz_root_dir);
+
 // GraphChi flags.
 DECLARE_string(graphchi_dir);
 DECLARE_string(graphchi_templates_dir);

@@ -99,6 +99,14 @@ namespace mpc {
         }
     }
 
+    bool Obligation::CanAbsorb(OperatorInterface* other_op) {
+        if (other_op->get_type() == AGG_OP) {
+            Aggregation* other_agg = dynamic_cast<Aggregation*>(other_op);
+            return type == other_agg->get_group_by_type();
+        }
+        return false;
+    }
+
     bool Obligation::CanPass(SelectOperator* other) {
         // SelectOp could either be a projection on the columns of the input
         // or a conditional filter (or both?)

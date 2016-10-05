@@ -65,6 +65,10 @@ DEFINE_string(tmp_data_dir, "/tmp/",
 DEFINE_string(use_frameworks, "hadoop-spark-graphchi-naiad-powergraph",
               "Frameworks that can be used. Dash separated");
 
+// Visualization flags.
+DEFINE_string(viz_root_dir, "/home/ubuntu/work/dag-viz/", 
+              "Directory where to store generated visualization html.");
+
 // Scheduler flags.
 DEFINE_bool(best_runtime, true, "Optimize for runtime or resource utilization");
 DEFINE_bool(dry_run, false,

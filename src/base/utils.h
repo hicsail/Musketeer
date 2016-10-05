@@ -54,7 +54,7 @@ namespace musketeer {
   // TODO: make this more general by passing in a stream
   void PrintDagGVToFile(shared_ptr<OperatorNode> current,op_nodes& dag, 
                         musketeer::mpc::Environment& obls,
-                        map<string, bool>& mpc_mode, ofstream& stream);
+                        map<string, bool>& mpc_mode, ostream& stream);
   vector<string> GetDagOutputs(op_nodes dag);
   bool CheckRenameRequired(OperatorInterface* op);
   string FmwToString(uint8_t fmw);

@@ -19,17 +19,41 @@
 #include "mpc/dag_rewriter_mpc.h"
 #include "ir/relation.h"
 #include "ir/owner.h"
+#include "base/flags.h"
 #include <queue>
 #include <algorithm>
+#include <sstream>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 namespace musketeer {
 namespace mpc {
     
     DAGRewriterMPC::DAGRewriterMPC() {}
 
+    // shamelessly stolen from stackoverflow
+    bool replace(std::string& str, const std::string& from, const std::string& to) {
+        size_t start_pos = str.find(from);
+        if(start_pos == std::string::npos)
+            return false;
+        str.replace(start_pos, from.length(), to);
+        return true;
+    }
+
+    void write_to_file(const string& dags) {
+        ifstream t(FLAGS_viz_root_dir + "template.html");
+        string template_str((istreambuf_iterator<char>(t)),
+                             istreambuf_iterator<char>());
+        replace(template_str, "{{DAGS}}", dags);
+        ofstream result_file(FLAGS_viz_root_dir + "index.html");
+        result_file << template_str;
+    }
+
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, op_nodes* result_dag) {
-        ofstream json_file;
-        json_file.open("dags.txt", std::ios_base::app);
+        stringstream stream;
+        // ofstream json_file;
+        // json_file.open("dags.txt", std::ios_base::app);
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
         PropagateOwnership(order);
@@ -38,8 +62,12 @@ namespace mpc {
         set<string> inputs;
         DetermineInputs(dag, &inputs);
         InitEnvAndMode(obls, mode, &inputs);
-        DeriveObligations(order, obls, mode, json_file, dag);
-        json_file.close();
+        DeriveObligations(order, obls, mode, stream, dag);
+        PrintDagGVToFile(make_shared<OperatorNode>(nullptr), dag, obls, mode, stream);
+        stream << endl;
+        string dag_strings = stream.str();
+        write_to_file(dag_strings);
+        // json_file.close();
         RewriteDAG(dag, obls, mode, result_dag);
     }
 
@@ -77,6 +105,9 @@ namespace mpc {
             // Block obligations by pushing them back to parents.
             // This also means that we need to enter MPC mode.
             LOG(INFO) << cur_name << " blocked obligation.";
+            if (obl->CanAbsorb(cur->get_operator())) {
+                return true;
+            }
             obl->set_blocked_by(cur);
             obls.push_obligation(par_name, obl);
             if (other_obl) {
@@ -122,7 +153,7 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::DeriveObligations(op_nodes& order, Environment& obls, 
-                                           map<string, bool>& mpc_mode, ofstream& stream,
+                                           map<string, bool>& mpc_mode, ostream& stream,
                                            op_nodes& dag) {
         for (vector<shared_ptr<OperatorNode>>::iterator cur = order.begin(); cur != order.end(); ++cur) {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
@@ -133,7 +164,6 @@ namespace mpc {
             PrintDagGVToFile((*cur), dag, obls, mpc_mode, stream);
             stream << endl;
             
-
             if (!rel->isShared()) {
                 // the output relation (and consequently the input relations) 
                 // is owned by only one party so we don't need mpc OR obligations

@@ -60,6 +60,8 @@ namespace mpc {
         void PassThrough(shared_ptr<OperatorNode> op_node);
         // other_obl is null for unary operators
         bool CanPassOperator(OperatorInterface* other_op, Obligation* other_obl);
+        // TODO(nikolaj): implement 
+        bool CanAbsorb(OperatorInterface* other_op);
         
         bool CanPass(SelectOperator* other);
         bool CanPass(MulOperator* other);
