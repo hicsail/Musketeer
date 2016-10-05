@@ -32,7 +32,7 @@ namespace framework {
 
   void ViffDispatcher::Execute(string job_path, string job_options) {
     // XXX(malte): hack hack hack
-    string cmd = "python " + job_path + " " + job_options;
+    string cmd = "python " + job_path + " --no-ssl" + job_options;
     LOG(INFO) << "viff run started for: " << job_path;
     system(cmd.c_str());
     LOG(INFO) << "viff run ended for: " << job_path;
