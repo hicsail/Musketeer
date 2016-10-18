@@ -139,9 +139,8 @@ namespace mpc {
             // If we have a state_translator object, we should store intermediate state
             // at each step of the derivation, i.e., upon visiting each node in the dag 
             if (translator) {
-                translator->StoreAsDagre(
-                    make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode
-                );
+                translator->StoreAsDagre(make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode);
+                translator->StoreAsDagre(*cur, dag, obls, mpc_mode);
             }
 
             Relation* rel = (*cur)->get_operator()->get_output_relation();
@@ -216,6 +215,9 @@ namespace mpc {
             else {
                 LOG(FATAL) << "Unexpected number of parent nodes";
             }
+        }
+        if (translator) {
+            translator->StoreAsDagre(make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode);
         }
     }
 

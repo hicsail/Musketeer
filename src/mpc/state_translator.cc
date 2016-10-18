@@ -47,7 +47,7 @@ namespace mpc {
         string mpc_str = isMpc ? "true" : "false";
         string highlight_str = highlight ? "true" : "false";
         return "{ \"id\" : \"" + name + 
-               "\", \"label\" : \"" + op_name + 
+               "\", \"label\" : \"" + op_name.substr(0, op_name.length() - 3) + 
                "\", \"mpc\" : " + mpc_str +
                ", \"highlight\" : " + highlight_str +
                " }";
