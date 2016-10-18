@@ -43,6 +43,15 @@
 
 namespace musketeer {
 
+  // shamelessly stolen from stackoverflow
+  bool replace(string& str, const string& from, const string& to) {
+      size_t start_pos = str.find(from);
+      if (start_pos == string::npos)
+        return false;
+      str.replace(start_pos, from.length(), to);
+      return true;
+  }
+
   // Checks if all the nodes in the dag are in the nodes set.
   bool CheckChildrenInSet(const op_nodes& dag, const node_set& nodes) {
     set<shared_ptr<OperatorNode> > visited;
@@ -93,122 +102,122 @@ namespace musketeer {
     return result;
   }
 
-  string to_gv(string name, string op_name, bool isMpc, bool highlight) {
-    string label = "label=\\\"" + op_name + "\\\"";
-    string style = "style=\\\"";
-    if (isMpc) {
-      style += "fill: #f77;";
-    }
-    if (highlight) {
-      style += "stroke: #FF0000; stroke-width: 3px; font-weight: bold;";  
-    }
+  // string to_gv(string name, string op_name, bool isMpc, bool highlight) {
+  //   string label = "label=\\\"" + op_name + "\\\"";
+  //   string style = "style=\\\"";
+  //   if (isMpc) {
+  //     style += "fill: #f77;";
+  //   }
+  //   if (highlight) {
+  //     style += "stroke: #FF0000; stroke-width: 3px; font-weight: bold;";  
+  //   }
 
-    style += "\\\"";
-    return " " + name + "[" + label + " " + style + "]; \\"; 
-  }
+  //   style += "\\\"";
+  //   return " " + name + "[" + label + " " + style + "]; \\"; 
+  // }
 
-  string node_to_gv(shared_ptr<OperatorNode> node, bool isMpc, bool highlight) {
-    string name = node->get_operator()->get_output_relation()->get_name();
-    string op_name = node->get_operator()->get_type_string();
-    return to_gv(name, op_name, isMpc, highlight); 
-  }
+  // string node_to_gv(shared_ptr<OperatorNode> node, bool isMpc, bool highlight) {
+  //   string name = node->get_operator()->get_output_relation()->get_name();
+  //   string op_name = node->get_operator()->get_type_string();
+  //   return to_gv(name, op_name, isMpc, highlight); 
+  // }
 
-  void PrintDagGVToFile(shared_ptr<OperatorNode> current, op_nodes& dag, 
-                        mpc::Environment& obls, map<string, bool>& mpc_mode,
-                        ostream& stream) {
-    set<shared_ptr<OperatorNode> > visited;
-    queue<shared_ptr<OperatorNode> > to_visit;
+  // void PrintDagGVToFile(shared_ptr<OperatorNode> current, op_nodes& dag, 
+  //                       mpc::Environment& obls, map<string, bool>& mpc_mode,
+  //                       ostream& stream) {
+  //   set<shared_ptr<OperatorNode> > visited;
+  //   queue<shared_ptr<OperatorNode> > to_visit;
 
-    stream << "\"digraph OpDAG { \\" << endl;
-    stream << " node [fillcolor=white rx=5 ry=5 labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
-    stream << " edge [labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
+  //   stream << "\"digraph OpDAG { \\" << endl;
+  //   stream << " node [fillcolor=white rx=5 ry=5 labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
+  //   stream << " edge [labelStyle=\\\"font: 300 14px 'Helvetica Neue', Helvetica\\\"] \\" << endl;
     
-    for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
-      to_visit.push(*it);
-      visited.insert(*it);
-      stream << " " << (*it)->get_operator()->get_output_relation()->get_name()
-           << " [label=\\\"" << (*it)->get_operator()->get_type_string() << "\\\"]"
-           << "; \\" << endl;
-    }
+  //   for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
+  //     to_visit.push(*it);
+  //     visited.insert(*it);
+  //     stream << " " << (*it)->get_operator()->get_output_relation()->get_name()
+  //          << " [label=\\\"" << (*it)->get_operator()->get_type_string() << "\\\"]"
+  //          << "; \\" << endl;
+  //   }
 
-    while (!to_visit.empty()) {
-      shared_ptr<OperatorNode> cur_node = to_visit.front();
-      string cur_name = cur_node->get_operator()->get_output_relation()->get_name();
-      string cur_op_name = cur_node->get_operator()->get_type_string();
-      to_visit.pop();
-      stream << node_to_gv(cur_node, mpc_mode[cur_name], cur_node == current) << endl;
+  //   while (!to_visit.empty()) {
+  //     shared_ptr<OperatorNode> cur_node = to_visit.front();
+  //     string cur_name = cur_node->get_operator()->get_output_relation()->get_name();
+  //     string cur_op_name = cur_node->get_operator()->get_type_string();
+  //     to_visit.pop();
+  //     stream << node_to_gv(cur_node, mpc_mode[cur_name], cur_node == current) << endl;
 
-      queue<mpc::Obligation*> original_order;
-      queue<mpc::Obligation*> non_blocked;
-      map<string, mpc::Obligation*> obl_lookup;
+  //     queue<mpc::Obligation*> original_order;
+  //     queue<mpc::Obligation*> non_blocked;
+  //     map<string, mpc::Obligation*> obl_lookup;
       
-      while (obls.has_obligation(cur_name)) {
-        mpc::Obligation* obl = obls.pop_obligation(cur_name);
-        shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
+  //     while (obls.has_obligation(cur_name)) {
+  //       mpc::Obligation* obl = obls.pop_obligation(cur_name);
+  //       shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
         
-        if (blocker) {
-          string blocker_name = blocker->get_operator()->get_output_relation()->get_name();
-          obl_lookup[blocker_name] = obl;
-        }
-        else {
-          non_blocked.push(obl);
-        }
+  //       if (blocker) {
+  //         string blocker_name = blocker->get_operator()->get_output_relation()->get_name();
+  //         obl_lookup[blocker_name] = obl;
+  //       }
+  //       else {
+  //         non_blocked.push(obl);
+  //       }
         
-        original_order.push(obl);
-      }
+  //       original_order.push(obl);
+  //     }
 
-      if (!cur_node->IsLeaf()) {
+  //     if (!cur_node->IsLeaf()) {
 
-        op_nodes children = cur_node->get_loop_children();
-        op_nodes non_loop_children = cur_node->get_children();
-        children.insert(children.end(), non_loop_children.begin(),
-                        non_loop_children.end());
-        for (op_nodes::iterator it = children.begin(); it != children.end();
-             ++it) {
-          string child_name = (*it)->get_operator()->get_output_relation()->get_name();
-          string child_op_name = (*it)->get_operator()->get_type_string();
-          mpc::Obligation* obl = obl_lookup[child_name];
-          if (!obl) {
-            if (!non_blocked.empty()) {
-              obl = non_blocked.front();
-              non_blocked.pop();
-            }
-          }
+  //       op_nodes children = cur_node->get_loop_children();
+  //       op_nodes non_loop_children = cur_node->get_children();
+  //       children.insert(children.end(), non_loop_children.begin(),
+  //                       non_loop_children.end());
+  //       for (op_nodes::iterator it = children.begin(); it != children.end();
+  //            ++it) {
+  //         string child_name = (*it)->get_operator()->get_output_relation()->get_name();
+  //         string child_op_name = (*it)->get_operator()->get_type_string();
+  //         mpc::Obligation* obl = obl_lookup[child_name];
+  //         if (!obl) {
+  //           if (!non_blocked.empty()) {
+  //             obl = non_blocked.front();
+  //             non_blocked.pop();
+  //           }
+  //         }
           
-          if (!obl) {
-            stream << " " << cur_name
-                 << "->"
-                 << child_name
-                 << " \\" << endl;
-          }
-          else {
-            string obl_op_name = obl->get_operator()->get_type_string(); 
-            stream << to_gv(obl->get_name(), obl_op_name.substr(0, obl_op_name.length() - 4), true, false);
+  //         if (!obl) {
+  //           stream << " " << cur_name
+  //                << "->"
+  //                << child_name
+  //                << " \\" << endl;
+  //         }
+  //         else {
+  //           string obl_op_name = obl->get_operator()->get_type_string(); 
+  //           stream << to_gv(obl->get_name(), obl_op_name.substr(0, obl_op_name.length() - 4), true, false);
 
-            stream << " " << cur_name
-                 << "->"
-                 << obl->get_name()
-                 << " \\" << endl;
+  //           stream << " " << cur_name
+  //                << "->"
+  //                << obl->get_name()
+  //                << " \\" << endl;
 
-            stream << " " << obl->get_name()
-                 << "->"
-                 << child_name
-                 << " \\" << endl;  
-          }
+  //           stream << " " << obl->get_name()
+  //                << "->"
+  //                << child_name
+  //                << " \\" << endl;  
+  //         }
 
-          if (visited.insert(*it).second) {
-            to_visit.push(*it);
-          }
-        }
-      }
+  //         if (visited.insert(*it).second) {
+  //           to_visit.push(*it);
+  //         }
+  //       }
+  //     }
 
-      while (!original_order.empty()) {
-        obls.push_obligation(cur_name, original_order.front());
-        original_order.pop();
-      }
-    }
-    stream << " }\", " << endl;
-  }
+  //     while (!original_order.empty()) {
+  //       obls.push_obligation(cur_name, original_order.front());
+  //       original_order.pop();
+  //     }
+  //   }
+  //   stream << " }\", " << endl;
+  // }
   
   void PrintDag(op_nodes dag) {
     set<shared_ptr<OperatorNode> > visited;

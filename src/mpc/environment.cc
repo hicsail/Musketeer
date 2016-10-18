@@ -21,13 +21,13 @@
 namespace musketeer {
 namespace mpc {
     
-    void Environment::init_for(string rel_name) {
+    void Environment::init_for(const string& rel_name) {
         if (env.find(rel_name) == env.end()) {
             env[rel_name];
         }
     }
 
-    void Environment::push_obligation(string rel_name, Obligation* obl) {
+    void Environment::push_obligation(const string& rel_name, Obligation* obl) {
         if (env.find(rel_name) == env.end()) {
             env[rel_name];
         }
@@ -35,11 +35,11 @@ namespace mpc {
         cout << env[rel_name].size() << endl;
     }
 
-    bool Environment::has_obligation(string rel_name) {
+    bool Environment::has_obligation(const string& rel_name) {
         return !env[rel_name].empty();
     }
     
-    Obligation* Environment::pop_obligation(string rel_name) {
+    Obligation* Environment::pop_obligation(const string& rel_name) {
         if (!has_obligation(rel_name)) {
             LOG(ERROR) << "Tried to pop non-existent obligation.";
             return NULL;
@@ -49,17 +49,8 @@ namespace mpc {
         return obl;
     }
 
-    string Environment::toJSON() {
-        string json = "{\n";
-
-        for (map<string, list<Obligation*>>::const_iterator it = env.begin(); it != env.end(); ++it) {
-            for (list<Obligation*>::const_iterator o = (it->second).begin(); o != (it->second).end(); ++o) {
-                json += "'" + it->first + "' : '" + (*o)->get_name() + "',\n";
-            }
-        }
-        json += "}\n";
-
-        return json;
+    list<Obligation*> Environment::obligations_for(const string& rel_name) {
+        return has_obligation(rel_name) ? env[rel_name] : list<Obligation*>();
     }
 
     std::ostream& operator<<(std::ostream& _stream, Environment const& env) { 

@@ -33,8 +33,6 @@
 
 #include "base/common.h"
 #include "frontends/operator_node.h"
-// TODO: this doesn't belong here
-#include "mpc/environment.h"
 
 namespace musketeer {
 
@@ -46,15 +44,27 @@ namespace musketeer {
                 FMW_NAIAD, FMW_POWER_GRAPH, FMW_POWER_LYRA, FMW_WILD_CHERRY,
                 FMW_VIFF};
 
+  // shamelessly stolen from stackoverflow
+  bool replace(string& str, const string& from, const string& to);
+  
+  // void write_to_file(const string& dags) {
+  //     ifstream t(FLAGS_viz_root_dir + "template.html");
+  //     string template_str((istreambuf_iterator<char>(t)),
+  //                          istreambuf_iterator<char>());
+  //     replace(template_str, "{{DAGS}}", dags);
+  //     ofstream result_file(FLAGS_viz_root_dir + "index.html");
+  //     result_file << template_str;
+  // }
+
+
   bool CheckChildrenInSet(const op_nodes& dag, const node_set& nodes);
   string ExecCmd(const string& cmd);
   op_nodes CloneDag(op_nodes& dag); 
   void PrintDag(op_nodes dag);
   void PrintDagGV(op_nodes dag);
-  // TODO: make this more general by passing in a stream
-  void PrintDagGVToFile(shared_ptr<OperatorNode> current,op_nodes& dag, 
-                        musketeer::mpc::Environment& obls,
-                        map<string, bool>& mpc_mode, ostream& stream);
+  // void PrintDagGVToFile(shared_ptr<OperatorNode> current, op_nodes& dag, 
+  //                       musketeer::mpc::Environment& obls,
+  //                       map<string, bool>& mpc_mode, ostream& stream);
   vector<string> GetDagOutputs(op_nodes dag);
   bool CheckRenameRequired(OperatorInterface* op);
   string FmwToString(uint8_t fmw);

@@ -30,43 +30,25 @@
 namespace musketeer {
 namespace mpc {
     
-    DAGRewriterMPC::DAGRewriterMPC() {}
-
-    // shamelessly stolen from stackoverflow
-    bool replace(std::string& str, const std::string& from, const std::string& to) {
-        size_t start_pos = str.find(from);
-        if(start_pos == std::string::npos)
-            return false;
-        str.replace(start_pos, from.length(), to);
-        return true;
-    }
-
-    void write_to_file(const string& dags) {
-        ifstream t(FLAGS_viz_root_dir + "template.html");
-        string template_str((istreambuf_iterator<char>(t)),
-                             istreambuf_iterator<char>());
-        replace(template_str, "{{DAGS}}", dags);
-        ofstream result_file(FLAGS_viz_root_dir + "index.html");
-        result_file << template_str;
-    }
-
-    void DAGRewriterMPC::RewriteDAG(op_nodes& dag, op_nodes* result_dag) {
-        stringstream stream;
+    void DAGRewriterMPC::RewriteDAG(op_nodes& dag, StateTranslator* translator) {
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
+        
         // PropagateOwnership(order);
+        
         Environment obls;
         map<string, bool> mode;
+        
         set<string> inputs;
         DetermineInputs(dag, &inputs);
+        
         InitEnvAndMode(obls, mode, &inputs);
-        DeriveObligations(order, obls, mode, stream, dag);
-        PrintDagGVToFile(make_shared<OperatorNode>(nullptr), dag, obls, mode, stream);
-        stream << endl;
-        string dag_strings = stream.str();
-        write_to_file(dag_strings);
-        // json_file.close();
-        RewriteDAG(dag, obls, mode, result_dag);
+        DeriveObligations(order, obls, mode, dag, translator);
+        RewriteDAG(dag, obls, mode);
+    }
+
+    void DAGRewriterMPC::RewriteDAG(op_nodes& dag) {
+        RewriteDAG(dag, NULL);
     }
 
     // pre-condition: l_obl or r_obl not null
@@ -151,16 +133,19 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::DeriveObligations(op_nodes& order, Environment& obls, 
-                                           map<string, bool>& mpc_mode, ostream& stream,
-                                           op_nodes& dag) {
+                                           map<string, bool>& mpc_mode, op_nodes& dag, 
+                                           StateTranslator* translator) {
         for (vector<shared_ptr<OperatorNode>>::iterator cur = order.begin(); cur != order.end(); ++cur) {
+            // If we have a state_translator object, we should store intermediate state
+            // at each step of the derivation, i.e., upon visiting each node in the dag 
+            if (translator) {
+                translator->StoreAsDagre(
+                    make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode
+                );
+            }
+
             Relation* rel = (*cur)->get_operator()->get_output_relation();
             LOG(INFO) << "Deriving obligations for " << rel->get_name();
-            
-            PrintDagGVToFile(make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode, stream);
-            stream << endl;
-            PrintDagGVToFile((*cur), dag, obls, mpc_mode, stream);
-            stream << endl;
             
             // if (!rel->isShared()) {
             //     // the output relation (and consequently the input relations) 
@@ -266,10 +251,6 @@ namespace mpc {
         at_children.push_back(new_node);
         at_node->set_children(at_children);
 
-        // for (std::vector<shared_ptr<OperatorNode>>::iterator i = at_children.begin(); i != at_children.end(); ++i) {
-        //     cout << (*i)->get_operator()->get_output_relation()->get_name() << endl;
-        // }
-
         vector<Relation*> new_rels;
         new_rels.push_back(at_rel);
 
@@ -296,7 +277,6 @@ namespace mpc {
                 updated_rels.push_back(*r);
             }
             else {
-                cout << "pushing " << new_rel->get_name() << endl;
                 updated_rels.push_back(new_rel);    
             }
         }
@@ -307,8 +287,7 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag, Environment& obls, 
-                                    map<string, bool>& mpc_mode,
-                                    op_nodes* result_dag) {
+                                    map<string, bool>& mpc_mode) {
         set<shared_ptr<OperatorNode>> visited;
         queue<shared_ptr<OperatorNode>> to_visit;
         for (op_nodes::iterator it = dag.begin(); it != dag.end(); ++it) {
@@ -341,7 +320,6 @@ namespace mpc {
                 Obligation* obl = obls.pop_obligation(rel_name);
                 OperatorInterface* obl_op = obl->get_operator();
                 shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
-                cout << rel_name << " " << blocker << endl;
                 shared_ptr<OperatorNode> inserted = 
                     InsertNode(cur_node, blocker, make_shared<OperatorNode>(obl_op));
             }

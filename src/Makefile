@@ -119,6 +119,7 @@ musketeer: $(addprefix $(OBJ_DIR)/, $(OBJS)) $(addprefix $(SRC_ROOT_DIR)/, $(ANT
 		$(BUILD_DIR)/mpc/dag_rewriter_mpc.o \
 		$(BUILD_DIR)/mpc/obligation.o \
 		$(BUILD_DIR)/mpc/environment.o \
+		$(BUILD_DIR)/mpc/state_translator.o \
 		$(BUILD_DIR)/monitoring/hadoop_monitor.o \
 		$(BUILD_DIR)/monitoring/spark_monitor.o \
 		$(BUILD_DIR)/translation/hadoop_job_code.o \

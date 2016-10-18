@@ -33,6 +33,7 @@
 #include "frontends/operator_node.h"
 #include "frontends/tree_traversal.h"
 #include "mpc/dag_rewriter_mpc.h"
+#include "mpc/state_translator.h"
 #include "RLPlusLexer.h"
 #include "RLPlusParser.h"
 #include "scheduling/operator_scheduler.h"
@@ -315,20 +316,12 @@ int main(int argc, char *argv[]) {
     RLPlusParser_expr_return expr_ret = parser->expr(parser);
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
     vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
-    // vector<shared_ptr<OperatorNode>> dag = tests::mindi::Test().Run();
-    // shared_ptr<OperatorNode> test = tests::mindi::Test().Run();
-    // dag.push_back(test);
-
-    PrintDagGV(dag);
-
+    
+    // TODO: check if we want to visualize
+    StateTranslator translator; // maybe this should go on the heap instead
     DAGRewriterMPC rewriter;
-    rewriter.RewriteDAG(dag, NULL);
-
-    PrintDagGV(dag);
-
-    // if (true) {
-    //   return -1;
-    // }
+    rewriter.RewriteDAG(dag, &translator);
+    translator.WriteStatesToFile(FLAGS_viz_root_dir + "dags.json");
 
     if (!strcmp(job->operator_merge().c_str(), "1")) {
       LOG(INFO) << "Scheduling entire DAG";

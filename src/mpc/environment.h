@@ -20,12 +20,8 @@
 #define MUSKETEER_MPC_ENVIRONMENT_H
 
 #include "mpc/obligation.h"
-// #include "base/utils.h"
-// #include "base/common.h"
 #include <map>
 #include <list>
-
-// using namespace musketeer::mpc;
 
 namespace musketeer {
 namespace mpc {
@@ -35,19 +31,20 @@ namespace mpc {
         Environment() {
         };
         
-        // TODO(nikolaj): Implement destructor
+        // TODO(nikolaj): Destructor
 
         // Initialize empty entry under rel_name
-        void init_for(string rel_name);
+        void init_for(const string& rel_name);
         // Push back single obligation to rel_name
-        void push_obligation(string rel_name, Obligation* obl);
+        void push_obligation(const string& rel_name, Obligation* obl);
         // Determine if there are any obligations on rel_name
-        bool has_obligation(string rel_name);
+        bool has_obligation(const string& rel_name);
         // Returns last obligation on rel_name
         // Returns NULL if no obligation to pop
-        Obligation* pop_obligation(string rel_name);
-
-        string toJSON();
+        Obligation* pop_obligation(const string& rel_name);
+        // Returns all obligations for rel_name
+        // Empty list if none
+        list<Obligation*> obligations_for(const string& rel_name);
 
         friend std::ostream& operator<<(std::ostream& _stream, Environment const& env);
         
