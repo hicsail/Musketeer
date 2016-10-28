@@ -27,6 +27,19 @@ namespace mpc {
         states.push_back(ToDagre(current, dag, obls, mode));
     }
 
+    void StateTranslator::WriteCodeToFile(const string& code_path, const string& out_path) {
+        ifstream in_file(code_path);
+        ofstream result_file(out_path);
+        string line;
+        result_file << "{\"code\" :\"";
+        while (getline(in_file, line)) {
+            result_file << line << "\\n";
+        }
+        result_file << "\"}";
+        in_file.close();
+        result_file.close();        
+    }
+
     void StateTranslator::WriteStatesToFile(const string& out_path) {
         // TODO(nikolaj): the code below doesn't belong here
         string entire_json = "[";
@@ -97,7 +110,6 @@ namespace mpc {
             }
 
             if (!cur_node->IsLeaf()) {
-
                 op_nodes children = cur_node->get_loop_children();
                 op_nodes non_loop_children = cur_node->get_children();
                 children.insert(children.end(), non_loop_children.begin(),
@@ -127,6 +139,19 @@ namespace mpc {
                     if (visited.insert(*it).second) {
                         to_visit.push(*it);
                     }
+                }
+            }
+            else {
+                mpc::Obligation* obl = NULL;
+                if (!non_blocked.empty()) {
+                    obl = non_blocked.front();
+                    non_blocked.pop();
+                }
+                if (obl) {
+                    string obl_op_name = obl->get_operator()->get_type_string();
+                    nodes.push_back(ToDagre(obl->get_name(), 
+                        obl_op_name.substr(0, obl_op_name.length() - 4), true, false));
+                    edges.push_back("{ \"from\": \"" + cur_name + "\", \"to\": \"" + obl->get_name() + "\" }");
                 }
             }
         }

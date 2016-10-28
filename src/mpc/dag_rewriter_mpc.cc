@@ -154,6 +154,7 @@ namespace mpc {
             //     continue;    
             // }
             
+
             vector<shared_ptr<OperatorNode>> parents = (*cur)->get_parents();
             if (parents.size() == 0) {
                 LOG(INFO) << "Root rel found: " << rel->get_name();
@@ -216,6 +217,7 @@ namespace mpc {
                 LOG(FATAL) << "Unexpected number of parent nodes";
             }
         }
+        // Store final state if we have a StateTranslator object
         if (translator) {
             translator->StoreAsDagre(make_shared<OperatorNode>(nullptr), dag, obls, mpc_mode);
         }
@@ -241,50 +243,46 @@ namespace mpc {
 
         LOG(INFO) << "Inserting obligation node: " << new_rel->get_name();
 
-        if (!child_node) {
-            LOG(INFO) << "No child node found";
-            at_children.push_back(new_node);
-            // TODO(nikolaj): check if we need to do anything else
-            return new_node;
-        }
-
-        at_children.erase(remove(at_children.begin(), at_children.end(), child_node), 
-                          at_children.end());
-        at_children.push_back(new_node);
-        at_node->set_children(at_children);
-
         vector<Relation*> new_rels;
         new_rels.push_back(at_rel);
 
         new_op->set_relations(new_rels);
         new_op->update_columns();
 
-        op_nodes wrapper;
-        wrapper.push_back(child_node);
-        new_node->set_children(wrapper);
+        if (child_node) {
+            LOG(INFO) << "Child node found";
+            at_children.erase(remove(at_children.begin(), at_children.end(), child_node), 
+                              at_children.end());
+            at_children.push_back(new_node);
+            at_node->set_children(at_children);
 
-        op_nodes child_parents = child_node->get_parents();
-        child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
-                            child_parents.end());
-        child_parents.push_back(new_node);
-            
-        // Update the relations attached to the operator on the child node
-        OperatorInterface* child_op = child_node->get_operator();
-        vector<Relation*> child_rels = child_op->get_relations();
-        vector<Relation*> updated_rels;
+            op_nodes wrapper;
+            wrapper.push_back(child_node);
+            new_node->set_children(wrapper);
 
-        for (vector<Relation*>::iterator r = child_rels.begin(); 
-             r != child_rels.end(); ++r) {
-            if (*r != at_rel) {
-                updated_rels.push_back(*r);
+            op_nodes child_parents = child_node->get_parents();
+            child_parents.erase(remove(child_parents.begin(), child_parents.end(), at_node), 
+                                child_parents.end());
+            child_parents.push_back(new_node);
+                
+            // Update the relations attached to the operator on the child node
+            OperatorInterface* child_op = child_node->get_operator();
+            vector<Relation*> child_rels = child_op->get_relations();
+            vector<Relation*> updated_rels;
+
+            for (vector<Relation*>::iterator r = child_rels.begin(); 
+                 r != child_rels.end(); ++r) {
+                if (*r != at_rel) {
+                    updated_rels.push_back(*r);
+                }
+                else {
+                    updated_rels.push_back(new_rel);    
+                }
             }
-            else {
-                updated_rels.push_back(new_rel);    
-            }
+            child_op->set_relations(updated_rels);
+            child_op->update_columns();    
         }
-        child_op->set_relations(updated_rels);
-        child_op->update_columns();
-    
+
         return new_node;
     }
 

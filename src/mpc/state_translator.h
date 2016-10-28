@@ -40,6 +40,9 @@ namespace mpc {
         // Writes accumulated states out to file
         void WriteStatesToFile(const string& out_path);
 
+        // Writes code source out to file
+        void WriteCodeToFile(const string& code_path, const string& out_path);
+
     private:
         vector<string> states;
 

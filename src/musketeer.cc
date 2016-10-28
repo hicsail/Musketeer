@@ -67,8 +67,8 @@ DEFINE_string(use_frameworks, "hadoop-spark-graphchi-naiad-powergraph",
               "Frameworks that can be used. Dash separated");
 
 // Visualization flags.
-DEFINE_string(viz_root_dir, "/home/ubuntu/work/dag-viz/", 
-              "Directory where to store generated visualization html.");
+DEFINE_string(viz_root_dir, "", 
+              "Directory where to store generated visualization json.");
 
 // Scheduler flags.
 DEFINE_bool(best_runtime, true, "Optimize for runtime or resource utilization");
@@ -317,11 +317,19 @@ int main(int argc, char *argv[]) {
     TreeTraversal tree_traversal = TreeTraversal(expr_ret.tree);
     vector<shared_ptr<OperatorNode>> dag = tree_traversal.Traverse();
     
-    // TODO: check if we want to visualize
-    StateTranslator translator; // maybe this should go on the heap instead
     DAGRewriterMPC rewriter;
-    rewriter.RewriteDAG(dag, &translator);
-    translator.WriteStatesToFile(FLAGS_viz_root_dir + "dags.json");
+
+    if (FLAGS_viz_root_dir != "") {
+      StateTranslator translator;
+      rewriter.RewriteDAG(dag, &translator);
+      translator.WriteStatesToFile(FLAGS_viz_root_dir + "dags.json");
+      translator.WriteCodeToFile(FLAGS_beer_query, 
+                                 FLAGS_viz_root_dir + "code.json");
+    }
+    else {
+      // If directory is blank we don't want to visualize
+      rewriter.RewriteDAG(dag);
+    }
 
     if (!strcmp(job->operator_merge().c_str(), "1")) {
       LOG(INFO) << "Scheduling entire DAG";
