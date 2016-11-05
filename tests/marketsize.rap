@@ -1,0 +1,5 @@
+CREATE RELATION cab_data WITH COLUMNS (INTEGER, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, STRING, INTEGER),
+PROJECT [cab_data_0, cab_data_17] FROM (cab_data) AS selected_input,
+MUL [0, selected_input_0] FROM (selected_input) AS first_val_blank,
+AGG [first_val_blank_1, +] FROM (first_val_blank) GROUP BY [first_val_blank_0] AS market_size,
+DIV [market_size_0, 100] FROM (market_size) AS market_size_scaled

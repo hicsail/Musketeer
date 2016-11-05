@@ -305,7 +305,7 @@ namespace musketeer {
         owners.insert(new Owner(owner_id));
       }
       else {
-        LOG(ERROR) << "Invalid owner ID.";
+        LOG(ERROR) << "Invalid owner ID type.";
         return false;
       }
       ++child_num;
