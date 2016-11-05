@@ -22,13 +22,15 @@
 #include <string>
 
 namespace musketeer {
+namespace ir {
 
   string Owner::get_name() {
     return name;
   }
 
-  void Owner::set_name(string name_) {
+  void Owner::set_name(const string& name_) {
     name = name_;
   }
 
+} // namespace ir
 } // namespace musketeer

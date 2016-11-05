@@ -45,6 +45,7 @@ class TreeTraversal {
 
  private:
   pANTLR3_BASE_TREE tree;
+  map<string, set<Owner*>> owner_lookup;
 
   shared_ptr<OperatorNode> Traverse(pANTLR3_BASE_TREE tree, rel_node* op_map);
   Relation* ConstructRelation(string relation);

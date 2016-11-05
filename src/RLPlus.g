@@ -55,6 +55,7 @@ tokens {
 
 AS            : 'AS';
 COLUMNS       : 'COLUMNS';
+OWNERS        : 'OWNERS';
 DO            : 'DO';
 FROM          : 'FROM';
 WHERE         : 'WHERE';
@@ -105,7 +106,7 @@ expr
     ;
 
 createExpr
-    : CREATE_RELATION ATTRIBUTE WITH COLUMNS LPAREN typeExpr RPAREN -> ^(CREATE_RELATION ATTRIBUTE typeExpr)
+    : CREATE_RELATION ATTRIBUTE WITH COLUMNS LPAREN typeExpr RPAREN WITH OWNERS LPAREN ownerExpr RPAREN -> ^(CREATE_RELATION ATTRIBUTE typeExpr DELIMITER ownerExpr)
     ;
 
 blackBoxExpr
@@ -260,6 +261,10 @@ attributeExpr
 
 typeExpr
     : (INTEGER | DOUBLE | STRING | BOOLEAN) (COMMA! (INTEGER | DOUBLE | STRING | BOOLEAN))*
+    ;
+
+ownerExpr
+    : INT_VALUE (COMMA! INT_VALUE)*
     ;
 
 framework

@@ -24,6 +24,7 @@
 #include <string>
 
 #include "base/common.h"
+#include "ir/owner.h"
 #include "ir/agg_operator.h"
 #include "ir/black_box_operator.h"
 #include "ir/count_operator.h"
@@ -249,12 +250,18 @@ namespace musketeer {
 
   bool TreeTraversal::HandleCreateRelation(pANTLR3_BASE_TREE tree) {
     vector<uint16_t> col_types;
+    set<Owner*> owners;
+
     uint32_t cnt = tree->getChildCount(tree);
     pANTLR3_BASE_TREE rel_node =
       (pANTLR3_BASE_TREE)tree->getChild(tree, 0);
     string rel_name =
       string(reinterpret_cast<char*>(rel_node->getText(rel_node)->chars));
-    for (uint32_t child_num = 1; child_num < cnt; ++child_num) {
+    bool read_all_types = false;
+    uint32_t child_num = 1;
+
+    // read column types until we reach delimiter or end of children
+    while (!read_all_types && child_num < cnt) {
       pANTLR3_BASE_TREE type_node =
         (pANTLR3_BASE_TREE)tree->getChild(tree, child_num);
       switch (type_node->getToken(type_node)->type) {
@@ -274,11 +281,39 @@ namespace musketeer {
         col_types.push_back(BOOLEAN_TYPE);
         break;
       }
+      case DELIMITER: {
+        LOG(INFO) << "Delimiter encountered.";
+        read_all_types = true;
+        break;
+      }
       default: {
-        LOG(ERROR) << "Column has unexpected type";
+        LOG(ERROR) << "Column has unexpected type: " 
+                   << type_node->getToken(type_node)->type;
         return false;
       }
       }
+      ++child_num;
+    }
+
+    while (child_num < cnt) {
+      pANTLR3_BASE_TREE owner_node =
+        (pANTLR3_BASE_TREE)tree->getChild(tree, child_num);
+      if (owner_node->getToken(owner_node)->type == INT_VALUE) {
+        string owner_id = 
+          string(reinterpret_cast<char*>(owner_node->getText(owner_node)->chars));
+        LOG(INFO) << "Owner ID: " << owner_id;
+        owners.insert(new Owner(owner_id));
+      }
+      else {
+        LOG(ERROR) << "Invalid owner ID.";
+        return false;
+      }
+      ++child_num;
+    }
+
+    if (!owner_lookup.insert(pair<string, set<Owner*>>(rel_name, owners)).second) {
+      LOG(ERROR) << "Ownership for relation: " << rel_name << " already defined";
+      return false;  
     }
 
     if (!RelationsType::relations_type.insert(
@@ -1461,7 +1496,16 @@ namespace musketeer {
            type_it != rel_it->second.end(); ++type_it, ++index) {
         columns.push_back(new Column(relation, index, *type_it));
       }
-      return new Relation(relation, columns);
+      
+      map<string, set<Owner*>>::iterator owit = owner_lookup.find(relation);
+      if (owit != owner_lookup.end()) {
+        LOG(INFO) << "Found obligations for: " << relation;
+        return new Relation(relation, columns, owit->second);
+      }
+      else {
+        return new Relation(relation, columns);  
+      }
+
     } else {
       LOG(ERROR) << "Relation: " << relation << " is not defined";
       // TODO(ionel): Handle this case (e.g. kill workflow).

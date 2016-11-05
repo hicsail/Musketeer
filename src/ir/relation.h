@@ -28,6 +28,8 @@
 #include "ir/column.h"
 #include "ir/owner.h"
 
+using namespace musketeer::ir;
+
 namespace musketeer {
 
 class Relation {
@@ -56,7 +58,6 @@ class Relation {
   set<Owner*> get_owners();
   void add_owner(Owner* owner);
   void add_owners(set<Owner*> owners_);
-  void set_owners(set<Owner*> owners_);
   void set_immutable(bool immutable);
   bool isImmutable();
   bool isShared();

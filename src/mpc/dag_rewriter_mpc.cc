@@ -34,7 +34,7 @@ namespace mpc {
         op_nodes order = op_nodes();
         TopologicalOrder(dag, &order);
         
-        // PropagateOwnership(order);
+        PropagateOwnership(order);
         
         Environment obls;
         map<string, bool> mode;
@@ -334,9 +334,21 @@ namespace mpc {
             OperatorInterface* op = (*i)->get_operator();
             Relation* out_rel = op->get_output_relation();
             vector<Relation*> in_rels = op->get_relations();
+            
             for (vector<Relation*>::iterator r = in_rels.begin(); r != in_rels.end(); ++r) {
+                LOG(INFO) << "INREL " << *r;
                 out_rel->add_owners((*r)->get_owners());
             }
+            LOG(INFO) << "Processing obligations for " << out_rel->get_name() << " " << out_rel;
+
+            string owner_str = "";
+            set<Owner*> temp = out_rel->get_owners();
+            LOG(INFO) << "####" << temp.size();
+            for (set<Owner*>::iterator i = temp.begin(); 
+                 i != temp.end(); ++i) {
+                owner_str += (*i)->get_name() + " ";
+            }
+            LOG(INFO) << "Rel " << out_rel->get_name() << " has owners " << owner_str;  
         }
     }
 

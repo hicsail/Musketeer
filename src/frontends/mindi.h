@@ -112,10 +112,6 @@ class Mindi {
                                const vector<Column*>& val_cols,
                                const string& rel_out_name) const;
 
-  shared_ptr<OperatorNode> MathMPC(shared_ptr<OperatorNode> op_node,
-                                   vector<Value*> values,
-                                   const string& rel_out_name) const;
-
   // Non-standard LINQ methods
   shared_ptr<OperatorNode> Iterate(shared_ptr<OperatorNode> op_node,
                                    ConditionTree* cond_tree,

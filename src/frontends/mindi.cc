@@ -274,12 +274,6 @@ namespace musketeer {
     return select_node;
   }
 
-  shared_ptr<OperatorNode> Mindi::MathMPC(shared_ptr<OperatorNode> op_node,
-                                          vector<Value*> values,
-                                          const string& rel_out_name) const {
-    // TODO(nikolaj)
-  }
-
   shared_ptr<OperatorNode> Mindi::Where(shared_ptr<OperatorNode> op_node,
                                         ConditionTree* cond_tree,
                                         const string& rel_out_name) const {

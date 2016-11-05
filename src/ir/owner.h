@@ -26,7 +26,7 @@
 #include "base/common.h"
 
 namespace musketeer {
-
+namespace ir {
 class Owner {
  public:
   Owner(const string& name_):
@@ -34,11 +34,11 @@ class Owner {
   }
 
   string get_name();
-  void set_name(string name_);
+  void set_name(const string& name_);
   
  private:
   string name;
 };
-
+} // namespace ir
 } // namespace musketeer
 #endif
