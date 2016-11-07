@@ -330,20 +330,23 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::PropagateOwnership(op_nodes& dag) {
+        map<string, set<Owner*>> owner_lookup;
         for (vector<shared_ptr<OperatorNode>>::iterator i = dag.begin(); i != dag.end(); ++i) {
             OperatorInterface* op = (*i)->get_operator();
             Relation* out_rel = op->get_output_relation();
             vector<Relation*> in_rels = op->get_relations();
             
             for (vector<Relation*>::iterator r = in_rels.begin(); r != in_rels.end(); ++r) {
-                LOG(INFO) << "INREL " << *r;
-                out_rel->add_owners((*r)->get_owners());
+                set<Owner*> owners_on_inrel = (*r)->get_owners();
+                owner_lookup[(*r)->get_name()].insert(owners_on_inrel.begin(), owners_on_inrel.end());
+                set<Owner*> in_owners = owner_lookup[(*r)->get_name()];
+                owner_lookup[out_rel->get_name()].insert(in_owners.begin(), in_owners.end());
             }
-            LOG(INFO) << "Processing obligations for " << out_rel->get_name() << " " << out_rel;
+            out_rel->add_owners(owner_lookup[out_rel->get_name()]);
+            LOG(INFO) << "Propagating ownership for " << out_rel->get_name();
 
             string owner_str = "";
             set<Owner*> temp = out_rel->get_owners();
-            LOG(INFO) << "####" << temp.size();
             for (set<Owner*>::iterator i = temp.begin(); 
                  i != temp.end(); ++i) {
                 owner_str += (*i)->get_name() + " ";
