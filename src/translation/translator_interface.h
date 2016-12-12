@@ -38,6 +38,7 @@
 #include "ir/distinct_operator.h"
 #include "ir/div_operator.h"
 #include "ir/div_operator_mpc.h"
+#include "ir/dummy_operator.h"
 #include "ir/intersection_operator.h"
 #include "ir/join_operator.h"
 #include "ir/join_operator_mpc.h"
@@ -94,6 +95,8 @@ class TranslatorInterface {
       return Translate(dynamic_cast<DistinctOperator*>(op));
     case DIV_OP:
       return Translate(dynamic_cast<DivOperator*>(op));
+    case DUMMY_OP:
+      return Translate(dynamic_cast<DummyOperator*>(op));
     case INTERSECTION_OP:
       return Translate(dynamic_cast<IntersectionOperator*>(op));
     case JOIN_OP:
@@ -129,7 +132,7 @@ class TranslatorInterface {
     case DIV_OP_MPC:
       return Translate(dynamic_cast<DivOperatorMPC*>(op));
     default:
-      LOG(ERROR) << "Unexpected operator type: " << op->get_type();
+      LOG(ERROR) << "Unexpected operator type: " << op->get_type_string();
     }
     return NULL;
   }
@@ -180,6 +183,12 @@ class TranslatorInterface {
   virtual JobCode* Translate(DivOperatorMPC* op) {
     // Only frameworks that support DIV must implement it.
     LOG(FATAL) << "DIV_MPC operator not supported by framework!";
+    return NULL;
+  }
+
+  virtual JobCode* Translate(DummyOperator* op) {
+    // Only frameworks that support DIV must implement it.
+    LOG(FATAL) << "DUMMY operator not supported by framework!";
     return NULL;
   }
 

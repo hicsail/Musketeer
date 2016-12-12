@@ -181,6 +181,8 @@ class OperatorInterface {
       return "DISTINCT_OP";
     case DIV_OP:
       return "DIV_OP";
+    case DUMMY_OP:
+      return "DUMMY_OP";
     case INPUT_OP:
       return "INPUT_OP";
     case INTERSECTION_OP:

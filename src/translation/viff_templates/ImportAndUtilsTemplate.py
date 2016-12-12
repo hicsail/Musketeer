@@ -16,23 +16,17 @@ import copy
 import random
 import subprocess
 
-def read_from_hdfs(input_path):
+def read_from_hdfs(input_path, no_input):
+    if no_input:
+        return []
     input_stream = subprocess.Popen(["hadoop", "fs", "-cat", input_path + "*"], 
                                     stdout=subprocess.PIPE).stdout
     rel = [[int(val) for val in row.split()] for row in input_stream]
-    print "Read in from HDFS: ", rel
+    print "Read from HDFS: ", rel
     return rel
 
-def write_to_hdfs(rel, output_path):
-    
-    def to_string(row):
-        return ' '.join([str(v) for v in row])
-
-    rel_str = '\n'.join([to_string(row) for row in rel])
-    print "Will write to HDFS: "
-    print rel_str
-
-    return True
+def output(rel):
+    print "Result: ", rel
 
 def report_error(err):
     import sys
@@ -43,4 +37,3 @@ def shutdown_wrapper(_, rt):
 
 def protocol(rt, Zp):
     ext = Rel(rt)
-    all_done = []

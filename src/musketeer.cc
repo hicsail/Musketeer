@@ -260,13 +260,7 @@ int main(int argc, char *argv[]) {
   HistoryStorage* history = new HistoryStorage();
   map<string, FrameworkInterface* > frameworks =
     AddFrameworks(FLAGS_use_frameworks);
-  /*
-  if (FLAGS_optimise_ir_dag == true) {
-    optimiser = new QueryOptimiser(true, history);
-  } else {
-    optimiser = new QueryOptimiser(false, history);
-  }
-  */
+  
   SchedulerInterface* scheduler =
     new SchedulerDynamic(frameworks, history);
   //     SchedulerInterface* scheduler =  new OperatorScheduler(frameworks);
@@ -342,6 +336,7 @@ int main(int argc, char *argv[]) {
       LOG(INFO) << "Individual Operator Scheduling";
       for (vector<shared_ptr<OperatorNode> >::iterator it = dag.begin();
            it != dag.end(); ++it) {
+        LOG(INFO) << "Scheduling at node " << (*it)->get_operator()->get_output_relation()->get_name();
         vector<shared_ptr<OperatorNode> > op_dag;
         op_dag.push_back(*it);
         if (FLAGS_use_dynamic_scheduler) {

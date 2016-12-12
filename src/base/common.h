@@ -33,6 +33,7 @@ typedef enum {
   DIFFERENCE_OP,
   DISTINCT_OP,
   DIV_OP,
+  DUMMY_OP,
   INPUT_OP,
   INTERSECTION_OP,
   JOIN_OP,

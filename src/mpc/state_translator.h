@@ -32,7 +32,7 @@ namespace mpc {
     public:
         StateTranslator() {
         };
-        // Translates a state to a string in a particular format and 
+        // Translates a state to a string in the dagre format and 
         // stores result in states
         void StoreAsDagre(shared_ptr<OperatorNode> current, op_nodes dag,
                           Environment& obls, map<string, bool>& mode);

@@ -236,9 +236,13 @@ namespace translator {
     for (set<pair<Relation*, string>>::iterator it = input_rels_paths.begin(); 
          it != input_rels_paths.end(); ++it) {
       string in_code;
+      LOG(INFO) << "My MPC ID: " << FLAGS_data_owner_id;
+      LOG(INFO) << "Owner string of input relation " << it->first->get_name() << ": " << it->first->get_owner_string(); 
+      string input_flag = it->first->has_owner(FLAGS_data_owner_id) ? "True" : "False";
       TemplateDictionary dict("input");
       dict.SetValue("REL", it->first->get_name());
       dict.SetValue("INPUT_PATH", it->second);
+      dict.SetValue("INPUT_FLAG", input_flag);
       ExpandTemplate(FLAGS_viff_templates_dir + "InputTemplate.py",
                      ctemplate::DO_NOT_STRIP, &dict, &in_code);
       input_rels_code += in_code;
@@ -283,11 +287,6 @@ namespace translator {
     string output = TranslateOutput(leaves);
     string close_protocol = TranslateCloseProtocol();
     string main = TranslateMain();
-    // string make_shares = TranslateMakeShares(input_rels_paths);
-    // string data_transfer = TranslateDataTransfer();
-    // string store_leaves = TranslateStoreLeaves(leaves);
-    // string code = header + protocol_inputs + protocol_ops + gather_ops + 
-    //               return_rt + make_shares + data_transfer + store_leaves;
     string code = import_and_utils + inputs + protocol_ops + output
                   + close_protocol + main;
 

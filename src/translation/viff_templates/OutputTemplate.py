@@ -1,1 +1,2 @@
-    ext.output({{REL}}, write_to_hdfs, "{{OUTPUT_PATH}}")
+    {{REL}}_gathered = ext.gather({{REL}}, [1, 2, 3])
+    ext.output({{REL}}_gathered, "{{OUTPUT_PATH}}")

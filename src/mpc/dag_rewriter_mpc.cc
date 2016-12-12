@@ -17,6 +17,7 @@
  */
 
 #include "mpc/dag_rewriter_mpc.h"
+#include "ir/dummy_operator.h"
 #include "ir/relation.h"
 #include "ir/owner.h"
 #include "base/flags.h"
@@ -45,6 +46,8 @@ namespace mpc {
         InitEnvAndMode(obls, mode, &inputs);
         DeriveObligations(order, obls, mode, dag, translator);
         RewriteDAG(dag, obls, mode);
+        PruneDAG(dag, order);
+
     }
 
     void DAGRewriterMPC::RewriteDAG(op_nodes& dag) {
@@ -146,15 +149,14 @@ namespace mpc {
             Relation* rel = (*cur)->get_operator()->get_output_relation();
             LOG(INFO) << "Deriving obligations for " << rel->get_name();
             
-            // if (!rel->isShared()) {
-            //     // the output relation (and consequently the input relations) 
-            //     // is owned by only one party so we don't need mpc OR obligations
-            //     LOG(INFO) << "Relation " << rel->get_name() << " is not shared";
-            //     mpc_mode[rel->get_name()] = false;
-            //     continue;    
-            // }
+            if (!rel->isShared()) {
+                // the output relation (and consequently the input relations) 
+                // is owned by only one party so we don't need mpc OR obligations
+                LOG(INFO) << "Relation " << rel->get_name() << " is not shared";
+                mpc_mode[rel->get_name()] = false;
+                continue;    
+            }
             
-
             vector<shared_ptr<OperatorNode>> parents = (*cur)->get_parents();
             if (parents.size() == 0) {
                 LOG(INFO) << "Root rel found: " << rel->get_name();
@@ -313,10 +315,12 @@ namespace mpc {
 
             // Note that the conditions below are mutually exclusive (by design)
             if (mpc_mode[rel_name]) {
+                LOG(INFO) << "Replacing with MPC operator for " << rel_name; 
                 OperatorInterface* mpc_op = cur_node->get_operator()->toMPC();
                 cur_node->replace_operator(mpc_op);   
             }
             else if (obls.has_obligation(rel_name)) {
+                LOG(INFO) << "Inserting obligation for " << rel_name;
                 Obligation* obl = obls.pop_obligation(rel_name);
                 OperatorInterface* obl_op = obl->get_operator();
                 shared_ptr<OperatorNode> blocker = obl->get_blocked_by();
@@ -330,6 +334,7 @@ namespace mpc {
     }
 
     void DAGRewriterMPC::PropagateOwnership(op_nodes& dag) {
+        // TODO(nikolaj): this is pretty hacky
         map<string, set<Owner*>> owner_lookup;
         for (vector<shared_ptr<OperatorNode>>::iterator i = dag.begin(); i != dag.end(); ++i) {
             OperatorInterface* op = (*i)->get_operator();
@@ -338,6 +343,7 @@ namespace mpc {
             
             for (vector<Relation*>::iterator r = in_rels.begin(); r != in_rels.end(); ++r) {
                 set<Owner*> owners_on_inrel = (*r)->get_owners();
+                (*r)->add_owners(owner_lookup[(*r)->get_name()]);
                 owner_lookup[(*r)->get_name()].insert(owners_on_inrel.begin(), owners_on_inrel.end());
                 set<Owner*> in_owners = owner_lookup[(*r)->get_name()];
                 owner_lookup[out_rel->get_name()].insert(in_owners.begin(), in_owners.end());
@@ -352,6 +358,56 @@ namespace mpc {
                 owner_str += (*i)->get_name() + " ";
             }
             LOG(INFO) << "Rel " << out_rel->get_name() << " has owners " << owner_str;  
+        }
+    }
+
+    void DAGRewriterMPC::PruneDAG(op_nodes& roots, op_nodes& dag) {
+        LOG(INFO) << "Pruning DAG";
+        set<shared_ptr<OperatorNode>> bad_nodes;
+
+        // Record all "bad" nodes we need to remove from graph
+        for (vector<shared_ptr<OperatorNode>>::iterator i = dag.begin(); i != dag.end(); ++i) {
+            Relation* outrel = (*i)->get_operator()->get_output_relation();
+            if (!(outrel->has_owner(FLAGS_data_owner_id))) {
+                LOG(INFO) << "Relation owned by someone else: " << outrel->get_name();
+                bad_nodes.insert(*i);
+                // roots.erase(remove(roots.begin(), roots.end(), *i), roots.end());
+                OperatorInterface* current_op = (*i)->get_operator(); 
+                Relation* rel = current_op->get_output_relation();
+                LOG(INFO) << "Found node we can remove: " << rel->get_name();
+                vector<Relation*> rels;
+                rels.push_back(rel);
+                OperatorInterface* dummy_op = new DummyOperator(current_op->get_output_path(), rels, rel);
+                (*i)->replace_operator(dummy_op);
+            }
+        }
+
+        for (vector<shared_ptr<OperatorNode>>::iterator i = dag.begin(); i != dag.end(); ++i) {
+            LOG(INFO) << "Pruning node: " << (*i)->get_operator()->get_output_relation()->get_name();
+
+            op_nodes children = (*i)->get_children();
+            op_nodes new_children;
+            op_nodes parents = (*i)->get_parents();
+            
+            for (vector<shared_ptr<OperatorNode>>::iterator j = children.begin(); j != children.end(); ++j) {
+                if (find(bad_nodes.begin(), bad_nodes.end(), (*j)) == bad_nodes.end()) {
+                    new_children.push_back(*j);
+                }
+            }
+
+            for (vector<shared_ptr<OperatorNode>>::iterator j = parents.begin(); j != parents.end(); ++j) {
+                if (find(bad_nodes.begin(), bad_nodes.end(), (*j)) != bad_nodes.end()) {
+                    OperatorInterface* current_op = (*j)->get_operator(); 
+                    Relation* rel = current_op->get_output_relation();
+                    LOG(INFO) << "Found node we can remove: " << rel->get_name();
+                    vector<Relation*> rels;
+                    rels.push_back(rel);
+                    OperatorInterface* dummy_op = new DummyOperator(current_op->get_output_path(), rels, rel);
+                    (*j)->replace_operator(dummy_op);
+                }
+            }
+
+            (*i)->set_children(new_children);
         }
     }
 

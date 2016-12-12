@@ -1499,7 +1499,7 @@ namespace musketeer {
       
       map<string, set<Owner*>>::iterator owit = owner_lookup.find(relation);
       if (owit != owner_lookup.end()) {
-        LOG(INFO) << "Found obligations for: " << relation;
+        LOG(INFO) << "Found owners for: " << relation;
         return new Relation(relation, columns, owit->second);
       }
       else {

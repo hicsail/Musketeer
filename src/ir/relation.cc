@@ -47,6 +47,29 @@ namespace musketeer {
     return new Relation(new_name, columns, owners);
   }
 
+  string Relation::get_owner_string() {
+    string owner_str = "";
+    for (set<Owner*>::iterator i = owners.begin(); 
+         i != owners.end(); ++i) {
+        owner_str += (*i)->get_name() + " ";
+    }
+    if (owner_str == "") {
+      return "EMPTY";
+    }
+    return owner_str;
+  }
+
+  bool Relation::has_owner(string owner_id) {
+    // TODO: shouldn't iterate over set. Instead override owner equality function
+    // and use contains
+    for (std::set<Owner*>::iterator i = owners.begin(); i != owners.end(); ++i) {
+      if ((*i)->get_name() == owner_id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   set<Owner*> Relation::get_owners() {
     return owners;
   }

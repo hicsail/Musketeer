@@ -46,16 +46,6 @@ namespace musketeer {
 
   // shamelessly stolen from stackoverflow
   bool replace(string& str, const string& from, const string& to);
-  
-  // void write_to_file(const string& dags) {
-  //     ifstream t(FLAGS_viz_root_dir + "template.html");
-  //     string template_str((istreambuf_iterator<char>(t)),
-  //                          istreambuf_iterator<char>());
-  //     replace(template_str, "{{DAGS}}", dags);
-  //     ofstream result_file(FLAGS_viz_root_dir + "index.html");
-  //     result_file << template_str;
-  // }
-
 
   bool CheckChildrenInSet(const op_nodes& dag, const node_set& nodes);
   string ExecCmd(const string& cmd);

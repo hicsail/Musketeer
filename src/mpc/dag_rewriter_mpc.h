@@ -58,6 +58,7 @@ namespace mpc {
                                             shared_ptr<OperatorNode> child_node, 
                                             shared_ptr<OperatorNode> new_node);
         void PropagateOwnership(op_nodes& dag);
+        void PruneDAG(op_nodes& roots, op_nodes& dag);
 
     }; 
     

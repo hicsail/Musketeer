@@ -367,22 +367,12 @@ namespace scheduling {
     DetermineInputsSize(dag);
     LOG(INFO) << "Schedule DAG";
     op_nodes order = op_nodes();
-    //    optimiser_->optimiseDAG(dag);
     TopologicalOrder(dag, &order);
-    PrintNodesVector("Node order after optimisation: ", order);
+    PrintNodesVector("Node order: ", order);
     RefreshOutputSize(order);
-    // Comment the next 2 lines if you're uncommenting the next block.
+    
     bindings_lt l_bindings = BindOperators(order);
     bindings_vt bindings(l_bindings.begin(), l_bindings.end());
-
-    // Uncomment to merge all operators of PageRank.
-    //bindings_vt bindings = ScheduleNetflix(order, FMW_HADOOP);
-    //bindings_vt bindings = SchedulePageRank(order, FMW_SPARK);
-    //bindings_vt bindings = ScheduleShopper(order, FMW_GRAPH_CHI);
-    //bindings_vt bindings = SchedulePageRankHad(order);
-    //bindings_vt bindings = ScheduleTriangle(order, FMW_GRAPH_CHI);
-    //bindings_vt bindings = ScheduleSSSP(order, FMW_HADOOP);
-    //bindings_vt bindings = ScheduleTPC(order, FMW_SPARK);
 
     uint16_t rem_index = 0;
     for (bindings_vt::size_type index = 0; index != bindings.size(); index++) {

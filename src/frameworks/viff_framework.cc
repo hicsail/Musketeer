@@ -75,8 +75,7 @@ namespace framework {
       num_ops_to_schedule++;
     }
     if (CanMerge(input_nodes, to_schedule, num_ops_to_schedule)) {
-      // LOG(INFO) << "Can merge in " << FrameworkToString(GetType());
-      VLOG(2) << "Can merge in " << FrameworkToString(GetType());
+      LOG(INFO) << "Can merge in " << FrameworkToString(GetType());
       set<string> input_names;
       uint64_t input_data_size = GetDataSize(
           *DetermineInputs(input_nodes, &input_names), rel_size);
@@ -85,7 +84,7 @@ namespace framework {
                  ScoreRuntime(input_data_size, nodes, rel_size));
       
     } else {
-      VLOG(2) << "Cannot merge in " << FrameworkToString(GetType());
+      LOG(INFO) << "Cannot merge in " << FrameworkToString(GetType());
       return numeric_limits<uint32_t>::max();
     }
   }
@@ -93,11 +92,11 @@ namespace framework {
   double ViffFramework::ScoreOperator(shared_ptr<OperatorNode> op_node, const relation_size& rel_size) {
     OperatorInterface* op = op_node->get_operator();
     if (op->isMPC()) {
-      cout << "Secure operator detected." << endl;
+      LOG(INFO) << "Scoring MPC operator " << op->get_output_relation()->get_name();
       return 1.0; 
     }
     else { 
-      cout << "Non-secure operator detected." << endl;
+      LOG(INFO) << "Scoring non-MPC operator " << op->get_output_relation()->get_name();
       return FLAGS_max_scheduler_cost;
     }
   }
@@ -134,8 +133,10 @@ namespace framework {
                                const node_set& to_schedule,
                                int32_t num_ops_to_schedule) {
     // make sure all operators are secure operators (no mixing operators for now)
+    LOG(INFO) << "Checking if we can merge operators into VIFF";
     for (node_set::const_iterator it = to_schedule.begin();
          it != to_schedule.end(); ++it) {
+      LOG(INFO) << (*it)->get_operator()->get_output_relation()->get_name();
       if (!(*it)->get_operator()->isMPC()) {
         return false;
       }

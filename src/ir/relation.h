@@ -56,6 +56,8 @@ class Relation {
   void set_name(string name_);
   vector<Column*> get_columns();
   set<Owner*> get_owners();
+  string get_owner_string();
+  bool has_owner(string owner_id);
   void add_owner(Owner* owner);
   void add_owners(set<Owner*> owners_);
   void set_immutable(bool immutable);
